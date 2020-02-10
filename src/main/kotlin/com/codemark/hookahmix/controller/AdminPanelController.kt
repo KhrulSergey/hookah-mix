@@ -7,18 +7,10 @@ import org.springframework.web.bind.annotation.*
 @RequestMapping(value = ["/", "api/admin"])
 class AdminPanelController {
 
-    /*
-    TODO make a mapping for login page like that
-     */
-
     @GetMapping()
     fun login() : String {
         return "redirect:/main.html";
     }
-
-    /*
-    TODO add required fields
-    */
 
     @PostMapping("/add_tobacco")
     fun addTobacco(@RequestParam tobacco : String)

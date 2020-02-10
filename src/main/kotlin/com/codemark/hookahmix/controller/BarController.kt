@@ -8,8 +8,6 @@ import org.springframework.web.bind.annotation.*
 @RestController
 @RequestMapping("/api/bar")
 
-//@Autowired constructor(private val tobaccoRepository: TobaccoRepository)
-
 class BarController {
 
     @GetMapping("/all")

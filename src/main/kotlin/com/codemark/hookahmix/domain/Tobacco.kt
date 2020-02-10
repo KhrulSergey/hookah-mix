@@ -1,8 +1,6 @@
 package com.codemark.hookahmix.domain
 
 
-// TODO tags - String or List<String>?
-
 /**
  * class for test of method adding new item;
  * when designing of logic basic class will be enabled

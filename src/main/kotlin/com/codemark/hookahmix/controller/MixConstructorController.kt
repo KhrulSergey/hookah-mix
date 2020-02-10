@@ -7,8 +7,6 @@ import org.springframework.web.bind.annotation.*
 @RestController
 @RequestMapping("/api/mixes")
 
-//@Autowired constructor(private val mixRepository: MixRepository)
-
 class MixConstructorController {
 
     /*
