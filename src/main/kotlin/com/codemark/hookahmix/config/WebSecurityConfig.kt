@@ -14,7 +14,7 @@ class WebSecurityConfig : WebSecurityConfigurerAdapter() {
         http
                     .authorizeRequests()
                     .antMatchers("/", "/*/html").permitAll()
-                    .antMatchers("/api/admin", "/main.html",
+                    .antMatchers("/api/admin", "/main",
                             "/tobaccos_list", "/mixes_list")
                     .authenticated()
                 .and()
