@@ -1,7 +1,16 @@
 package com.codemark.hookahmix.domain
 
-import javax.persistence.*;
+import lombok.AllArgsConstructor
+import java.time.LocalDate
+import java.util.*
+import javax.persistence.*
 
+//o	Название
+//o	Картинка
+//o	Год основания
+//o	Описание
+//o	Ценовой диапазон
+@AllArgsConstructor
 @Entity
 @Table(name = "makers")
 class Maker {
