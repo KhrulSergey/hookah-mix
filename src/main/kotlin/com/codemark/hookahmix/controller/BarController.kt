@@ -43,22 +43,32 @@ class BarController {
     )
 
     /**
-     * Метод получения табаков по фильтру с учетом авторизации
-     * return
+     * Метод получения  структурированого списка табаков для экрана Все табаки
      */
-    @GetMapping("/marker", produces = ["application/json"])
+    @GetMapping("/marker/catalog", produces = ["application/json"])
     fun findMarkersBy(@RequestParam(required = false) page: Pageable?): ResponseEntity<Page<Maker>> = ResponseEntity.ok(
         PageImpl(mockData)
     )
 
     /**
-     * Метод получения
+     * Метод получения структурированого списка табаков для экрана В баре
      */
-    @GetMapping("/tobacco", produces = ["application/json"])
+    @GetMapping("/marker/bar", produces = ["application/json"])
+    fun findMarkersBar(): ResponseEntity<List<Maker>> = ResponseEntity.ok(
+        mockData
+    )
+
+    /**
+     * Метод получения списка табаков в для экрана Покупки
+     */
+    @GetMapping("/tobacco/shopping", produces = ["application/json"])
     fun findTobaccoBy(@RequestParam(required = false) page: Pageable?): ResponseEntity<Page<Tobacco>?> = ResponseEntity.ok(
         PageImpl(mockData.flatMap { maker -> ArrayList(maker.tobaccos) })
     )
 
+    /**
+     * Метод добавления табака в бар
+     */
     @PostMapping("/tobacco")
     fun addTobacco(@RequestBody tobacco: Tobacco)
             : ResponseEntity<String> {
@@ -68,6 +78,9 @@ class BarController {
         );
     }
 
+    /**
+     * Метод удаления табака из бара
+     */
     @DeleteMapping("/tobacco/{id}")
     fun delete(@PathVariable("id") id: Long)
             : ResponseEntity<String> = ResponseEntity(
