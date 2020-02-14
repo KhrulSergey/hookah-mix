@@ -50,7 +50,7 @@ class BarController {
         mockData.flatMap { maker -> ArrayList(maker.tobaccos) }
     )
 
-    @PostMapping("/add")
+    @PostMapping("/tobacco")
     fun addTobacco(@RequestBody tobacco: Tobacco)
             : ResponseEntity<String> {
         return ResponseEntity(
@@ -59,7 +59,7 @@ class BarController {
         );
     }
 
-    @DeleteMapping("/delete/{id}")
+    @DeleteMapping("/tobacco/{id}")
     fun delete(@PathVariable("id") id: Long)
             : ResponseEntity<String> = ResponseEntity(
         "Tobacco $id successfully deleted", HttpStatus.OK
