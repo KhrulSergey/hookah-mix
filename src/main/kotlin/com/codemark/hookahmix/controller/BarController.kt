@@ -2,6 +2,8 @@ package com.codemark.hookahmix.controller
 
 import com.codemark.hookahmix.domain.Maker
 import com.codemark.hookahmix.domain.Tobacco
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -40,14 +42,21 @@ class BarController {
         }
     )
 
+    /**
+     * Метод получения табаков по фильтру с учетом авторизации
+     * return
+     */
     @GetMapping("/marker", produces = ["application/json"])
-    fun findMarkersBy(@RequestParam(required = false) page: Pageable?): ResponseEntity<List<Maker>> = ResponseEntity.ok(
-        mockData
+    fun findMarkersBy(@RequestParam(required = false) page: Pageable?): ResponseEntity<Page<Maker>> = ResponseEntity.ok(
+        PageImpl(mockData)
     )
 
+    /**
+     * Метод получения
+     */
     @GetMapping("/tobacco", produces = ["application/json"])
-    fun findTobaccoBy(@RequestParam(required = false) page: Pageable?): ResponseEntity<List<Tobacco>?> = ResponseEntity.ok(
-        mockData.flatMap { maker -> ArrayList(maker.tobaccos) }
+    fun findTobaccoBy(@RequestParam(required = false) page: Pageable?): ResponseEntity<Page<Tobacco>?> = ResponseEntity.ok(
+        PageImpl(mockData.flatMap { maker -> ArrayList(maker.tobaccos) })
     )
 
     @PostMapping("/tobacco")
