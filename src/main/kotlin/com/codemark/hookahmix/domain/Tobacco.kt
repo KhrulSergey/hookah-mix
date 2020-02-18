@@ -24,7 +24,7 @@ data class Tobacco(
     @OneToOne
     @JoinColumn(name = "taste_id")
     var taste : Taste? = null;
-
+    var status: TobaccoStatus = TobaccoStatus.NEED_BAR
 
     override fun toString(): String = "Tobacco $title: $tags";
 }

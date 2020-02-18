@@ -2,6 +2,7 @@ package com.codemark.hookahmix.controller
 
 import com.codemark.hookahmix.domain.Maker
 import com.codemark.hookahmix.domain.Tobacco
+import com.codemark.hookahmix.domain.TobaccoStatus
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
@@ -15,16 +16,22 @@ import java.util.stream.Collectors.toList
 class BarController {
 
     private val mockData = listOf(
-        Maker().let {
-            it.makersId = 1
-            it.title = "Al Fakhamah1"
-            val maker = it
-            it.tobaccos = setOf<Tobacco>(
-                Tobacco("Blackcurant1", "").let { it.tobaccosId = 1; it.maker = maker; it },
-                Tobacco("Blackcurant2", "").let { it.tobaccosId = 2; it.maker = maker; it },
-                Tobacco("Blackcurant3", "").let { it.tobaccosId = 3; it.maker = maker; it }
+        Maker().apply {
+            makersId = 1
+            title = "Al Fakhamah1"
+            val m = this;
+            tobaccos = setOf<Tobacco>(
+                Tobacco("Blackcurant1", "").apply {
+                    tobaccosId = 1
+                    maker = m
+                    status = TobaccoStatus.CONTAIN_BAR
+                },
+                Tobacco("Blackcurant2", "").apply {
+                    tobaccosId = 2
+                    maker = m;
+                },
+                Tobacco("Blackcurant3", "").apply { tobaccosId = 3; maker = m; }
             )
-            it
         },
         Maker().let {
             it.makersId = 2
@@ -44,7 +51,7 @@ class BarController {
      */
     @GetMapping("/marker/catalog", produces = ["application/json"])
     fun findMarkersBy(@RequestParam(required = false) page: Pageable?): ResponseEntity<Page<Maker>> = ResponseEntity.ok(
-        PageImpl(mockData.stream(). map { it.tobaccos?.forEach { it.maker = null }; it }.collect(toList()))
+        PageImpl(mockData.stream().map { it.tobaccos?.forEach { it.maker = null }; it }.collect(toList()))
     )
 
     /**
@@ -52,16 +59,19 @@ class BarController {
      */
     @GetMapping("/marker/bar", produces = ["application/json"])
     fun findMarkersBar(): ResponseEntity<List<Maker>> = ResponseEntity.ok(
-        mockData.stream(). map { it.tobaccos?.forEach { it.maker = null }; it }.collect(toList())
+        mockData.stream().map { it.tobaccos?.forEach { it.maker = null }; it }.collect(toList())
     )
 
     /**
      * Метод получения списка табаков в для экрана Покупки
      */
     @GetMapping("/tobacco/shopping", produces = ["application/json"])
-    fun findTobaccoBy(@RequestParam(required = false) page: Pageable?): ResponseEntity<Page<Tobacco>?> = ResponseEntity.ok(
-        PageImpl(mockData.stream().flatMap { maker -> ArrayList(maker.tobaccos).stream().map { it.maker?.tobaccos = null; it } } .collect(toList()))
-    )
+    fun findTobaccoBy(@RequestParam(required = false) page: Pageable?): ResponseEntity<Page<Tobacco>?> =
+        ResponseEntity.ok(
+            PageImpl(mockData.stream().flatMap { maker ->
+                ArrayList(maker.tobaccos).stream().map { it.maker?.tobaccos = null; it }
+            }.collect(toList()))
+        )
 
     /**
      * Метод добавления табака в бар

@@ -36,7 +36,7 @@ class MixConstructorController {
                 rating = ""
                 tags = "Сладкий,Пряный";
                 warmupTime = "";
-                set = MixSet.MATCH_BAR;
+                set = MixSet.PARTIAL_BAR;
             },
             Mix().apply {
                 mixesId = 4;
