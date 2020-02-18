@@ -16,6 +16,7 @@ class Mix {
     @Column(name = "warmup_time")
     var warmupTime : String = "";
 
+    var set: MixSet = MixSet.MATCH_BAR
     /*
     TODO add relations
      */

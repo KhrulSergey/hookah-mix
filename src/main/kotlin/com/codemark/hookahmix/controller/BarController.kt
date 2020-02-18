@@ -8,15 +8,12 @@ import org.springframework.data.domain.Pageable
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
+import java.util.stream.Collectors.toList
 
 @RestController
 @RequestMapping("/api/bar")
 class BarController {
 
-
-    private val mockDataBuilder: () -> Unit = {
-
-    }
     private val mockData = listOf(
         Maker().let {
             it.makersId = 1
@@ -47,7 +44,7 @@ class BarController {
      */
     @GetMapping("/marker/catalog", produces = ["application/json"])
     fun findMarkersBy(@RequestParam(required = false) page: Pageable?): ResponseEntity<Page<Maker>> = ResponseEntity.ok(
-        PageImpl(mockData)
+        PageImpl(mockData.stream(). map { it.tobaccos?.forEach { it.maker = null }; it }.collect(toList()))
     )
 
     /**
@@ -55,7 +52,7 @@ class BarController {
      */
     @GetMapping("/marker/bar", produces = ["application/json"])
     fun findMarkersBar(): ResponseEntity<List<Maker>> = ResponseEntity.ok(
-        mockData
+        mockData.stream(). map { it.tobaccos?.forEach { it.maker = null }; it }.collect(toList())
     )
 
     /**
@@ -63,7 +60,7 @@ class BarController {
      */
     @GetMapping("/tobacco/shopping", produces = ["application/json"])
     fun findTobaccoBy(@RequestParam(required = false) page: Pageable?): ResponseEntity<Page<Tobacco>?> = ResponseEntity.ok(
-        PageImpl(mockData.flatMap { maker -> ArrayList(maker.tobaccos) })
+        PageImpl(mockData.stream().flatMap { maker -> ArrayList(maker.tobaccos).stream().map { it.maker?.tobaccos = null; it } } .collect(toList()))
     )
 
     /**
