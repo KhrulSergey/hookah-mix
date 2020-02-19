@@ -11,6 +11,7 @@
     <groupId>com.codemark</groupId>
     <artifactId>hookah-mix</artifactId>
     <version>0.0.1-SNAPSHOT</version>
+    <packaging>war</packaging>
     <name>hookah-mix</name>
     <description>Hookah Mix</description>
 
