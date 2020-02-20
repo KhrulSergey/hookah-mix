@@ -20,6 +20,8 @@ node-modules/
 *.iws
 *.iml
 *.ipr
+yarn.lock
+bash.exe.stackdump
 
 ### NetBeans ###
 /nbproject/private/
