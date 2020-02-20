@@ -28,7 +28,6 @@ class AdminPanelController @Autowired constructor(private val tobaccoRepository:
     }
 
 
-
     @GetMapping("/main")
     fun main(model : Model) : String {
 
@@ -68,11 +67,11 @@ class AdminPanelController @Autowired constructor(private val tobaccoRepository:
     @PostMapping("/add_mix")
     fun addMix(@RequestParam mix : String)
             : String {
-        return "redirect:/main.html";
+        return "redirect:/main";
     }
 
 
-    @GetMapping("/tobaccos_list")
+    @GetMapping("/catalog_tobaccos")
     fun getAllTobaccos(@RequestParam(name = "filter", defaultValue = "", required = false) filter : String,
                        model : Model) : String {
 
@@ -84,7 +83,7 @@ class AdminPanelController @Autowired constructor(private val tobaccoRepository:
             model.addAttribute("tobaccos", tobaccos);
             model.addAttribute("filter", filter);
 
-            return "/tobaccos_list";
+            return "/catalog_tobaccos";
         }
 
         tobaccos = tobaccoRepository.findAll();
@@ -92,18 +91,18 @@ class AdminPanelController @Autowired constructor(private val tobaccoRepository:
         model.addAttribute("tobaccos", tobaccos);
         model.addAttribute("filter", filter);
 
-        return "/tobaccos_list";
+        return "/catalog_tobaccos";
     }
 
 
 
-    @GetMapping("/mixes_list")
+    @GetMapping("/catalog_mixes")
     fun getAllMixes(model : Model) : String {
 
         var mixes : List<MixDto> = mutableListOf(MixDto(), MixDto(), MixDto());
         model.addAttribute("mixes", mixes);
 
-        return "/mixes_list";
+        return "/catalog_mixes";
     }
 
 }

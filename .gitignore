@@ -1,5 +1,7 @@
 HELP.md
 target/
+hookah-mix-mobile-client/
+node-modules/
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**
 !**/src/test/**

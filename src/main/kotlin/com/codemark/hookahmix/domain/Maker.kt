@@ -1,7 +1,16 @@
 package com.codemark.hookahmix.domain
 
-import javax.persistence.*;
+import lombok.AllArgsConstructor
+import java.time.LocalDate
+import java.util.*
+import javax.persistence.*
 
+//o	Название
+//o	Картинка
+//o	Год основания
+//o	Описание
+//o	Ценовой диапазон
+@AllArgsConstructor
 @Entity
 @Table(name = "makers")
 class Maker {
@@ -11,11 +20,9 @@ class Maker {
     var makersId : Long = 0;
     var title : String = "";
     var image : String = "";
-    @Column(name = "founding_date")
-    var foundingDate : String = "";
+    @Column(name = "founding_year")
+    var foundingYear : String = "";
     var description : String = "";
-    @Column(name = "price_range")
-    var priceRange : String = "";
 
     @OneToMany
     @JoinColumn(name = "tobaccos_id")

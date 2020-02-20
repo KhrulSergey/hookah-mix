@@ -1,5 +1,4 @@
 
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -14,12 +13,17 @@
 </head>
 <body>
 
-<h1>Mixes</h1>
+<h1>Tobaccos</h1>
 
-<form action="/mixes_list" method="get">
-    <select name="mixes">
-        <#list mixes as mix>
-            <option value="${mix}">${mix}</option>
+<form action="/catalog_tobaccos" method="get">
+    <input type="text" class="form-control col-sm-2" name="filter" value="${filter}" placeholder="Maker">
+    <button type="submit" class="btn btn-primary">Enter</button>
+</form>
+
+<form action="/catalog_tobaccos" method="get">
+    <select name="tobaccos" class="form-control selcls col-sm-2">
+        <#list tobaccos as tobacco>
+            <option value="${tobacco}">${tobacco}</option>
         </#list>
     </select>
 </form>

@@ -21,8 +21,8 @@
 <div class="container">
 
     <div>
-        <a href="/tobaccos_list">Tobaccos List</a>
-        <a href="/mixes_list">Mixes List</a>
+        <a href="/catalog_tobaccos">Tobaccos List</a>
+        <a href="/catalog_mixes">Mixes List</a>
     </div>
 
     <div>

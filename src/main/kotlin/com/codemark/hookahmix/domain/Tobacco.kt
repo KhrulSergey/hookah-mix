@@ -1,15 +1,14 @@
 package com.codemark.hookahmix.domain
 
 
+import com.fasterxml.jackson.annotation.JsonIgnore
 import javax.persistence.*;
 
 @Entity
 @Table(name = "tobaccos")
 data class Tobacco(
         var title : String,
-//                   var makerId : Int,
         var description : String,
-//                   var tasteId : Int,
         var strength : Int = 5,
         var image : String = "",
         var tags : String = "") {
@@ -18,6 +17,7 @@ data class Tobacco(
     @Column(name = "tobaccos_id")
     var tobaccosId : Long = 0;
 
+    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "maker_id")
     var maker : Maker? = null;
@@ -25,6 +25,9 @@ data class Tobacco(
     @JoinColumn(name = "taste_id")
     var taste : Taste? = null;
 
+    @Transient
+    var existInBar : Boolean = false;
 
-    override fun toString(): String = "Tobacco $title: $tags";
+
+    override fun toString(): String = "Tobacco $title: $tags by $maker";
 }

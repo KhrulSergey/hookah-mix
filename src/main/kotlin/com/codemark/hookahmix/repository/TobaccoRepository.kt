@@ -17,6 +17,11 @@ interface TobaccoRepository : JpaRepository<Tobacco, Long> {
             value = "select * from Tobaccos t " +
                     "inner join Makers m on t.maker_id = m.makers_id " +
                     "where m.title = :filter")
-    fun findAllByMaker(@Param("filter") filter : String) : List<Tobacco>;
+    fun findAllByMaker(@Param("filter") filter : String): List<Tobacco>;
+
+    @Query(nativeQuery = true, value = "select * from Tobaccos t " +
+            "inner join Makers m on t.maker_id = m.makers_id " +
+            "order by m.title, t.title")
+    fun findAllSortedByMaker(): List<Tobacco>;
 
 }

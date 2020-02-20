@@ -13,8 +13,6 @@ class Mix {
     var title : String = "";
     var rating : String = "";
     var tags : String = "";
-    @Column(name = "warmup_time")
-    var warmupTime : String = "";
 
     /*
     TODO add relations
