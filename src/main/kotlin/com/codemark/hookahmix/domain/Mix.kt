@@ -14,6 +14,7 @@ class Mix {
     var rating : String = "";
     var tags : String = "";
 
+    var set: MixSet = MixSet.MATCH_BAR
     /*
     TODO add relations
      */
