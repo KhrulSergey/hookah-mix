@@ -19,7 +19,6 @@ class MixConstructorController {
                 title = "Лунная ночь";
                 rating = ""
                 tags = "Сладкий,Пряный";
-                warmupTime = "";
                 set = MixSet.MATCH_BAR;
             },
             Mix().apply {
@@ -27,7 +26,6 @@ class MixConstructorController {
                 title = "Жвачка";
                 rating = ""
                 tags = "Сладкий,Пряный";
-                warmupTime = "";
                 set = MixSet.MATCH_BAR;
             },
             Mix().apply {
@@ -35,7 +33,6 @@ class MixConstructorController {
                 title = "Лунная ночь";
                 rating = ""
                 tags = "Сладкий,Пряный";
-                warmupTime = "";
                 set = MixSet.PARTIAL_BAR;
             },
             Mix().apply {
@@ -43,7 +40,6 @@ class MixConstructorController {
                 title = "Жвачка";
                 rating = ""
                 tags = "Сладкий,Пряный";
-                warmupTime = "";
                 set = MixSet.MATCH_BAR;
             },
             Mix().apply {
@@ -51,7 +47,6 @@ class MixConstructorController {
                 title = "Лунная ночь";
                 rating = ""
                 tags = "Сладкий,Пряный";
-                warmupTime = "";
                 set = MixSet.MATCH_BAR;
             },
             Mix().apply {
@@ -59,7 +54,6 @@ class MixConstructorController {
                 title = "Жвачка";
                 rating = ""
                 tags = "Сладкий,Пряный";
-                warmupTime = "";
                 set = MixSet.MATCH_BAR;
             },
             Mix().apply {
@@ -67,7 +61,6 @@ class MixConstructorController {
                 title = "Лунная ночь";
                 rating = ""
                 tags = "Сладкий,Пряный";
-                warmupTime = "";
                 set = MixSet.MATCH_BAR;
             },
             Mix().apply {
@@ -75,7 +68,6 @@ class MixConstructorController {
                 title = "Жвачка";
                 rating = ""
                 tags = "Сладкий,Пряный";
-                warmupTime = "";
                 set = MixSet.MATCH_BAR;
             }
         )

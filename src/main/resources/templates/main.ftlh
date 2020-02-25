@@ -13,10 +13,6 @@
 <body>
 <h2>Hello, Admin!</h2>
 
-<#--<div>-->
-    <#--<a href="/tobaccos_list">Tobaccos List</a>-->
-    <#--<a href="/mixes_list">Mixes List</a>-->
-<#--</div>-->
 
 <div class="container">
 

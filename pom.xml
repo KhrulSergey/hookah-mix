@@ -10,7 +10,7 @@
     </parent>
     <groupId>com.codemark</groupId>
     <artifactId>hookah-mix</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>hookah-mix</version>
     <packaging>war</packaging>
     <name>hookah-mix</name>
     <description>Hookah Mix</description>
@@ -99,6 +99,7 @@
     </dependencies>
 
     <build>
+        <finalName>hookah-mix</finalName>
         <sourceDirectory>${project.basedir}/src/main/kotlin</sourceDirectory>
         <testSourceDirectory>${project.basedir}/src/test/kotlin</testSourceDirectory>
         <plugins>

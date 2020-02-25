@@ -24,9 +24,8 @@ class Maker {
     var foundingYear : String = "";
     var description : String = "";
 
-    @OneToMany
-    @JoinColumn(name = "tobaccos_id")
-    var tobaccos : Set<Tobacco>? = null;
+    @OneToMany(mappedBy = "maker")
+    var tobaccos : MutableSet<Tobacco> = mutableSetOf();
 
     override fun toString(): String {
         return title;

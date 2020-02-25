@@ -26,6 +26,7 @@ data class Tobacco(
     var taste : Taste? = null;
 
     @Transient
+    @JsonIgnore
     var existInBar : Boolean = false;
 
 

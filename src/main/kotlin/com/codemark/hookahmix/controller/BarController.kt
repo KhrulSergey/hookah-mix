@@ -2,25 +2,29 @@ package com.codemark.hookahmix.controller
 
 import com.codemark.hookahmix.domain.Maker
 import com.codemark.hookahmix.domain.Tobacco
+import com.codemark.hookahmix.repository.MakerRepository
 import com.codemark.hookahmix.repository.TobaccoRepository
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
+import org.springframework.util.StringUtils
 import org.springframework.web.bind.annotation.*
 import java.util.*
 import javax.servlet.http.Cookie
 import javax.servlet.http.HttpServletRequest
+import javax.servlet.http.HttpServletResponse
 import kotlin.collections.ArrayList
 
 @RestController
 @RequestMapping("/api/bar")
-class BarController @Autowired constructor(private val tobaccoRepository: TobaccoRepository) {
+class BarController @Autowired constructor(private val tobaccoRepository: TobaccoRepository,
+                                           private val makerRepository: MakerRepository) {
 
 
-    private val barTobaccos: MutableList<Tobacco> = mutableListOf();
+    private val barTobaccos: MutableList<Maker> = mutableListOf();
+    private var installationCookie: String = "";
 
     private val mockDataBuilder: () -> Unit = {
 
@@ -34,7 +38,7 @@ class BarController @Autowired constructor(private val tobaccoRepository: Tobacc
                         Tobacco("Blackcurant1", "").let { it.tobaccosId = 1; it.maker = maker; it },
                         Tobacco("Blackcurant2", "").let { it.tobaccosId = 2; it.maker = maker; it },
                         Tobacco("Blackcurant3", "").let { it.tobaccosId = 3; it.maker = maker; it }
-                )
+                ) as MutableSet<Tobacco>
                 it
             },
             Maker().let {
@@ -45,7 +49,7 @@ class BarController @Autowired constructor(private val tobaccoRepository: Tobacc
                         Tobacco("Blackcurant4", "").let { it.tobaccosId = 4; it.maker = maker; it },
                         Tobacco("Blackcurant5", "").let { it.tobaccosId = 5; it.maker = maker; it },
                         Tobacco("Blackcurant6", "").let { it.tobaccosId = 6; it.maker = maker; it }
-                )
+                ) as MutableSet<Tobacco>
                 it
             }
     )
@@ -59,22 +63,19 @@ class BarController @Autowired constructor(private val tobaccoRepository: Tobacc
 //    )
 
     @GetMapping("/marker/catalog")
-    fun findMarkersBy(): List<Tobacco> {
+    fun findMarkersBy(): List<Maker> {
 
-        var catalogTobaccos = tobaccoRepository.findAllSortedByMaker();
+        var catalogTobaccos = makerRepository.findAllSortedByTitle();
         return catalogTobaccos;
+
     }
 
     /**
      * Метод получения структурированого списка табаков для экрана В баре
      */
-//    @GetMapping("/marker/bar", produces = ["application/json"])
-//    fun findMarkersBar(): ResponseEntity<List<Maker>> = ResponseEntity.ok(
-//            mockData
-//    )
 
     @GetMapping("/marker/bar")
-    fun findMarkersBar(): MutableList<Tobacco> {
+    fun findMarkersBar(): MutableList<Maker> {
 
         return barTobaccos;
     }
@@ -92,13 +93,26 @@ class BarController @Autowired constructor(private val tobaccoRepository: Tobacc
      * Метод добавления табака в бар
      */
 
-    @PostMapping("/tobacco/{id}")
-    fun addTobacco(@PathVariable("id") id: Long): Unit {
+//     POST, of course
+    @GetMapping("/tobacco/{id}")
+    fun addTobacco(@PathVariable("id") id: Long) {
 
-        var barTobacco : Tobacco = tobaccoRepository.getOne(id);
+        var barTobacco: Tobacco = tobaccoRepository.getOne(id);
         barTobacco.existInBar = true;
 
-        barTobaccos.add(barTobacco);
+        var title: String? = barTobacco.maker?.title;
+        var barMaker = makerRepository.getOneByTobacco(title);
+
+        for (index in barTobaccos) {
+            if (index.title.equals(title)) {
+                index.tobaccos.add(barTobacco);
+                println(barTobaccos)
+                return;
+            }
+        }
+
+        barMaker.tobaccos.add(barTobacco);
+        barTobaccos.add(barMaker);
     }
 
     /**
