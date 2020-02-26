@@ -2,6 +2,7 @@ package com.codemark.hookahmix.controller
 
 import com.codemark.hookahmix.domain.Maker
 import com.codemark.hookahmix.domain.Tobacco
+import com.codemark.hookahmix.domain.TobaccoStatus
 import com.codemark.hookahmix.repository.MakerRepository
 import com.codemark.hookahmix.repository.TobaccoRepository
 import org.springframework.beans.factory.annotation.Autowired
@@ -9,13 +10,8 @@ import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
-import org.springframework.util.StringUtils
+import org.springframework.http.ResponseEntity.ok
 import org.springframework.web.bind.annotation.*
-import java.util.*
-import javax.servlet.http.Cookie
-import javax.servlet.http.HttpServletRequest
-import javax.servlet.http.HttpServletResponse
-import kotlin.collections.ArrayList
 
 @RestController
 @RequestMapping("/api/bar")
@@ -85,7 +81,7 @@ class BarController @Autowired constructor(private val tobaccoRepository: Tobacc
      */
 
     @GetMapping("/tobacco/shopping", produces = ["application/json"])
-    fun findTobaccoBy(@RequestParam(required = false) page: Pageable?): ResponseEntity<PageImpl<Tobacco>> = ResponseEntity.ok(
+    fun findTobaccoBy(@RequestParam(required = false) page: Pageable?): ResponseEntity<PageImpl<Tobacco>> = ok(
             PageImpl(mockData.flatMap { maker -> ArrayList(maker.tobaccos) })
     )
 
@@ -94,11 +90,40 @@ class BarController @Autowired constructor(private val tobaccoRepository: Tobacc
      */
 
 //     POST, of course
+//    @GetMapping("/tobacco/{id}")
+//    fun addTobacco(@PathVariable("id") id: Long) {
+//
+//        var barTobacco: Tobacco = tobaccoRepository.getOne(id);
+//        barTobacco.existInBar = true;
+//
+//        println("Tobacco: $barTobacco")
+//
+//        var title: String? = barTobacco.maker?.title;
+//        println("Title: $title")
+//
+//        var barMaker = makerRepository.getOneByTobacco(title);
+//        println("Maker: $barMaker")
+//
+//        for (index in barTobaccos) {
+//            if (index.title.equals(title)) {
+//                index.tobaccos.add(barTobacco);
+//                println("Tobacco $barTobaccos was added!")
+//                println("Size: $barTobaccos.size")
+//                return;
+//            }
+//        }
+//
+//        barMaker.tobaccos.add(barTobacco);
+//        barTobaccos.add(barMaker);
+//        println("Size: ${barTobaccos.size}")
+//    }
+
     @GetMapping("/tobacco/{id}")
     fun addTobacco(@PathVariable("id") id: Long) {
 
         var barTobacco: Tobacco = tobaccoRepository.getOne(id);
-        barTobacco.existInBar = true;
+
+        barTobacco.status = TobaccoStatus.CONTAIN_BAR.title;
 
         var title: String? = barTobacco.maker?.title;
         var barMaker = makerRepository.getOneByTobacco(title);
@@ -106,13 +131,13 @@ class BarController @Autowired constructor(private val tobaccoRepository: Tobacc
         for (index in barTobaccos) {
             if (index.title.equals(title)) {
                 index.tobaccos.add(barTobacco);
-                println(barTobaccos)
                 return;
             }
         }
 
         barMaker.tobaccos.add(barTobacco);
         barTobaccos.add(barMaker);
+
     }
 
     /**

@@ -17,15 +17,15 @@ class Maker {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    var makersId : Long = 0;
-    var title : String = "";
-    var image : String = "";
+    var makersId: Long = 0;
+    var title: String = "";
+    var image: String = "";
     @Column(name = "founding_year")
-    var foundingYear : String = "";
-    var description : String = "";
+    var foundingYear: String = "";
+    var description: String = "";
 
     @OneToMany(mappedBy = "maker")
-    var tobaccos : MutableSet<Tobacco> = mutableSetOf();
+    var tobaccos: MutableSet<Tobacco> = mutableSetOf();
 
     override fun toString(): String {
         return title;
