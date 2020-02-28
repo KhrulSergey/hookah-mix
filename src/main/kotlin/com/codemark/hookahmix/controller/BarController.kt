@@ -18,7 +18,7 @@ import javax.servlet.http.HttpServletRequest
 import kotlin.collections.ArrayList
 
 @RestController
-@RequestMapping("/hookah-mix/api/bar")
+@RequestMapping("/api/bar")
 class BarController @Autowired constructor(private val tobaccoRepository: TobaccoRepository,
                                            private val makerRepository: MakerRepository,
                                            private var userRepository: UserRepository) {
@@ -93,6 +93,12 @@ class BarController @Autowired constructor(private val tobaccoRepository: Tobacc
             }
         }
 
+        var existUser: Boolean =
+                userRepository.existsByInstallationCookie(installationCookie);
+        if (!existUser) {
+            var newUser = User(installationCookie);
+            userRepository.save(newUser);
+        }
         var user: User = userRepository
                 .findUserByInstallationCookie(installationCookie);
         println(user)
@@ -110,7 +116,6 @@ class BarController @Autowired constructor(private val tobaccoRepository: Tobacc
     fun findTobaccoBy(@RequestParam(required = false) page: Pageable?): ResponseEntity<PageImpl<Tobacco>> = ok(
             PageImpl(mockData.flatMap { maker -> ArrayList(maker.tobaccos) })
     )
-
     /**
      * Метод добавления табака в бар
      */
@@ -132,6 +137,10 @@ class BarController @Autowired constructor(private val tobaccoRepository: Tobacc
             installationCookie = currentCookie;
             println("Cookie in /tobacco: $installationCookie")
         }
+
+        var existUser = userRepository.existsByInstallationCookie(installationCookie);
+        println("User exist: $existUser")
+
         var user: User = userRepository
                 .findUserByInstallationCookie(installationCookie);
 

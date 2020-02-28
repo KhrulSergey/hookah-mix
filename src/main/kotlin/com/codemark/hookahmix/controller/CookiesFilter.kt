@@ -64,7 +64,8 @@ class CookiesFilter(@Autowired
 
                 installationCookie = generatedInstallationCookie();
                 var cookie: Cookie = Cookie("UserId", installationCookie);
-                cookie.path = "/hookah-mix/api/"
+                cookie.path = "/"
+                cookie.maxAge = 600;
                 response.addCookie(cookie);
 
                 var user: User = User(installationCookie);
@@ -79,12 +80,13 @@ class CookiesFilter(@Autowired
             println("Cookie is empty")
             installationCookie = generatedInstallationCookie();
             var cookie: Cookie = Cookie("UserId", installationCookie);
-            cookie.path = "/hookah-mix/api/"
+            cookie.path = "/"
+            cookie.maxAge = 600;
             response.addCookie(cookie);
 
             var user: User = User(installationCookie);
             userRepository.save(user);
-            println("User was created")
+            println("User was created");
         }
 
         filterChan?.doFilter(request, response);

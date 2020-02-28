@@ -5,8 +5,9 @@
 # * 'ptr' and 'ptrp' create a POST request with a simple or parameter-like body;
 # * 'mptr' and 'fptr' create a POST request to submit a form with a text or file field (multipart/form-data);
 
-http://big.dev.codemark.ru:8080/hookah-mix/api/bar/marker/catalog
+#http://big.dev.codemark.ru:8888/hookah-mix/api/bar/marker/bar
 
-#http://localhost:8080/hookah-mix/api/bar/marker/catalog
+
+http://localhost:8080/api/mixes/generator
 
 ###
