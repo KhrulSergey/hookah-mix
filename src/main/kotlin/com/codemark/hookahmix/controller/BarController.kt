@@ -2,13 +2,11 @@ package com.codemark.hookahmix.controller
 
 import com.codemark.hookahmix.domain.Maker
 import com.codemark.hookahmix.domain.Tobacco
-import com.codemark.hookahmix.domain.TobaccoStatus
 import com.codemark.hookahmix.domain.User
 import com.codemark.hookahmix.repository.MakerRepository
 import com.codemark.hookahmix.repository.TobaccoRepository
 import com.codemark.hookahmix.repository.UserRepository
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.data.domain.ExampleMatcher
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
 import org.springframework.http.HttpStatus
@@ -16,7 +14,6 @@ import org.springframework.http.ResponseEntity
 import org.springframework.http.ResponseEntity.ok
 import org.springframework.web.bind.annotation.*
 import java.util.*
-import javax.servlet.http.Cookie
 import javax.servlet.http.HttpServletRequest
 import kotlin.collections.ArrayList
 
