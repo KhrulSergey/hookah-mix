@@ -107,6 +107,10 @@ class MixConstructorController {
                 Taste().apply {
                     tastesId = 4
                     taste = "Арбуз"
+                },
+                Taste().apply {
+                    tastesId = 4
+                    taste = "Корица"
                 }
             )
         );
