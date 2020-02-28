@@ -2,9 +2,15 @@ package com.codemark.hookahmix.controller
 
 import com.codemark.hookahmix.domain.Mix
 import com.codemark.hookahmix.domain.MixSet
+import com.codemark.hookahmix.domain.Taste
+import com.codemark.hookahmix.domain.dto.Ingredient
+import com.codemark.hookahmix.domain.dto.IngredientType
+import com.codemark.hookahmix.domain.dto.MixFilterInfoDto
+import com.codemark.hookahmix.domain.dto.StrengthLevel
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
+import java.util.Arrays.asList
 
 @RestController
 @RequestMapping("/api/mixes")
@@ -72,5 +78,42 @@ class MixConstructorController {
             }
         )
         return result;
+    }
+
+    @GetMapping("/filter")
+    fun generateFilter(): MixFilterInfoDto {
+        return MixFilterInfoDto(
+            listOf(
+                Ingredient(IngredientType.ALL_IN_BAR, "Все есть"),
+                Ingredient(IngredientType.WITH_REPLACE, "С заменой"),
+                Ingredient(IngredientType.WITH_BAY, "Докупить")
+            ), listOf(
+                StrengthLevel.LIGHT,
+                StrengthLevel.MEDIUM,
+                StrengthLevel.STRONG
+            ), listOf(
+                Taste().apply {
+                    tastesId = 1
+                    taste = "Яблако"
+                },
+                Taste().apply {
+                    tastesId = 2
+                    taste = "Цитрус"
+                },
+                Taste().apply {
+                    tastesId = 3
+                    taste = "Ваниль"
+                },
+                Taste().apply {
+                    tastesId = 4
+                    taste = "Арбуз"
+                }
+            )
+        );
+    }
+
+    @GetMapping("/count")
+    fun countGeneratedMix(): Int {
+        return 15;
     }
 }
