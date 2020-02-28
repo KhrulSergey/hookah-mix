@@ -22,4 +22,5 @@ interface MakerRepository : JpaRepository<Maker, Long> {
     @Query(nativeQuery = true, value = "select * from Makers m " +
             "where m.title = :title order by m.title")
     fun getOneByTobacco(@Param("title") title: String?): Maker;
+
 }

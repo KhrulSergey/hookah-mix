@@ -14,5 +14,4 @@ class Taste {
         return taste;
     }
 
-
 }

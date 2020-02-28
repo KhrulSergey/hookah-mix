@@ -22,6 +22,7 @@ node-modules/
 *.ipr
 yarn.lock
 bash.exe.stackdump
+application-requests
 
 ### NetBeans ###
 /nbproject/private/
