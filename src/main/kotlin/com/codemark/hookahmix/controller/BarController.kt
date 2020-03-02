@@ -6,12 +6,14 @@ import com.codemark.hookahmix.domain.User
 import com.codemark.hookahmix.repository.MakerRepository
 import com.codemark.hookahmix.repository.TobaccoRepository
 import com.codemark.hookahmix.repository.UserRepository
+import com.codemark.hookahmix.util.CookieAuthorizationUtil
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.http.ResponseEntity.ok
+import org.springframework.util.StringUtils
 import org.springframework.web.bind.annotation.*
 import java.util.*
 import javax.servlet.http.HttpServletRequest
@@ -21,7 +23,8 @@ import kotlin.collections.ArrayList
 @RequestMapping("/api/bar")
 class BarController @Autowired constructor(private val tobaccoRepository: TobaccoRepository,
                                            private val makerRepository: MakerRepository,
-                                           private var userRepository: UserRepository) {
+                                           private var userRepository: UserRepository,
+                                           var cookieAuthorizationUtil: CookieAuthorizationUtil) {
 
 //    private var installationCookie: String = "";
 
@@ -80,25 +83,23 @@ class BarController @Autowired constructor(private val tobaccoRepository: Tobacc
     @GetMapping("/marker/bar")
     fun findMarkersBar(request: HttpServletRequest): MutableList<Tobacco> {
 
-        var installationCookie: String = "";
+        var installationCookie = "";
         if (request.cookies != null) {
-            for (index in request.cookies) {
-                if (index.name.equals("UserId")) {
-                    println("Cookie with ${index.name} was found");
-                    println(index.value);
 
-                    installationCookie = index.value;
-                    println("Cookie in bar: $installationCookie")
-                }
-            }
+            installationCookie =
+                    cookieAuthorizationUtil.findCurrentCookie(request.cookies);
+            println("Cookie in bar: $installationCookie");
         }
 
         var existUser: Boolean =
                 userRepository.existsByInstallationCookie(installationCookie);
+        println("Bar, existUser: $existUser");
+        
         if (!existUser) {
-            var newUser = User(installationCookie);
-            userRepository.save(newUser);
+            println("Bar, cookie: $installationCookie");
+            cookieAuthorizationUtil.createUser(installationCookie);
         }
+
         var user: User = userRepository
                 .findUserByInstallationCookie(installationCookie);
         println(user)
@@ -130,15 +131,15 @@ class BarController @Autowired constructor(private val tobaccoRepository: Tobacc
 
         var installationCookie: String = "";
         if (request.cookies != null) {
-            var currentCookie: String = Arrays.stream(request.cookies)
-                    .filter { i -> i.name.equals("UserId") }
-                    .findAny()
-                    .get().value;
-            installationCookie = currentCookie;
+
+            installationCookie =
+                    cookieAuthorizationUtil.findCurrentCookie(request.cookies);
+
             println("Cookie in /tobacco: $installationCookie")
         }
 
-        var existUser = userRepository.existsByInstallationCookie(installationCookie);
+        var existUser =
+                userRepository.existsByInstallationCookie(installationCookie);
         println("User exist: $existUser")
 
         var user: User = userRepository
@@ -146,8 +147,8 @@ class BarController @Autowired constructor(private val tobaccoRepository: Tobacc
 
         user.tobaccos.add(tobacco);
         userRepository.save(user);
-        println("Tobacco successfully added to user ${user.installationCookie}!")
 
+        println("Tobacco successfully added to user ${user.installationCookie}!")
     }
 
     /**

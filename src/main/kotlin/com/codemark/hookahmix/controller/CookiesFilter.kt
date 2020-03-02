@@ -1,7 +1,7 @@
 package com.codemark.hookahmix.controller
 
-import com.codemark.hookahmix.domain.User
 import com.codemark.hookahmix.repository.UserRepository
+import com.codemark.hookahmix.util.CookieAuthorizationUtil
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 import java.util.*
@@ -15,7 +15,8 @@ import javax.servlet.http.HttpServletResponse
 
 @Component
 class CookiesFilter(@Autowired
-                    var userRepository: UserRepository) : Filter {
+                    var userRepository: UserRepository,
+                    var cookieAuthorizationUtil: CookieAuthorizationUtil) : Filter {
     override fun doFilter(servletRequest: ServletRequest?,
                           servletResponse: ServletResponse?,
                           filterChan: FilterChain?) {
@@ -25,7 +26,7 @@ class CookiesFilter(@Autowired
         var response: HttpServletResponse = servletResponse as HttpServletResponse;
 
         var installationCookie: String = "";
-        var cookies= request.cookies;
+        var cookies = request.cookies;
         println("Check cookies...");
 
         if (cookies != null) {
@@ -37,11 +38,11 @@ class CookiesFilter(@Autowired
 
             if (existCookie) {
 
-                println("Cookie was found")
-                var currentCookieValue: String = Arrays.stream(cookies)
-                        .filter { i -> i.name.equals("UserId") }
-                        .findFirst()
-                        .get().value;
+                println("Cookie was found");
+
+                var currentCookieValue =
+                        cookieAuthorizationUtil.findCurrentCookie(
+                                request.cookies);
 
                 var existUser = userRepository.existsByInstallationCookie(currentCookieValue);
                 println("User exist: $existUser")
@@ -50,8 +51,7 @@ class CookiesFilter(@Autowired
                 // create new user
 
                 if (!existUser) {
-                    var user: User = User(currentCookieValue);
-                    userRepository.save(user);
+                    cookieAuthorizationUtil.createUser(currentCookieValue);
                     println("User was created")
                 }
 
@@ -60,40 +60,35 @@ class CookiesFilter(@Autowired
                 // if cookie not found, user not found too -
                 // create new cookie and new user
 
-                println("Cookie not found!")
+                println("Cookie not found!");
 
-                installationCookie = generatedInstallationCookie();
-                var cookie: Cookie = Cookie("UserId", installationCookie);
-                cookie.path = "/"
-                cookie.maxAge = 600;
+                installationCookie =
+                        cookieAuthorizationUtil.generatedInstallationCookie();
+                var cookie: Cookie =
+                        cookieAuthorizationUtil.createCookie(installationCookie);
+
                 response.addCookie(cookie);
 
-                var user: User = User(installationCookie);
-                userRepository.save(user);
+                cookieAuthorizationUtil.createUser(installationCookie);
                 println("User was created")
-
             }
         } else {
 
             // create new cookie and new user
 
             println("Cookie is empty")
-            installationCookie = generatedInstallationCookie();
-            var cookie: Cookie = Cookie("UserId", installationCookie);
-            cookie.path = "/"
-            cookie.maxAge = 600;
+            installationCookie =
+                    cookieAuthorizationUtil.generatedInstallationCookie();
+            println("Filter: $installationCookie")
+            var cookie: Cookie =
+                    cookieAuthorizationUtil.createCookie(installationCookie);
+            println("Filter: cookie $installationCookie was created")
             response.addCookie(cookie);
 
-            var user: User = User(installationCookie);
-            userRepository.save(user);
-            println("User was created");
+            cookieAuthorizationUtil.createUser(installationCookie);
+            println("Filter: User was created");
         }
 
         filterChan?.doFilter(request, response);
     }
-
-    private fun generatedInstallationCookie(): String {
-        return UUID.randomUUID().toString();
-    }
-
 }
