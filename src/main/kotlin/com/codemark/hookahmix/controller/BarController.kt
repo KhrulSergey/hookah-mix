@@ -94,7 +94,6 @@ class BarController @Autowired constructor(private val tobaccoRepository: Tobacc
         var existUser: Boolean =
                 userRepository.existsByInstallationCookie(installationCookie);
         println("Bar, existUser: $existUser");
-        
         if (!existUser) {
             println("Bar, cookie: $installationCookie");
             cookieAuthorizationUtil.createUser(installationCookie);

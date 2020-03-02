@@ -1,5 +1,6 @@
 package com.codemark.hookahmix.controller
 
+import com.codemark.hookahmix.domain.User
 import com.codemark.hookahmix.repository.UserRepository
 import com.codemark.hookahmix.util.CookieAuthorizationUtil
 import org.springframework.beans.factory.annotation.Autowired
@@ -38,7 +39,7 @@ class CookiesFilter(@Autowired
 
             if (existCookie) {
 
-                println("Cookie was found");
+                println("Cookie was found")
 
                 var currentCookieValue =
                         cookieAuthorizationUtil.findCurrentCookie(
