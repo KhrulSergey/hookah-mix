@@ -7,6 +7,7 @@ import com.codemark.hookahmix.domain.dto.MixDto
 import com.codemark.hookahmix.repository.MakerRepository
 import com.codemark.hookahmix.repository.TasteRepository
 import com.codemark.hookahmix.repository.TobaccoRepository
+import com.codemark.hookahmix.util.TobaccoParser
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Controller
 import org.springframework.ui.Model
@@ -19,7 +20,8 @@ import org.springframework.web.bind.annotation.RequestParam
 @RequestMapping(value = ["/", "api/admin"])
 class AdminPanelController @Autowired constructor(private val tobaccoRepository: TobaccoRepository,
                                                   private val makerRepository: MakerRepository,
-                                                  private val tasteRepository: TasteRepository) {
+                                                  private val tasteRepository: TasteRepository,
+                                                  private var tobaccoParser: TobaccoParser) {
 
 
     @GetMapping()
@@ -27,6 +29,10 @@ class AdminPanelController @Autowired constructor(private val tobaccoRepository:
         return "redirect:/main";
     }
 
+    @GetMapping("/parse")
+    fun parse(): Unit {
+        tobaccoParser.connectPage()?.let { tobaccoParser.startParse(it) };
+    }
 
     @GetMapping("/main")
     fun main(model : Model) : String {
@@ -45,16 +51,14 @@ class AdminPanelController @Autowired constructor(private val tobaccoRepository:
                    @RequestParam("makers") maker : String,
                    @RequestParam("description") description : String,
                    @RequestParam("tastes", required = false) taste : String,
-                   @RequestParam("strength") strength : Int,
-                   @RequestParam("image") image : String,
-                   @RequestParam("tags") tags : String,
+                   @RequestParam("strength") strength : Double,
                    model : Model)
             : String {
 
         var findMaker : Maker = makerRepository.findByTitle(maker);
         var findTaste : Taste = tasteRepository.findByTaste(taste);
 
-        var newTobacco = Tobacco(title, description, strength, image, tags);
+        var newTobacco = Tobacco(title, description, strength);
         newTobacco.maker = findMaker;
         newTobacco.taste = findTaste;
 

@@ -1,6 +1,5 @@
 package com.codemark.hookahmix.controller
 
-import com.codemark.hookahmix.domain.User
 import com.codemark.hookahmix.repository.UserRepository
 import com.codemark.hookahmix.util.CookieAuthorizationUtil
 import org.springframework.beans.factory.annotation.Autowired
@@ -18,10 +17,10 @@ import javax.servlet.http.HttpServletResponse
 class CookiesFilter(@Autowired
                     var userRepository: UserRepository,
                     var cookieAuthorizationUtil: CookieAuthorizationUtil) : Filter {
+
     override fun doFilter(servletRequest: ServletRequest?,
                           servletResponse: ServletResponse?,
                           filterChan: FilterChain?) {
-
 
         var request: HttpServletRequest = servletRequest as HttpServletRequest;
         var response: HttpServletResponse = servletResponse as HttpServletResponse;
@@ -45,7 +44,8 @@ class CookiesFilter(@Autowired
                         cookieAuthorizationUtil.findCurrentCookie(
                                 request.cookies);
 
-                var existUser = userRepository.existsByInstallationCookie(currentCookieValue);
+                var existUser =
+                        userRepository.existsByInstallationCookie(currentCookieValue);
                 println("User exist: $existUser")
 
                 // if user not found -
@@ -55,7 +55,6 @@ class CookiesFilter(@Autowired
                     cookieAuthorizationUtil.createUser(currentCookieValue);
                     println("User was created")
                 }
-
             } else {
 
                 // if cookie not found, user not found too -
@@ -71,19 +70,21 @@ class CookiesFilter(@Autowired
                 response.addCookie(cookie);
 
                 cookieAuthorizationUtil.createUser(installationCookie);
-                println("User was created")
+                println("User was created");
             }
         } else {
 
             // create new cookie and new user
 
-            println("Cookie is empty")
+            println("Cookie is empty");
             installationCookie =
                     cookieAuthorizationUtil.generatedInstallationCookie();
-            println("Filter: $installationCookie")
+            println("Filter: $installationCookie");
+
             var cookie: Cookie =
                     cookieAuthorizationUtil.createCookie(installationCookie);
-            println("Filter: cookie $installationCookie was created")
+            println("Filter: cookie $installationCookie was created");
+
             response.addCookie(cookie);
 
             cookieAuthorizationUtil.createUser(installationCookie);

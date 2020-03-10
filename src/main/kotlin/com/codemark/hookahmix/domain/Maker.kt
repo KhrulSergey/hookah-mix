@@ -1,5 +1,6 @@
 package com.codemark.hookahmix.domain
 
+import com.fasterxml.jackson.annotation.JsonIgnore
 import lombok.AllArgsConstructor
 import java.time.LocalDate
 import java.util.*
@@ -19,10 +20,14 @@ class Maker {
     @GeneratedValue(strategy = GenerationType.AUTO)
     var makersId: Long = 0;
     var title: String = "";
-    var image: String = "";
     @Column(name = "founding_year")
     var foundingYear: String = "";
     var description: String = "";
+
+    @OneToOne
+    @JoinColumn(name = "file_id")
+    @JsonIgnore
+    var image: Image? = null;
 
     @OneToMany(mappedBy = "maker")
     var tobaccos: MutableSet<Tobacco> = mutableSetOf();

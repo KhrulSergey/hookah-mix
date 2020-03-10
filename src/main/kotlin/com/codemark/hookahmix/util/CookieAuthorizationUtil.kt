@@ -24,7 +24,9 @@ class CookieAuthorizationUtil @Autowired constructor(
     }
 
     fun createUser(installationCookie: String): Unit {
+
         var user = User(installationCookie);
+        println("User $user was created")
         userRepository.save(user);
     }
 

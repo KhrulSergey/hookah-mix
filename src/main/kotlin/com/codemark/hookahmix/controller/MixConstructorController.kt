@@ -3,19 +3,26 @@ package com.codemark.hookahmix.controller
 import com.codemark.hookahmix.domain.Mix
 import com.codemark.hookahmix.domain.MixSet
 import com.codemark.hookahmix.domain.Taste
+import com.codemark.hookahmix.domain.User
 import com.codemark.hookahmix.domain.dto.Ingredient
 import com.codemark.hookahmix.domain.dto.IngredientType
 import com.codemark.hookahmix.domain.dto.MixFilterInfoDto
 import com.codemark.hookahmix.domain.dto.StrengthLevel
+import com.codemark.hookahmix.exception.InstallationCookieException
+import com.codemark.hookahmix.repository.UserRepository
+import com.codemark.hookahmix.util.CookieAuthorizationUtil
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
-import java.util.Arrays.asList
+import javax.servlet.http.HttpServletRequest
 
 @RestController
 @RequestMapping("/api/mixes")
 
-class MixConstructorController {
+class MixConstructorController @Autowired constructor(
+        private var userRepository: UserRepository,
+        var cookieAuthorizationUtil: CookieAuthorizationUtil) {
 
     @GetMapping("/generator")
     fun generateMix(): List<Mix> {

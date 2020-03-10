@@ -1,5 +1,6 @@
 package com.codemark.hookahmix.domain
 
+import com.fasterxml.jackson.annotation.JsonIgnore
 import javax.persistence.*;
 
 
@@ -14,7 +15,16 @@ class Mix {
     var rating : String = "";
     var tags : String = "";
 
+    @ManyToMany
+    @JoinTable(
+            name = "components",
+            joinColumns = [JoinColumn(name = "mix_id")],
+            inverseJoinColumns = [JoinColumn(name = "tobacco_id")]
+    )
+    var tobaccoMixList: MutableList<Tobacco> = mutableListOf();
+
     var set: MixSet = MixSet.MATCH_BAR
+
     /*
     TODO add relations
      */

@@ -9,13 +9,16 @@ import javax.persistence.*
 data class Tobacco(
         var title: String,
         var description: String,
-        var strength: Int = 5,
-        var image: String = "",
-        var tags: String = "") {
+        var strength: Double = 3.0) {
 
     @Id @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "tobaccos_id")
     var tobaccosId: Long = 0;
+
+    @OneToOne
+    @JoinColumn(name = "file_id")
+    @JsonIgnore
+    var image: Image? = null;
 
     @JsonIgnore
     @ManyToOne
@@ -25,14 +28,23 @@ data class Tobacco(
     @JoinColumn(name = "taste_id")
     var taste: Taste? = null;
 
-    @ManyToMany
     @JsonIgnore
+    @ManyToMany
     @JoinTable(
             name = "my_tobaccos",
             joinColumns = [JoinColumn(name = "tobacco_id")],
             inverseJoinColumns = [JoinColumn(name = "user_id")]
     )
     var users: MutableList<User> = mutableListOf();
+
+    @JsonIgnore
+    @ManyToMany
+    @JoinTable(
+            name = "components",
+            joinColumns = [JoinColumn(name = "tobacco_id")],
+            inverseJoinColumns = [JoinColumn(name = "mix_id")]
+    )
+    var mixList: MutableList<Mix> = mutableListOf();
 
     @Transient
     @JsonIgnore
@@ -41,5 +53,5 @@ data class Tobacco(
     @Transient
     var status: TobaccoStatus = TobaccoStatus.NEED_BAR;
 
-    override fun toString(): String = "Tobacco $title: $tags by $maker with status $status";
+    override fun toString(): String = "Tobacco $title: $taste by $maker with status $status";
 }
