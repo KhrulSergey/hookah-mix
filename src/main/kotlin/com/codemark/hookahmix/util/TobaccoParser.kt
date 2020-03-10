@@ -237,7 +237,7 @@ class TobaccoParser @Autowired constructor(private var tobaccoRepository: Tobacc
 
             makerRepository.save(maker);
             println("Maker was saved");
-            tobaccoCount = 0;
+            tobaccoCount = 0
 
         }
     }
