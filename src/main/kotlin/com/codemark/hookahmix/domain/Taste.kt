@@ -10,6 +10,7 @@ class Taste {
     @GeneratedValue(strategy = GenerationType.AUTO)
     var tastesId : Long = 0;
     var taste : String = "";
+
     override fun toString(): String {
         return taste;
     }

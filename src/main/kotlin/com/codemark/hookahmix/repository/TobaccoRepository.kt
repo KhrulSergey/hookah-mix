@@ -19,9 +19,20 @@ interface TobaccoRepository : JpaRepository<Tobacco, Long> {
                     "where m.title = :filter")
     fun findAllByMaker(@Param("filter") filter : String): List<Tobacco>;
 
-    @Query(nativeQuery = true, value = "select * from Tobaccos t " +
+    @Query(nativeQuery = true,
+            value = "select * from Tobaccos t " +
             "inner join Makers m on t.maker_id = m.makers_id " +
             "order by m.title, t.title")
     fun findAllSortedByMaker(): List<Tobacco>;
+
+//    @Query(nativeQuery = true,
+//            value = "select * from Tobaccos t " +
+//                    "inner join my_tobaccos mt on t.tobaccos_id = mt.tobacco_id " +
+//                    "inner join users u on mt.user_id = u.users_id " +
+//                    "where u.users_id = :id " +
+//                    "and mt.status = 'purchase'")
+//    fun findAllPurchases(id: Long): MutableList<Tobacco>;
+
+    fun findTobaccoByTitle(title: String): Tobacco;
 
 }

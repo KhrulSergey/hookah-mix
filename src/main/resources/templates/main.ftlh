@@ -63,26 +63,62 @@
 
     </div>
 
-    <div class="my-3">
-        <form action="/add_mix" method="post">
+    <#--<div class="my-3">-->
+        <#--<form action="/add_mix" method="post">-->
 
-            <label><p>Mix: </p></label>
+            <#--<label><p>Mix: </p></label>-->
 
-            <select name="mix" class="form-control selcls col-sm-3">
+            <#--<div>-->
+                <#--<p><input type="text" class="form-control col-sm-3" name="title" required placeholder="Mix title"/></p>-->
+            <#--</div>-->
 
-                <option>Tobacco Component</option>
-                <option>Tobacco Component</option>
-                <option>Tobacco Component</option>
-                <option>Tobacco Component</option>
-                <option>Tobacco Component</option>
+            <#--<div>-->
+                <#--<p><input type="text" class="form-control col-sm-3" name="tags" required placeholder="Tags"/></p>-->
+            <#--</div>-->
 
-            </select>
+            <#--<div>-->
+                <#--<p><input type="text" class="form-control col-sm-3" name="description" required placeholder="Description"/></p>-->
+            <#--</div>-->
 
-            <div>
-                <p><button type="submit" class="btn btn-primary">Add mix</button></p>
-            </div>
-        </form>
-    </div>
+            <#--<div>-->
+                <#--<p><input type="text" class="form-control col-sm-3" name="strength" required placeholder="Strength"/></p>-->
+            <#--</div>-->
+
+            <#--<div>-->
+                <#--<label>Components: </label>-->
+
+                <#--<div>-->
+                    <#--<select name="components" class="form-control selcls col-sm-3">-->
+                        <#--<#list tobaccos as tobacco>-->
+                            <#--<option value="${tobacco}">${tobacco}</option>-->
+                        <#--</#list>-->
+                    <#--</select>-->
+                <#--</div>-->
+
+                <#--<div>-->
+                    <#--<p><input type="text" class="form-control col-sm-3" name="composition" required placeholder="Percentage" /></p>-->
+                <#--</div>-->
+
+                <#--<div>-->
+                    <#--<p><button type="submit" class="btn btn-primary">Add component</button></p>-->
+                <#--</div>-->
+            <#--</div>-->
+
+            <#--<select name="mix" class="form-control selcls col-sm-3">-->
+                <#---->
+                <#--<option>Tobacco Component</option>-->
+                <#--<option>Tobacco Component</option>-->
+                <#--<option>Tobacco Component</option>-->
+                <#--<option>Tobacco Component</option>-->
+                <#--<option>Tobacco Component</option>-->
+
+            <#--</select>-->
+
+            <#--<div>-->
+                <#--<p><button type="submit" class="btn btn-primary">Add mix</button></p>-->
+            <#--</div>-->
+        <#--</form>-->
+    <#--</div>-->
 
 </div>
 

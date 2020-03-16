@@ -1,10 +1,11 @@
 package com.codemark.hookahmix.controller
 
 import com.codemark.hookahmix.domain.Maker
+import com.codemark.hookahmix.domain.Mix
 import com.codemark.hookahmix.domain.Taste
 import com.codemark.hookahmix.domain.Tobacco
-import com.codemark.hookahmix.domain.dto.MixDto
 import com.codemark.hookahmix.repository.MakerRepository
+import com.codemark.hookahmix.repository.MixRepository
 import com.codemark.hookahmix.repository.TasteRepository
 import com.codemark.hookahmix.repository.TobaccoRepository
 import com.codemark.hookahmix.util.TobaccoParser
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestParam
 @RequestMapping(value = ["/", "api/admin"])
 class AdminPanelController @Autowired constructor(private val tobaccoRepository: TobaccoRepository,
                                                   private val makerRepository: MakerRepository,
+                                                  private val mixRepository: MixRepository,
                                                   private val tasteRepository: TasteRepository,
                                                   private var tobaccoParser: TobaccoParser) {
 
@@ -35,13 +37,15 @@ class AdminPanelController @Autowired constructor(private val tobaccoRepository:
     }
 
     @GetMapping("/main")
-    fun main(model : Model) : String {
+    fun main(model: Model) : String {
 
-        var makers : List<Maker> = makerRepository.findAll();
-        var tastes : List<Taste> = tasteRepository.findAll();
+        var makers: List<Maker> = makerRepository.findAll();
+        var tastes: List<Taste> = tasteRepository.findAll();
+//        var tobaccos: List<Tobacco> = tobaccoRepository.findAll();
 
         model.addAttribute("makers", makers);
         model.addAttribute("tastes", tastes);
+//        model.addAttribute("tobaccos", tobaccos);
 
         return "main";
     }
@@ -55,8 +59,8 @@ class AdminPanelController @Autowired constructor(private val tobaccoRepository:
                    model : Model)
             : String {
 
-        var findMaker : Maker = makerRepository.findByTitle(maker);
-        var findTaste : Taste = tasteRepository.findByTaste(taste);
+        var findMaker: Maker = makerRepository.findByTitle(maker);
+        var findTaste: Taste = tasteRepository.findByTaste(taste);
 
         var newTobacco = Tobacco(title, description, strength);
         newTobacco.maker = findMaker;
@@ -69,8 +73,23 @@ class AdminPanelController @Autowired constructor(private val tobaccoRepository:
 
 
     @PostMapping("/add_mix")
-    fun addMix(@RequestParam mix : String)
+    fun addMix(@RequestParam("title") title: String,
+               @RequestParam("tags") tags: String,
+               @RequestParam("description") description: String,
+               @RequestParam("strength") strength: String,
+               @RequestParam("tobacco") tobacco: String,
+               model: Model)
             : String {
+
+        var mix: Mix = Mix();
+        mix.title = title;
+        mix.tags = tags;
+        mix.description = description;
+        mix.strength = Integer.parseInt(strength);
+
+        var component: Tobacco = tobaccoRepository.findTobaccoByTitle(tobacco);
+
+
         return "redirect:/main";
     }
 
@@ -103,7 +122,7 @@ class AdminPanelController @Autowired constructor(private val tobaccoRepository:
     @GetMapping("/catalog_mixes")
     fun getAllMixes(model : Model) : String {
 
-        var mixes : List<MixDto> = mutableListOf(MixDto(), MixDto(), MixDto());
+        var mixes = mixRepository.findAll();
         model.addAttribute("mixes", mixes);
 
         return "/catalog_mixes";

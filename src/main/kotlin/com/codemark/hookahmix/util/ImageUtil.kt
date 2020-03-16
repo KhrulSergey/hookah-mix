@@ -1,5 +1,6 @@
 package com.codemark.hookahmix.util
 
+import com.codemark.hookahmix.exception.ImageReadException
 import org.springframework.stereotype.Component
 import java.io.BufferedInputStream
 import java.io.ByteArrayOutputStream
@@ -26,7 +27,7 @@ class ImageUtil {
             }
 
         } catch (e: IOException) {
-            throw Exception("Failed to read");
+            throw ImageReadException("Failed to read", e);
         }
         return byteArrayOutputStream.toByteArray();
     }

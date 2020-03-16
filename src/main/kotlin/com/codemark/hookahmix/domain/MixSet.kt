@@ -2,6 +2,7 @@ package com.codemark.hookahmix.domain
 
 import com.fasterxml.jackson.annotation.JsonFormat
 import com.fasterxml.jackson.annotation.JsonProperty
+import com.fasterxml.jackson.annotation.JsonValue
 
 @JsonFormat(shape = JsonFormat.Shape.OBJECT)
 enum class MixSet(@JsonProperty("title") val title: String) {
@@ -13,4 +14,5 @@ enum class MixSet(@JsonProperty("title") val title: String) {
     fun getId(): String {
         return name
     }
+
 }

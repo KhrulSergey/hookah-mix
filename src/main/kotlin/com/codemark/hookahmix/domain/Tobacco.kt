@@ -47,11 +47,16 @@ data class Tobacco(
     var mixList: MutableList<Mix> = mutableListOf();
 
     @Transient
-    @JsonIgnore
-    var existInBar: Boolean = false;
-
-    @Transient
     var status: TobaccoStatus = TobaccoStatus.NEED_BAR;
 
-    override fun toString(): String = "Tobacco $title: $taste by $maker with status $status";
+    @Transient
+    var replacements: MutableList<Tobacco> = mutableListOf()
+
+    @Transient
+    var composition: Int = 0;
+
+    override fun toString(): String {
+        return title;
+    }
+
 }

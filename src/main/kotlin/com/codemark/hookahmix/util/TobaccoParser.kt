@@ -20,7 +20,7 @@ import java.io.IOException
 
 
 @Component
-@PropertySource(ignoreResourceNotFound = true, value = ["parser.properties"])
+@PropertySource(ignoreResourceNotFound = false, value = ["classpath:parser.properties"])
 class TobaccoParser @Autowired constructor(private var tobaccoRepository: TobaccoRepository,
                                            private var makerRepository: MakerRepository,
                                            private var tasteRepository: TasteRepository,

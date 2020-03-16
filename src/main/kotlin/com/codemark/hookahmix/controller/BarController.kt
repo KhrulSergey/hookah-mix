@@ -9,15 +9,11 @@ import com.codemark.hookahmix.repository.TobaccoRepository
 import com.codemark.hookahmix.repository.UserRepository
 import com.codemark.hookahmix.util.CookieAuthorizationUtil
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.data.domain.PageImpl
-import org.springframework.data.domain.Pageable
+import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
-import org.springframework.http.ResponseEntity.ok
 import org.springframework.web.bind.annotation.*
 import java.util.*
 import javax.servlet.http.HttpServletRequest
-import kotlin.collections.ArrayList
-
 
 @RestController
 @RequestMapping("/api/bar")
@@ -25,34 +21,6 @@ class BarController @Autowired constructor(private val tobaccoRepository: Tobacc
                                            private val makerRepository: MakerRepository,
                                            private var userRepository: UserRepository,
                                            var cookieAuthorizationUtil: CookieAuthorizationUtil) {
-
-    private val mockDataBuilder: () -> Unit = {
-
-    }
-    private val mockData = listOf(
-            Maker().let {
-                it.makersId = 1
-                it.title = "Al Fakhamah1"
-                val maker = it
-                it.tobaccos = setOf<Tobacco>(
-                        Tobacco("Blackcurant1", "").let { it.tobaccosId = 1; it.maker = maker; it },
-                        Tobacco("Blackcurant2", "").let { it.tobaccosId = 2; it.maker = maker; it },
-                        Tobacco("Blackcurant3", "").let { it.tobaccosId = 3; it.maker = maker; it }
-                ) as MutableSet<Tobacco>
-                it
-            },
-            Maker().let {
-                it.makersId = 2
-                it.title = "Al Fakhamah2"
-                val maker = it
-                it.tobaccos = setOf<Tobacco>(
-                        Tobacco("Blackcurant4", "").let { it.tobaccosId = 4; it.maker = maker; it },
-                        Tobacco("Blackcurant5", "").let { it.tobaccosId = 5; it.maker = maker; it },
-                        Tobacco("Blackcurant6", "").let { it.tobaccosId = 6; it.maker = maker; it }
-                ) as MutableSet<Tobacco>
-                it
-            }
-    )
 
     /**
      * Метод получения  структурированого списка табаков для экрана Все табаки
@@ -66,7 +34,7 @@ class BarController @Autowired constructor(private val tobaccoRepository: Tobacc
                     .anyMatch { i -> i.name.equals("UserId") };
 
             if (!existCookie) {
-                throw Exception("Cookie not found");
+                throw InstallationCookieException("Cookie not found");
             }
         }
 
@@ -100,25 +68,16 @@ class BarController @Autowired constructor(private val tobaccoRepository: Tobacc
         println(user)
 
         println(user.tobaccos)
-        return user.tobaccos;
+        return user.tobaccos; // change
     }
 
-    /**
-     * Метод получения списка табаков в для экрана Покупки
-     */
-
-    @GetMapping("/tobacco/shopping", produces = ["application/json"])
-    fun findTobaccoBy(@RequestParam(required = false) page: Pageable?): ResponseEntity<PageImpl<Tobacco>> = ok(
-            PageImpl(mockData.flatMap { maker -> ArrayList(maker.tobaccos) })
-    )
     /**
      * Метод добавления табака в бар
      */
 
-//     POST, of course
-    @GetMapping("/tobacco/{id}")
+    @PostMapping("/tobacco/{id}")
     fun addTobacco(@PathVariable("id") id: Long,
-                   request: HttpServletRequest) {
+                   request: HttpServletRequest): ResponseEntity<String> {
 
         var tobacco: Tobacco = tobaccoRepository.getOne(id);
 
@@ -144,17 +103,17 @@ class BarController @Autowired constructor(private val tobaccoRepository: Tobacc
         userRepository.save(user);
 
         println("Tobacco successfully added to user ${user.installationCookie}!")
+
+        return ResponseEntity("Tobacco $tobacco was added in bar", HttpStatus.OK);
     }
 
     /**
      * Метод удаления табака из бара
      */
 
-    // DELETE, of course
-
-    @GetMapping("/delete_tobacco/{id}")
+    @DeleteMapping("/delete_tobacco/{id}")
     fun delete(@PathVariable("id") id: Long,
-               request: HttpServletRequest) {
+               request: HttpServletRequest): ResponseEntity<String> {
 
         var installationCookie = "";
         if (request.cookies != null) {
@@ -187,5 +146,6 @@ class BarController @Autowired constructor(private val tobaccoRepository: Tobacc
         }
 
         println("Tobacco was successfully removed!")
+        return ResponseEntity("Tobacco with ID $id was deleted from bar", HttpStatus.OK)
     }
 }

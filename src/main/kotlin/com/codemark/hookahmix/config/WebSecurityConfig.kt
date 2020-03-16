@@ -21,7 +21,7 @@ class WebSecurityConfig : WebSecurityConfigurerAdapter() {
                     .antMatchers("/api/admin", "/main",
                             "/catalog_tobaccos", "/catalog_mixes")
                     .authenticated()
-                    .antMatchers("/api/bar/**").permitAll()
+                    .antMatchers("/api/**").permitAll()
                 .and()
                     .formLogin()
                 .and()
@@ -33,7 +33,9 @@ class WebSecurityConfig : WebSecurityConfigurerAdapter() {
     fun corsConfigurer(): WebMvcConfigurer? {
         return object : WebMvcConfigurerAdapter() {
             override fun addCorsMappings(registry: CorsRegistry) {
-                registry.addMapping("/**").allowedOrigins("http://192.168.2.41:19006")
+                registry.addMapping("/**")
+                        .allowedOrigins("http://192.168.2.41:19006",
+                                "http://192.168.1.100:19006")
             }
         }
     }
