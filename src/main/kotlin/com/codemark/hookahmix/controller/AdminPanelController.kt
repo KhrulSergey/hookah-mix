@@ -1,9 +1,6 @@
 package com.codemark.hookahmix.controller
 
-import com.codemark.hookahmix.domain.Maker
-import com.codemark.hookahmix.domain.Mix
-import com.codemark.hookahmix.domain.Taste
-import com.codemark.hookahmix.domain.Tobacco
+import com.codemark.hookahmix.domain.*
 import com.codemark.hookahmix.repository.MakerRepository
 import com.codemark.hookahmix.repository.MixRepository
 import com.codemark.hookahmix.repository.TasteRepository

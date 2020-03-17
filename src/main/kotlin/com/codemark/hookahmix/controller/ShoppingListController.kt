@@ -1,8 +1,10 @@
 package com.codemark.hookahmix.controller
 
+import com.codemark.hookahmix.domain.MyTobacco
 import com.codemark.hookahmix.domain.Tobacco
 import com.codemark.hookahmix.domain.User
 import com.codemark.hookahmix.exception.InstallationCookieException
+import com.codemark.hookahmix.repository.MyTobaccoRepository
 import com.codemark.hookahmix.repository.TobaccoRepository
 import com.codemark.hookahmix.repository.UserRepository
 import com.codemark.hookahmix.util.CookieAuthorizationUtil
@@ -18,6 +20,7 @@ import javax.servlet.http.HttpServletRequest
 class ShoppingListController @Autowired constructor(
         private var userRepository: UserRepository,
         private var tobaccoRepository: TobaccoRepository,
+        private var myTobaccoRepository: MyTobaccoRepository,
         var cookieAuthorizationUtil: CookieAuthorizationUtil) {
 
     @GetMapping("/my")
@@ -38,7 +41,8 @@ class ShoppingListController @Autowired constructor(
         println("User: $user");
 
 
-        return emptyList();
+//        return tobaccoRepository.findAllPurchases(user.id);
+        return tobaccoRepository.findAllPurchases(user.id);
     }
 
     @PostMapping("/my/{id}")
@@ -65,13 +69,28 @@ class ShoppingListController @Autowired constructor(
         println("TobaccoId: ${tobacco.tobaccosId}")
         println("ParamId: $id")
 
+//        var myTobacco: MyTobacco = MyTobacco(
+//                userId = user.id, tobaccoId = tobacco.tobaccosId);
+
+        var myTobacco: MyTobacco = MyTobacco();
+        myTobacco.tobacco = tobacco;
+        myTobacco.user = user;
+        myTobacco.status = "purchase"
+
+        user.latestPurchases.add(tobacco);
+        userRepository.save(user);
+
+        user.myTobaccos.add(myTobacco);
+        tobacco.myTobaccos.add(myTobacco);
+
+        myTobaccoRepository.save(myTobacco);
 
         println("End")
         return ResponseEntity("Tobacco $tobacco was added in purchases", HttpStatus.OK)
     }
 
     @GetMapping("/latest")
-    fun getLatestPurchases(request: HttpServletRequest): Queue<Tobacco>? {
+    fun getLatestPurchases(request: HttpServletRequest): MutableList<Tobacco>? {
 
         var installationCookie = "";
         if (request.cookies != null) {
@@ -85,6 +104,6 @@ class ShoppingListController @Autowired constructor(
         var user: User =
                 userRepository.findUserByInstallationCookie(installationCookie);
 
-        return user.latestPurchases;
+        return tobaccoRepository.findLatestPurchases(user.id);
     }
 }

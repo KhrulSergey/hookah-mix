@@ -2,8 +2,10 @@ package com.codemark.hookahmix.domain
 
 
 import com.fasterxml.jackson.annotation.JsonIgnore
+import com.fasterxml.jackson.annotation.JsonPropertyOrder
 import javax.persistence.*
 
+@JsonPropertyOrder("tobaccosId")
 @Entity
 @Table(name = "tobaccos")
 data class Tobacco(
@@ -46,8 +48,12 @@ data class Tobacco(
     )
     var mixList: MutableList<Mix> = mutableListOf();
 
+    @JsonIgnore
+    @OneToMany(mappedBy = "tobacco")
+    var myTobaccos: MutableSet<MyTobacco> = mutableSetOf();
+
     @Transient
-    var status: TobaccoStatus = TobaccoStatus.NEED_BAR;
+    var status: TobaccoStatus = TobaccoStatus.NEED_BAR
 
     @Transient
     var replacements: MutableList<Tobacco> = mutableListOf()

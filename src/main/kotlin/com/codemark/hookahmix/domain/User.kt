@@ -1,5 +1,6 @@
 package com.codemark.hookahmix.domain
 
+import com.fasterxml.jackson.annotation.JsonIgnore
 import java.util.*
 import javax.persistence.*;
 import kotlin.jvm.Transient
@@ -22,8 +23,12 @@ class User (@Column(name = "installation_cookie")
     )
     var tobaccos: MutableList<Tobacco> = mutableListOf();
 
+    @JsonIgnore
+    @OneToMany(mappedBy = "user")
+    var myTobaccos: MutableSet<MyTobacco> = mutableSetOf();
+
     @Transient
-    var latestPurchases: Queue<Tobacco> = ArrayDeque();
+    var latestPurchases: Queue<Tobacco> = ArrayDeque(); // delete?
 
     override fun toString(): String {
         return "User(installationCookie='$installationCookie', id=$id)"

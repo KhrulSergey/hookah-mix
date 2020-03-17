@@ -2,6 +2,7 @@ package com.codemark.hookahmix.controller
 
 import com.codemark.hookahmix.domain.Maker
 import com.codemark.hookahmix.domain.Tobacco
+import com.codemark.hookahmix.domain.TobaccoStatus
 import com.codemark.hookahmix.domain.User
 import com.codemark.hookahmix.exception.InstallationCookieException
 import com.codemark.hookahmix.repository.MakerRepository
@@ -68,7 +69,7 @@ class BarController @Autowired constructor(private val tobaccoRepository: Tobacc
         println(user)
 
         println(user.tobaccos)
-        return user.tobaccos; // change
+        return user.tobaccos;
     }
 
     /**
@@ -99,6 +100,8 @@ class BarController @Autowired constructor(private val tobaccoRepository: Tobacc
         var user: User = userRepository
                 .findUserByInstallationCookie(installationCookie);
 
+        tobacco.status = TobaccoStatus.CONTAIN_BAR;
+        println("Status: " + tobacco.status)
         user.tobaccos.add(tobacco);
         userRepository.save(user);
 

@@ -3,6 +3,7 @@ package com.codemark.hookahmix.domain
 
 import com.fasterxml.jackson.annotation.JsonFormat
 import com.fasterxml.jackson.annotation.JsonProperty
+import com.fasterxml.jackson.annotation.JsonValue
 import com.fasterxml.jackson.core.JsonParser
 import com.fasterxml.jackson.databind.DeserializationContext
 import com.fasterxml.jackson.databind.JsonMappingException
@@ -13,7 +14,6 @@ import java.io.IOException
 import java.util.*
 import java.util.function.Predicate
 import java.util.function.Supplier
-import javax.persistence.Embeddable
 
 
 @JsonFormat(shape = JsonFormat.Shape.OBJECT)
@@ -24,7 +24,8 @@ enum class TobaccoStatus(@JsonProperty("title") val title: String) {
     PURCHASES("Докупить"),
     IN_PURCHASES("В покупках");
 
-    @JsonProperty("id")
+//    @JsonProperty("id")
+    @JsonValue
     fun getId(): String {
         return name
     }

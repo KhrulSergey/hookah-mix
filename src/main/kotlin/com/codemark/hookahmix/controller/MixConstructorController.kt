@@ -69,6 +69,7 @@ class MixConstructorController @Autowired constructor(
                     var existReplacements: Boolean = false;
                     for (mixTobacco in mix.tobaccoMixList) {
                         mixTobacco.replacements = ArrayList();
+                        mixTobacco.status = TobaccoStatus.PURCHASES;
                         for (userTobacco in user.tobaccos) {
 
                             if (mixTobacco.tobaccosId.equals(userTobacco.tobaccosId)) {
@@ -77,6 +78,7 @@ class MixConstructorController @Autowired constructor(
                             } else {
                                 if (mixTobacco.taste?.taste.equals(userTobacco.taste?.taste)) {
                                     existReplacements = true;
+                                    userTobacco.status = TobaccoStatus.CONTAIN_BAR;
                                     mixTobacco.replacements.add(userTobacco);
 
                                 } else {
@@ -101,6 +103,7 @@ class MixConstructorController @Autowired constructor(
                     for (mixTobacco in mix.tobaccoMixList) {
 
                         mixTobacco.replacements = ArrayList();
+                        mixTobacco.status = TobaccoStatus.PURCHASES;
                         for (userTobacco in user.tobaccos) {
 
                             if (mixTobacco.taste?.taste.equals(userTobacco.taste?.taste)) {

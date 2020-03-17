@@ -1,9 +1,6 @@
 package com.codemark.hookahmix.util
 
-import com.codemark.hookahmix.domain.Image
-import com.codemark.hookahmix.domain.Maker
-import com.codemark.hookahmix.domain.Taste
-import com.codemark.hookahmix.domain.Tobacco
+import com.codemark.hookahmix.domain.*
 import com.codemark.hookahmix.exception.ParsingException
 import com.codemark.hookahmix.repository.FileRepository
 import com.codemark.hookahmix.repository.MakerRepository
