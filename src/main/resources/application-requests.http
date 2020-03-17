@@ -7,6 +7,6 @@
 
 #http://big.dev.codemark.ru:8888/hookah-mix/api/bar/marker/catalog
 
-http://localhost:8080/api/bar/marker/bar
+http://localhost:8080/api/bar/marker/catalog
 
 ###

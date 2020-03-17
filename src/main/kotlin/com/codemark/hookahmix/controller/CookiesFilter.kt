@@ -20,7 +20,7 @@ class CookiesFilter(@Autowired
 
     override fun doFilter(servletRequest: ServletRequest?,
                           servletResponse: ServletResponse?,
-                          filterChan: FilterChain?) {
+                          filterChain: FilterChain?) {
 
         var request: HttpServletRequest = servletRequest as HttpServletRequest;
         var response: HttpServletResponse = servletResponse as HttpServletResponse;
@@ -91,6 +91,13 @@ class CookiesFilter(@Autowired
             println("Filter: User was created");
         }
 
-        filterChan?.doFilter(request, response);
+        if (request.cookies != null) {
+            filterChain?.doFilter(request, response);
+        } else {
+            println("Filter, path: " + request.servletPath)
+            response.sendRedirect(request.servletPath);
+        }
+
+//        filterChain?.doFilter(request, response);
     }
 }

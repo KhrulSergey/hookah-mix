@@ -39,8 +39,9 @@ interface TobaccoRepository : JpaRepository<Tobacco, Long> {
                     "inner join my_tobaccos mt on t.tobaccos_id = mt.tobacco_id " +
                     "inner join users u on mt.user_id = u.users_id " +
                     "where u.users_id = :userId " +
+                    "and mt.status = 'purchase'" +
                     "order by t.tobaccos_id desc limit 5")
-    fun findLatestPurchases(@Param("userId") userId: Long): MutableList<Tobacco>
+    fun findLatestPurchases(@Param("userId") userId: Long?): MutableList<Tobacco>
 
     fun findTobaccoByTitle(title: String): Tobacco;
 

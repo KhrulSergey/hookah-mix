@@ -10,7 +10,8 @@ enum class MixSet(@JsonProperty("title") val title: String) {
     REPLACEMENT_BAR("С заменой"),
     PARTIAL_BAR("Нужно докупить");
 
-    @JsonProperty("id")
+//    @JsonProperty("id")
+    @JsonValue
     fun getId(): String {
         return name
     }
