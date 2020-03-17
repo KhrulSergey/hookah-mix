@@ -16,13 +16,11 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import java.util.*
-import java.util.stream.Collector
-import java.util.stream.Collectors
 import javax.servlet.http.Cookie
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
+import javax.servlet.http.HttpSession
 import kotlin.collections.ArrayList
-import kotlin.streams.toList
 
 @RestController
 @RequestMapping("/api/mixes")
@@ -35,102 +33,63 @@ class MixConstructorController @Autowired constructor(
 
     @GetMapping("/generator")
     fun generateMixes(request: HttpServletRequest,
-                      response: HttpServletResponse): MutableList<Mix> {
+                      response: HttpServletResponse,
+                      session: HttpSession): MutableList<Mix> {
 
 
         var installationCookie = "";
-        if (request.cookies != null) {
+        var user: User;
 
-            var optionalCookie: Optional<Cookie> = Arrays.stream(request.cookies)
-                    .filter { i -> i.name.equals("UserId") }
-                    .findFirst();
-            if (optionalCookie.isPresent) {
-                installationCookie = optionalCookie.get().value;
-                if (installationCookie == null || installationCookie.isEmpty()) {
-                    response.sendRedirect(request.servletPath)
-                }
-            } else {
-                response.sendRedirect(request.servletPath)
-            }
+        if (request.cookies == null || !request.cookies.any { it.value.equals("UserId") }) {
+            println("Fuck, NPE will be here!")
+            installationCookie = session.getAttribute("installationCookie").toString();
+            user = userRepository.findUserByInstallationCookie(installationCookie);
         } else {
-            throw InstallationCookieException("Cookie not found");
+            installationCookie = Arrays.stream(request.cookies)
+                    .filter { i -> i.name.equals("UserId") }
+                    .findAny()
+                    .get().value
+            user = userRepository.findUserByInstallationCookie(installationCookie);
         }
 
 
-        var user: User?;
-        try {
-            user =
-                    userRepository.findUserByInstallationCookie(installationCookie);
-        } catch (e: EmptyResultDataAccessException) {
-            user = null;
-        }
+        user = userRepository.findUserByInstallationCookie(installationCookie);
 
         println("User: $user")
         var mixesList: MutableList<Mix> = mixRepository.findAll();
 
-
         for (mix in mixesList) {
 
-            if (user != null) {
-                if (user.tobaccos.containsAll(mix.tobaccoMixList)) {
+            if (user.tobaccos.containsAll(mix.tobaccoMixList)) {
 
-                    mix.status = MixSet.MATCH_BAR;
+                mix.status = MixSet.MATCH_BAR;
 
-                    for (tobacco in mix.tobaccoMixList) {
-                        tobacco.status = TobaccoStatus.CONTAIN_BAR;
-                    }
+                for (tobacco in mix.tobaccoMixList) {
+                    tobacco.status = TobaccoStatus.CONTAIN_BAR;
+                }
 
-                } else {
+            } else {
 
-                    var isTobaccoInBar: Boolean = mix.tobaccoMixList.stream()
-                            .anyMatch { i -> user.tobaccos.stream()
-                                    .anyMatch { f -> StringUtils.pathEquals(
-                                            i.title, f.title) } };
+                var isTobaccoInBar: Boolean = mix.tobaccoMixList.stream()
+                        .anyMatch { i -> user.tobaccos.stream()
+                                .anyMatch { f -> StringUtils.pathEquals(
+                                        i.title, f.title) } };
 
-                    if (isTobaccoInBar) {
+                if (isTobaccoInBar) {
 
-                        var existReplacements: Boolean = false;
-                        for (mixTobacco in mix.tobaccoMixList) {
-                            mixTobacco.replacements = ArrayList();
-                            mixTobacco.status = TobaccoStatus.PURCHASES;
-                            for (userTobacco in user.tobaccos) {
+                    var existReplacements: Boolean = false;
+                    for (mixTobacco in mix.tobaccoMixList) {
+                        mixTobacco.replacements = ArrayList();
+                        mixTobacco.status = TobaccoStatus.PURCHASES;
+                        for (userTobacco in user.tobaccos) {
 
-                                if (mixTobacco.tobaccosId.equals(userTobacco.tobaccosId)) {
-                                    mixTobacco.status = TobaccoStatus.CONTAIN_BAR;
+                            if (mixTobacco.tobaccosId.equals(userTobacco.tobaccosId)) {
+                                mixTobacco.status = TobaccoStatus.CONTAIN_BAR;
 
-                                } else {
-                                    if (mixTobacco.taste?.taste.equals(userTobacco.taste?.taste)) {
-                                        existReplacements = true;
-                                        userTobacco.status = TobaccoStatus.CONTAIN_BAR;
-                                        mixTobacco.replacements.add(userTobacco);
-
-                                    } else {
-                                        if (mixTobacco.status == null ||
-                                                !mixTobacco.status.equals(TobaccoStatus.CONTAIN_BAR)) {
-                                            mixTobacco.status = TobaccoStatus.PURCHASES;
-                                        }
-                                    }
-                                }
-                            }
-                        }
-
-                        if (existReplacements) {
-                            mix.status = MixSet.REPLACEMENT_BAR
-                        } else {
-                            mix.status = MixSet.PARTIAL_BAR
-                        }
-
-                    } else {
-
-                        var existReplacements: Boolean = false;
-                        for (mixTobacco in mix.tobaccoMixList) {
-
-                            mixTobacco.replacements = ArrayList();
-                            mixTobacco.status = TobaccoStatus.PURCHASES;
-                            for (userTobacco in user.tobaccos) {
-
+                            } else {
                                 if (mixTobacco.taste?.taste.equals(userTobacco.taste?.taste)) {
                                     existReplacements = true;
+                                    userTobacco.status = TobaccoStatus.CONTAIN_BAR;
                                     mixTobacco.replacements.add(userTobacco);
 
                                 } else {
@@ -141,17 +100,44 @@ class MixConstructorController @Autowired constructor(
                                 }
                             }
                         }
+                    }
 
-                        if (existReplacements) {
-                            mix.status = MixSet.REPLACEMENT_BAR
-                        } else {
-                            mix.status = MixSet.PARTIAL_BAR
+                    if (existReplacements) {
+                        mix.status = MixSet.REPLACEMENT_BAR
+                    } else {
+                        mix.status = MixSet.PARTIAL_BAR
+                    }
+
+                } else {
+
+                    var existReplacements: Boolean = false;
+                    for (mixTobacco in mix.tobaccoMixList) {
+
+                        mixTobacco.replacements = ArrayList();
+                        mixTobacco.status = TobaccoStatus.PURCHASES;
+                        for (userTobacco in user.tobaccos) {
+
+                            if (mixTobacco.taste?.taste.equals(userTobacco.taste?.taste)) {
+                                existReplacements = true;
+                                mixTobacco.replacements.add(userTobacco);
+
+                            } else {
+                                if (mixTobacco.status == null ||
+                                        !mixTobacco.status.equals(TobaccoStatus.CONTAIN_BAR)) {
+                                    mixTobacco.status = TobaccoStatus.PURCHASES;
+                                }
+                            }
                         }
+                    }
+
+                    if (existReplacements) {
+                        mix.status = MixSet.REPLACEMENT_BAR
+                    } else {
+                        mix.status = MixSet.PARTIAL_BAR
                     }
                 }
             }
         }
-
         return mixesList;
     }
 

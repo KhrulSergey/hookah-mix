@@ -12,6 +12,7 @@ import javax.servlet.ServletResponse
 import javax.servlet.http.Cookie
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
+import javax.servlet.http.HttpSession
 
 @Component
 class CookiesFilter(@Autowired
@@ -24,21 +25,22 @@ class CookiesFilter(@Autowired
 
         var request: HttpServletRequest = servletRequest as HttpServletRequest;
         var response: HttpServletResponse = servletResponse as HttpServletResponse;
+        var session: HttpSession = request.session;
 
         var installationCookie: String = "";
         var cookies = request.cookies;
-        println("Check cookies...");
+        println("Filter: check cookies...");
 
         if (cookies != null) {
 
-            println("Cookie is not empty")
+            println("Filter: cookie is not empty")
 
             var existCookie = Arrays.stream(cookies)
                     .anyMatch { i -> i.name.equals("UserId") };
 
             if (existCookie) {
 
-                println("Cookie was found")
+                println("Filter: cookie was found")
 
                 var currentCookieValue =
                         cookieAuthorizationUtil.findCurrentCookie(
@@ -46,14 +48,16 @@ class CookiesFilter(@Autowired
 
                 var existUser =
                         userRepository.existsByInstallationCookie(currentCookieValue);
-                println("User exist: $existUser")
+                println("Filter: user exist: $existUser")
+
+                session.setAttribute("installationCookie", currentCookieValue)
 
                 // if user not found -
                 // create new user
 
                 if (!existUser) {
                     cookieAuthorizationUtil.createUser(currentCookieValue);
-                    println("User was created")
+                    println("Filter: user was created")
                 }
             } else {
 
@@ -68,15 +72,16 @@ class CookiesFilter(@Autowired
                         cookieAuthorizationUtil.createCookie(installationCookie);
 
                 response.addCookie(cookie);
+                session.setAttribute("installationCookie", installationCookie)
 
                 cookieAuthorizationUtil.createUser(installationCookie);
-                println("User was created");
+                println("Filter: user was created");
             }
         } else {
 
             // create new cookie and new user
 
-            println("Cookie is empty");
+            println("Filter: cookie is empty");
             installationCookie =
                     cookieAuthorizationUtil.generatedInstallationCookie();
             println("Filter: $installationCookie");
@@ -87,17 +92,12 @@ class CookiesFilter(@Autowired
 
             response.addCookie(cookie);
 
+            session.setAttribute("installationCookie", installationCookie)
+
             cookieAuthorizationUtil.createUser(installationCookie);
             println("Filter: User was created");
         }
 
-        if (request.cookies != null) {
-            filterChain?.doFilter(request, response);
-        } else {
-            println("Filter, path: " + request.servletPath)
-            response.sendRedirect(request.servletPath);
-        }
-
-//        filterChain?.doFilter(request, response);
+        filterChain?.doFilter(request, response);
     }
 }

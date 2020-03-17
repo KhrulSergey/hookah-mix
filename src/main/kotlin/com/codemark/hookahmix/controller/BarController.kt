@@ -18,6 +18,7 @@ import java.util.*
 import javax.servlet.http.Cookie
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
+import javax.servlet.http.HttpSession
 
 @RestController
 @RequestMapping("/api/bar")
@@ -32,32 +33,25 @@ class BarController @Autowired constructor(private val tobaccoRepository: Tobacc
 
     @GetMapping("/marker/catalog")
     fun findMarkersBy(request: HttpServletRequest,
-                      response: HttpServletResponse): List<Maker> {
+                      response: HttpServletResponse,
+                      session: HttpSession): List<Maker> {
 
         var installationCookie = "";
-        if (request.cookies != null) {
+        var user: User;
 
-            println("Step first: check if cookie exist...")
-            var optionalCookie: Optional<Cookie> = Arrays.stream(request.cookies)
-                    .filter { i -> i.name.equals("UserId") }
-                    .findFirst();
-            println("Request Path: " + request.servletPath)
-            println("First step completed")
-            if (optionalCookie.isPresent) {
-                println("Step second: check if present...")
-                installationCookie = optionalCookie.get().value;
-                println("Second step completed, cookie: " + installationCookie)
-                if (installationCookie == null || installationCookie.isEmpty()) {
-                    println("Step third: return to method...")
-                    response.sendRedirect(request.servletPath)
-                }
-            } else {
-                println("Step fourth: redirect if present is null")
-                response.sendRedirect(request.servletPath)
-            }
+        if (request.cookies == null || !request.cookies.any { it.value.equals("UserId") }) {
+            println("Fuck, NPE will be here!")
+            installationCookie = session.getAttribute("installationCookie").toString();
+            user = userRepository.findUserByInstallationCookie(installationCookie);
         } else {
-            throw InstallationCookieException("Cookie not found");
+            installationCookie = Arrays.stream(request.cookies)
+                    .filter { i -> i.name.equals("UserId") }
+                    .findAny()
+                    .get().value
+            user = userRepository.findUserByInstallationCookie(installationCookie);
         }
+
+        println(user)
 
         var catalogTobaccos = makerRepository.findAllSortedByTitle();
         return catalogTobaccos;
@@ -69,56 +63,27 @@ class BarController @Autowired constructor(private val tobaccoRepository: Tobacc
 
     @GetMapping("/marker/bar")
     fun findMarkersBar(request: HttpServletRequest,
-                       response: HttpServletResponse): MutableList<Tobacco>? {
+                       response: HttpServletResponse,
+                       session: HttpSession): MutableList<Tobacco>? {
 
-//        var installationCookie = "";
-//        if (request.cookies != null) {
-//
-//            installationCookie =
-//                    cookieAuthorizationUtil.findCurrentCookie(request.cookies);
-//            println("Cookie in bar: $installationCookie");
-//        } else {
-//            throw InstallationCookieException("Cookie not found!");
-//        }
         var installationCookie = "";
-        if (request.cookies != null) {
+        var user: User;
 
-            println("Step first: check if cookie exist...")
-            var optionalCookie: Optional<Cookie> = Arrays.stream(request.cookies)
-                    .filter { i -> i.name.equals("UserId") }
-                    .findFirst();
-            println("Request Path: " + request.servletPath)
-            println("First step completed")
-            if (optionalCookie.isPresent) {
-                println("Step second: check if present...")
-                installationCookie = optionalCookie.get().value;
-                println("Second step completed, cookie: " + installationCookie)
-                if (installationCookie == null || installationCookie.isEmpty()) {
-                    println("Step third: return to method...")
-                    response.sendRedirect(request.servletPath)
-                }
-            } else {
-                println("Step fourth: redirect if present is null")
-                response.sendRedirect(request.servletPath)
-            }
+        if (request.cookies == null || !request.cookies.any { it.value.equals("UserId") }) {
+            println("Fuck, NPE will be here!")
+            installationCookie = session.getAttribute("installationCookie").toString();
+            user = userRepository.findUserByInstallationCookie(installationCookie);
         } else {
-            throw InstallationCookieException("Cookie not found");
-        }
-
-
-        var user: User?;
-        try {
-            user =
-                    userRepository.findUserByInstallationCookie(installationCookie);
-        } catch (e: EmptyResultDataAccessException) {
-            user = null;
-        } catch (e: KotlinNullPointerException) {
-            user = null;
+            installationCookie = Arrays.stream(request.cookies)
+                    .filter { i -> i.name.equals("UserId") }
+                    .findAny()
+                    .get().value
+            user = userRepository.findUserByInstallationCookie(installationCookie);
         }
 
         println(user)
 
-        return user?.tobaccos;
+        return user.tobaccos;
     }
 
     /**
@@ -128,50 +93,37 @@ class BarController @Autowired constructor(private val tobaccoRepository: Tobacc
     @PostMapping("/tobacco/{id}")
     fun addTobacco(@PathVariable("id") id: Long,
                    request: HttpServletRequest,
-                   response: HttpServletResponse): ResponseEntity<String> {
+                   response: HttpServletResponse,
+                   session: HttpSession): ResponseEntity<String> {
 
         var tobacco: Tobacco = tobaccoRepository.getOne(id);
 
 
         var installationCookie = "";
-        if (request.cookies != null) {
+        var user: User;
 
-            var optionalCookie: Optional<Cookie> = Arrays.stream(request.cookies)
-                    .filter { i -> i.name.equals("UserId") }
-                    .findFirst();
-            if (optionalCookie.isPresent) {
-                installationCookie = optionalCookie.get().value;
-                if (installationCookie == null || installationCookie.isEmpty()) {
-                    response.sendRedirect(request.servletPath)
-                }
-            } else {
-                response.sendRedirect(request.servletPath)
-            }
+        if (request.cookies == null || !request.cookies.any { it.value.equals("UserId") }) {
+            println("Fuck, NPE will be here!")
+            installationCookie = session.getAttribute("installationCookie").toString();
+            user = userRepository.findUserByInstallationCookie(installationCookie);
         } else {
-            throw InstallationCookieException("Cookie not found");
+            installationCookie = Arrays.stream(request.cookies)
+                    .filter { i -> i.name.equals("UserId") }
+                    .findAny()
+                    .get().value
+            user = userRepository.findUserByInstallationCookie(installationCookie);
         }
 
         var existUser =
                 userRepository.existsByInstallationCookie(installationCookie);
         println("/tobacco, user exist: $existUser");
 
-        var user: User?;
-        try {
-            user =
-                    userRepository.findUserByInstallationCookie(installationCookie);
-        } catch (e: EmptyResultDataAccessException) {
-            user = null;
-        }
-
-
         tobacco.status = TobaccoStatus.CONTAIN_BAR;
-        println("Status: " + tobacco.status)
-        if (user != null) {
-            user.tobaccos.add(tobacco)
-        };
-        user?.let { userRepository.save(it) };
 
-        println("Tobacco successfully added to user ${user?.installationCookie}!")
+        user.tobaccos.add(tobacco);
+        userRepository.save(user);
+
+        println("Tobacco successfully added to user ${user.installationCookie}!")
 
         return ResponseEntity("Tobacco $tobacco was added in bar", HttpStatus.OK);
     }
@@ -183,59 +135,34 @@ class BarController @Autowired constructor(private val tobaccoRepository: Tobacc
     @DeleteMapping("/delete_tobacco/{id}")
     fun delete(@PathVariable("id") id: Long,
                request: HttpServletRequest,
-               response: HttpServletResponse): ResponseEntity<String> {
-
-//        var installationCookie = "";
-//        if (request.cookies != null) {
-//            installationCookie =
-//                    cookieAuthorizationUtil.findCurrentCookie(request.cookies);
-//            println("Method DELETE detected")
-//        } else {
-//            throw InstallationCookieException("Cookie not found");
-//        }
+               response: HttpServletResponse,
+               session: HttpSession): ResponseEntity<String> {
 
         var installationCookie = "";
-        if (request.cookies != null) {
+        var user: User;
 
-            println("Step first: check if cookie exist...")
-            var optionalCookie: Optional<Cookie> = Arrays.stream(request.cookies)
-                    .filter { i -> i.name.equals("UserId") }
-                    .findFirst();
-            println("Request Path: " + request.servletPath)
-            println("First step completed")
-            if (optionalCookie.isPresent) {
-                println("Step second: check if present...")
-                installationCookie = optionalCookie.get().value;
-                println("Second step completed, cookie: " + installationCookie)
-                if (installationCookie == null || installationCookie.isEmpty()) {
-                    println("Step third: return to method...")
-                    response.sendRedirect(request.servletPath)
-                }
-            } else {
-                println("Step fourth: redirect if present is null")
-                response.sendRedirect(request.servletPath)
-            }
+        if (request.cookies == null || !request.cookies.any { it.value.equals("UserId") }) {
+            println("Fuck, NPE will be here!")
+            installationCookie = session.getAttribute("installationCookie").toString();
+            user = userRepository.findUserByInstallationCookie(installationCookie);
         } else {
-            throw InstallationCookieException("Cookie not found");
+            installationCookie = Arrays.stream(request.cookies)
+                    .filter { i -> i.name.equals("UserId") }
+                    .findAny()
+                    .get().value
+            user = userRepository.findUserByInstallationCookie(installationCookie);
         }
 
-//        var user: User = userRepository
-//                .findUserByInstallationCookie(installationCookie);
+        user = userRepository
+                .findUserByInstallationCookie(installationCookie);
 
-        var user: User?;
-        try {
-            user =
-                    userRepository.findUserByInstallationCookie(installationCookie);
-        } catch (e: EmptyResultDataAccessException) {
-            user = null;
-        }
 
-        var iterator = user!!.tobaccos.iterator();
+        var iterator = user.tobaccos.iterator();
         while (iterator.hasNext()) {
             var tobacco = iterator.next();
             if (tobacco.tobaccosId == id) {
                 iterator.remove();
-                user.let { userRepository.save(it) };
+                userRepository.save(user);
                 println("Tobacco ${tobacco.title} was successfully removed!");
                 println(user.tobaccos)
             }

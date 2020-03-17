@@ -17,6 +17,7 @@ import java.util.*
 import javax.servlet.http.Cookie
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
+import javax.servlet.http.HttpSession
 
 @RestController
 @RequestMapping("/api/purchases")
@@ -28,78 +29,58 @@ class ShoppingListController @Autowired constructor(
 
     @GetMapping("/my")
     fun getAllPurchases(request: HttpServletRequest,
-                        response: HttpServletResponse): List<Tobacco> {
+                        response: HttpServletResponse,
+                        session: HttpSession): List<Tobacco> {
 
 
         var installationCookie = "";
-        if (request.cookies != null) {
+        var user: User;
 
-            var optionalCookie: Optional<Cookie> = Arrays.stream(request.cookies)
-                    .filter { i -> i.name.equals("UserId") }
-                    .findFirst();
-            if (optionalCookie.isPresent) {
-                installationCookie = optionalCookie.get().value;
-                if (installationCookie == null || installationCookie.isEmpty()) {
-                    response.sendRedirect(request.servletPath)
-                }
-            } else {
-                response.sendRedirect(request.servletPath)
-            }
+        if (request.cookies == null || !request.cookies.any { it.value.equals("UserId") }) {
+            println("Fuck, NPE will be here!")
+            installationCookie = session.getAttribute("installationCookie").toString();
+            user = userRepository.findUserByInstallationCookie(installationCookie);
         } else {
-            throw InstallationCookieException("Cookie not found");
+            installationCookie = Arrays.stream(request.cookies)
+                    .filter { i -> i.name.equals("UserId") }
+                    .findAny()
+                    .get().value
+            user = userRepository.findUserByInstallationCookie(installationCookie);
         }
 
-        var user: User?;
-        try {
-            user =
-                    userRepository.findUserByInstallationCookie(installationCookie);
-        } catch (e: EmptyResultDataAccessException) {
-            user = null;
-        }
+        user = userRepository.findUserByInstallationCookie(installationCookie);
 
         println("User: $user");
 
-        var purchases: MutableList<Tobacco> = mutableListOf();
-        if (user != null) {
-            purchases = tobaccoRepository.findAllPurchases(user.id)
-        }
-        return purchases;
+        return tobaccoRepository.findAllPurchases(user.id)
     }
 
     @PostMapping("/my/{id}")
     fun addTobaccoInPurchases(@PathVariable("id") id: Long,
                               request: HttpServletRequest,
-                              response: HttpServletResponse): ResponseEntity<String> {
+                              response: HttpServletResponse,
+                              session: HttpSession): ResponseEntity<String> {
 
         var installationCookie = "";
-        if (request.cookies != null) {
+        var user: User;
 
-            var optionalCookie: Optional<Cookie> = Arrays.stream(request.cookies)
-                    .filter { i -> i.name.equals("UserId") }
-                    .findFirst();
-            if (optionalCookie.isPresent) {
-                installationCookie = optionalCookie.get().value;
-                if (installationCookie == null || installationCookie.isEmpty()) {
-                    response.sendRedirect(request.servletPath)
-                }
-            } else {
-                response.sendRedirect(request.servletPath)
-            }
+        if (request.cookies == null || !request.cookies.any { it.value.equals("UserId") }) {
+            println("Fuck, NPE will be here!")
+            installationCookie = session.getAttribute("installationCookie").toString();
+            user = userRepository.findUserByInstallationCookie(installationCookie);
         } else {
-            throw InstallationCookieException("Cookie not found");
+            installationCookie = Arrays.stream(request.cookies)
+                    .filter { i -> i.name.equals("UserId") }
+                    .findAny()
+                    .get().value
+            user = userRepository.findUserByInstallationCookie(installationCookie);
         }
 
-        var user: User?;
-        try {
-            user =
-                    userRepository.findUserByInstallationCookie(installationCookie);
-        } catch (e: EmptyResultDataAccessException) {
-            user = null;
-        }
+        user = userRepository.findUserByInstallationCookie(installationCookie);
 
         var tobacco: Tobacco = tobaccoRepository.getOne(id);
-        println(tobacco)
 
+        println(tobacco)
         println(user)
 
 
@@ -108,14 +89,11 @@ class ShoppingListController @Autowired constructor(
         myTobacco.user = user;
         myTobacco.status = "purchase"
 
-        if (user != null) {
-            user.latestPurchases.add(tobacco)
-        };
-        user?.let { userRepository.save(it) };
+        user.latestPurchases.add(tobacco);
 
-        if (user != null) {
-            user.myTobaccos.add(myTobacco)
-        };
+        userRepository.save(user);
+
+        user.myTobaccos.add(myTobacco);
         tobacco.myTobaccos.add(myTobacco);
 
         myTobaccoRepository.save(myTobacco);
@@ -125,40 +103,27 @@ class ShoppingListController @Autowired constructor(
 
     @GetMapping("/latest")
     fun getLatestPurchases(request: HttpServletRequest,
-                           response: HttpServletResponse): MutableList<Tobacco>? {
+                           response: HttpServletResponse,
+                           session: HttpSession): MutableList<Tobacco>? {
 
 
         var installationCookie = "";
-        if (request.cookies != null) {
+        var user: User;
 
-            var optionalCookie: Optional<Cookie> = Arrays.stream(request.cookies)
-                    .filter { i -> i.name.equals("UserId") }
-                    .findFirst();
-            if (optionalCookie.isPresent) {
-                installationCookie = optionalCookie.get().value;
-                if (installationCookie == null || installationCookie.isEmpty()) {
-                    response.sendRedirect(request.servletPath)
-                }
-            } else {
-                response.sendRedirect(request.servletPath)
-            }
+        if (request.cookies == null || !request.cookies.any { it.value.equals("UserId") }) {
+            println("Fuck, NPE will be here!")
+            installationCookie = session.getAttribute("installationCookie").toString();
+            user = userRepository.findUserByInstallationCookie(installationCookie);
         } else {
-            throw InstallationCookieException("Cookie not found");
+            installationCookie = Arrays.stream(request.cookies)
+                    .filter { i -> i.name.equals("UserId") }
+                    .findAny()
+                    .get().value
+            user = userRepository.findUserByInstallationCookie(installationCookie);
         }
 
+        user = userRepository.findUserByInstallationCookie(installationCookie);
 
-        var user: User?;
-        try {
-            user =
-                    userRepository.findUserByInstallationCookie(installationCookie);
-        } catch (e: EmptyResultDataAccessException) {
-            user = null;
-        }
-
-        var latestPurchases: MutableList<Tobacco> = mutableListOf();
-        if (user != null) {
-            latestPurchases = tobaccoRepository.findLatestPurchases(user.id)
-        }
-        return latestPurchases;
+        return tobaccoRepository.findLatestPurchases(user.id)
     }
 }
