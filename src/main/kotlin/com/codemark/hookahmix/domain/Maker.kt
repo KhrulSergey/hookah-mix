@@ -2,8 +2,6 @@ package com.codemark.hookahmix.domain
 
 import com.fasterxml.jackson.annotation.JsonIgnore
 import lombok.AllArgsConstructor
-import java.time.LocalDate
-import java.util.*
 import javax.persistence.*
 
 //o	Название

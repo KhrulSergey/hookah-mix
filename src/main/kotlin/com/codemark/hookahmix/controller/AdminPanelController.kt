@@ -1,10 +1,8 @@
 package com.codemark.hookahmix.controller
 
 import com.codemark.hookahmix.domain.*
-import com.codemark.hookahmix.repository.MakerRepository
-import com.codemark.hookahmix.repository.MixRepository
-import com.codemark.hookahmix.repository.TasteRepository
-import com.codemark.hookahmix.repository.TobaccoRepository
+import com.codemark.hookahmix.repository.*
+import com.codemark.hookahmix.util.ImageUtil
 import com.codemark.hookahmix.util.TobaccoParser
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Controller
@@ -20,6 +18,9 @@ class AdminPanelController @Autowired constructor(private val tobaccoRepository:
                                                   private val makerRepository: MakerRepository,
                                                   private val mixRepository: MixRepository,
                                                   private val tasteRepository: TasteRepository,
+                                                  private val componentRepository: ComponentRepository,
+                                                  private val fileRepository: FileRepository,
+                                                  private val imageUtil: ImageUtil,
                                                   private var tobaccoParser: TobaccoParser) {
 
 
@@ -29,7 +30,7 @@ class AdminPanelController @Autowired constructor(private val tobaccoRepository:
     }
 
     @GetMapping("/parse")
-    fun parse(): Unit {
+    fun parse() {
         tobaccoParser.connectPage()?.let { tobaccoParser.startParse(it) };
     }
 
@@ -74,20 +75,45 @@ class AdminPanelController @Autowired constructor(private val tobaccoRepository:
                @RequestParam("tags") tags: String,
                @RequestParam("description") description: String,
                @RequestParam("strength") strength: String,
-               @RequestParam("tobacco") tobacco: String,
                model: Model)
             : String {
 
-        var mix: Mix = Mix();
+        var mix = Mix();
         mix.title = title;
         mix.tags = tags;
+        mix.rating = 0;
         mix.description = description;
         mix.strength = Integer.parseInt(strength);
 
-        var component: Tobacco = tobaccoRepository.findTobaccoByTitle(tobacco);
+        mixRepository.save(mix)
+
+        println("Mix: ${mix.title}, ${mix.tags}, ${mix.description}, ${mix.strength}")
 
 
-        return "redirect:/main";
+        return "redirect:/main"
+    }
+
+    @PostMapping("/add_component")
+    fun addComponentToMix(@RequestParam("mixTitle") mixTitle: String,
+                          @RequestParam("makerTitle") makerTitle: String,
+                          @RequestParam("tobaccoTitle") tobaccoTitle: String,
+                          @RequestParam("composition") composition: Int,
+                          model: Model): String {
+
+        var mix = mixRepository.findByTitle(mixTitle);
+        var tobacco = tobaccoRepository.findOneByTitleAndMaker(tobaccoTitle, makerTitle)
+
+        var component: Component = Component();
+        component.mix = mix;
+        component.tobacco = tobacco;
+        component.composition = composition;
+
+        mix.components.add(component);
+        tobacco.components.add(component);
+
+        componentRepository.save(component);
+
+        return "redirect:/main"
     }
 
 

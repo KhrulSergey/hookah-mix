@@ -178,7 +178,29 @@ class MixConstructorController @Autowired constructor(
     }
 
     @GetMapping("/count")
-    fun countGeneratedMix(): Int {
+    fun countGeneratedMix(request: HttpServletRequest,
+                          response: HttpServletResponse,
+                          session: HttpSession): Int {
+
+        var installationCookie = "";
+        var user: User;
+
+        if (request.cookies == null || !request.cookies.any { it.value.equals("UserId") }) {
+            println("Fuck, NPE will be here!")
+            installationCookie = session.getAttribute("installationCookie").toString();
+            user = userRepository.findUserByInstallationCookie(installationCookie);
+        } else {
+            installationCookie = Arrays.stream(request.cookies)
+                    .filter { i -> i.name.equals("UserId") }
+                    .findAny()
+                    .get().value
+            user = userRepository.findUserByInstallationCookie(installationCookie);
+        }
+
+        user = userRepository.findUserByInstallationCookie(installationCookie)
+
+
+
         return 15;
     }
 }

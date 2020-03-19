@@ -43,6 +43,14 @@ interface TobaccoRepository : JpaRepository<Tobacco, Long> {
                     "order by t.tobaccos_id desc limit 5")
     fun findLatestPurchases(@Param("userId") userId: Long?): MutableList<Tobacco>
 
-    fun findTobaccoByTitle(title: String): Tobacco;
+    fun findByTitle(title: String): Tobacco;
+
+    @Query(nativeQuery = true,
+            value = "select * from tobaccos t " +
+                    "inner join makers m on t.maker_id = m.makers_id " +
+                    "where t.title = :tobaccoTitle " +
+                    "and m.title = :makerTitle")
+    fun findOneByTitleAndMaker(@Param("tobaccoTitle") tobaccoTitle: String,
+                               @Param("makerTitle") makerTitle: String): Tobacco
 
 }

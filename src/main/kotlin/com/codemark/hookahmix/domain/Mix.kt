@@ -1,5 +1,6 @@
 package com.codemark.hookahmix.domain
 
+import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonValue
 import javax.persistence.*;
 
@@ -12,7 +13,7 @@ class Mix {
     @GeneratedValue(strategy = GenerationType.AUTO)
     var mixesId : Long = 0;
     var title : String = "";
-    var rating : String = "";
+    var rating : Int = 0;
     var tags : String = "";
     var description: String = "";
     var strength: Int = 5
@@ -24,6 +25,10 @@ class Mix {
             inverseJoinColumns = [JoinColumn(name = "tobacco_id")]
     )
     var tobaccoMixList: MutableList<Tobacco> = mutableListOf();
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "mix")
+    var components: MutableSet<Component> = mutableSetOf()
 
     @Transient
     var status: MixSet = MixSet.MATCH_BAR

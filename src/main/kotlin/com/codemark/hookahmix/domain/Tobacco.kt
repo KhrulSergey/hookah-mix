@@ -52,6 +52,10 @@ data class Tobacco(
     @OneToMany(mappedBy = "tobacco")
     var myTobaccos: MutableSet<MyTobacco> = mutableSetOf();
 
+    @JsonIgnore
+    @OneToMany(mappedBy = "tobacco")
+    var components: MutableSet<Component> = mutableSetOf()
+
     @Transient
     var status: TobaccoStatus = TobaccoStatus.NEED_BAR
 

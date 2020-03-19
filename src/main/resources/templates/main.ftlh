@@ -1,6 +1,6 @@
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns="http://www.w3.org/1999/html">
 <head>
     <meta charset="UTF-8">
     <title>Hello, Admin!</title>
@@ -63,65 +63,71 @@
 
     </div>
 
-    <#--<div class="my-3">-->
-        <#--<form action="/add_mix" method="post">-->
+    <div class="my-3">
+        <form action="/add_mix" method="post">
 
-            <#--<label><p>Mix: </p></label>-->
+            <label><p>Mix: </p></label>
 
-            <#--<div>-->
-                <#--<p><input type="text" class="form-control col-sm-3" name="title" required placeholder="Mix title"/></p>-->
-            <#--</div>-->
+            <div>
+                <p><input type="text" class="form-control col-sm-3" name="title" required placeholder="Mix title"/></p>
+            </div>
 
-            <#--<div>-->
-                <#--<p><input type="text" class="form-control col-sm-3" name="tags" required placeholder="Tags"/></p>-->
-            <#--</div>-->
+            <div>
+                <p><input type="text" class="form-control col-sm-3" name="tags" required placeholder="Tags"/></p>
+            </div>
 
-            <#--<div>-->
-                <#--<p><input type="text" class="form-control col-sm-3" name="description" required placeholder="Description"/></p>-->
-            <#--</div>-->
+            <div>
+                <p><input type="text" class="form-control col-sm-3" name="description" required placeholder="Description"/></p>
+            </div>
 
-            <#--<div>-->
-                <#--<p><input type="text" class="form-control col-sm-3" name="strength" required placeholder="Strength"/></p>-->
-            <#--</div>-->
+            <div>
+                <p><input type="text" class="form-control col-sm-3" name="strength" required placeholder="Strength"/></p>
+            </div>
 
-            <#--<div>-->
-                <#--<label>Components: </label>-->
+            <div>
+                <p><button type="submit" class="btn btn-primary">Add mix</button></p>
+            </div>
+        </form>
+    </div>
 
-                <#--<div>-->
-                    <#--<select name="components" class="form-control selcls col-sm-3">-->
-                        <#--<#list tobaccos as tobacco>-->
-                            <#--<option value="${tobacco}">${tobacco}</option>-->
-                        <#--</#list>-->
-                    <#--</select>-->
-                <#--</div>-->
+    <a class="btn btn-primary" data-toggle="collapse" href="#collapseExample" role="button" aria-expanded="false" aria-controls="collapseExample">
+        Components
+    </a>
 
-                <#--<div>-->
-                    <#--<p><input type="text" class="form-control col-sm-3" name="composition" required placeholder="Percentage" /></p>-->
-                <#--</div>-->
+    <form action="/add_component" method="post">
+        <div class="collapse my-3" id="collapseExample">
+            <div>
+                <label>Add component for this mix</label>
 
-                <#--<div>-->
-                    <#--<p><button type="submit" class="btn btn-primary">Add component</button></p>-->
-                <#--</div>-->
-            <#--</div>-->
+                <div>
+                    <p><input type="text" class="form-control col-sm-3" name="mixTitle" required placeholder="Mix Title"/></p>
+                </div>
 
-            <#--<select name="mix" class="form-control selcls col-sm-3">-->
-                <#---->
-                <#--<option>Tobacco Component</option>-->
-                <#--<option>Tobacco Component</option>-->
-                <#--<option>Tobacco Component</option>-->
-                <#--<option>Tobacco Component</option>-->
-                <#--<option>Tobacco Component</option>-->
+                <div>
+                    <p><input type="text" class="form-control col-sm-3" name="makerTitle" required placeholder="Maker Title"/></p>
+                </div>
 
-            <#--</select>-->
+                <div>
+                    <p><input type="text" class="form-control col-sm-3" name="tobaccoTitle" required placeholder="Tobacco Title"/></p>
+                </div>
 
-            <#--<div>-->
-                <#--<p><button type="submit" class="btn btn-primary">Add mix</button></p>-->
-            <#--</div>-->
-        <#--</form>-->
-    <#--</div>-->
+                <div>
+                    <p><input type="text" class="form-control col-sm-3" name="composition" required placeholder="Percentage" /></p>
+                </div>
+
+                <div>
+                    <p><button type="submit" class="btn btn-primary">Add component</button></p>
+                </div>
+
+            </div>
+        </div>
+    </form>
 
 </div>
 
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
 
 </body>
 </html>
