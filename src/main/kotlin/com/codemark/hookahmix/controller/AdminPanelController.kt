@@ -2,6 +2,7 @@ package com.codemark.hookahmix.controller
 
 import com.codemark.hookahmix.domain.*
 import com.codemark.hookahmix.repository.*
+import com.codemark.hookahmix.service.AdminPanelService
 import com.codemark.hookahmix.util.ImageUtil
 import com.codemark.hookahmix.util.TobaccoParser
 import org.springframework.beans.factory.annotation.Autowired
@@ -18,9 +19,7 @@ class AdminPanelController @Autowired constructor(private val tobaccoRepository:
                                                   private val makerRepository: MakerRepository,
                                                   private val mixRepository: MixRepository,
                                                   private val tasteRepository: TasteRepository,
-                                                  private val componentRepository: ComponentRepository,
-                                                  private val fileRepository: FileRepository,
-                                                  private val imageUtil: ImageUtil,
+                                                  private val adminPanelService: AdminPanelService,
                                                   private var tobaccoParser: TobaccoParser) {
 
 
@@ -54,17 +53,13 @@ class AdminPanelController @Autowired constructor(private val tobaccoRepository:
                    @RequestParam("description") description : String,
                    @RequestParam("tastes", required = false) taste : String,
                    @RequestParam("strength") strength : Double,
+                   @RequestParam("image") image: String,
+                   @RequestParam("tags") tags: String,
                    model : Model)
             : String {
 
-        var findMaker: Maker = makerRepository.findByTitle(maker);
-        var findTaste: Taste = tasteRepository.findByTaste(taste);
-
-        var newTobacco = Tobacco(title, description, strength);
-        newTobacco.maker = findMaker;
-        newTobacco.taste = findTaste;
-
-        tobaccoRepository.save(newTobacco);
+        adminPanelService.addTobacco(
+                title, maker, description, taste, strength, image, tags);
 
         return "redirect:/main";
     }
@@ -78,17 +73,7 @@ class AdminPanelController @Autowired constructor(private val tobaccoRepository:
                model: Model)
             : String {
 
-        var mix = Mix();
-        mix.title = title;
-        mix.tags = tags;
-        mix.rating = 0;
-        mix.description = description;
-        mix.strength = Integer.parseInt(strength);
-
-        mixRepository.save(mix)
-
-        println("Mix: ${mix.title}, ${mix.tags}, ${mix.description}, ${mix.strength}")
-
+        adminPanelService.addMix(title, tags, description, strength);
 
         return "redirect:/main"
     }
@@ -98,27 +83,18 @@ class AdminPanelController @Autowired constructor(private val tobaccoRepository:
                           @RequestParam("makerTitle") makerTitle: String,
                           @RequestParam("tobaccoTitle") tobaccoTitle: String,
                           @RequestParam("composition") composition: Int,
-                          model: Model): String {
+                          model: Model)
+            : String {
 
-        var mix = mixRepository.findByTitle(mixTitle);
-        var tobacco = tobaccoRepository.findOneByTitleAndMaker(tobaccoTitle, makerTitle)
-
-        var component: Component = Component();
-        component.mix = mix;
-        component.tobacco = tobacco;
-        component.composition = composition;
-
-        mix.components.add(component);
-        tobacco.components.add(component);
-
-        componentRepository.save(component);
+        adminPanelService.addComponentMix(mixTitle, makerTitle, tobaccoTitle, composition);
 
         return "redirect:/main"
     }
 
 
     @GetMapping("/catalog_tobaccos")
-    fun getAllTobaccos(@RequestParam(name = "filter", defaultValue = "", required = false) filter : String,
+    fun getAllTobaccos(@RequestParam(name = "filter", defaultValue = "", required = false)
+                       filter : String,
                        model : Model) : String {
 
         var tobaccos : List<Tobacco>;
