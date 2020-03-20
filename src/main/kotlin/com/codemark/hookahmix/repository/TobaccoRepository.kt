@@ -53,4 +53,8 @@ interface TobaccoRepository : JpaRepository<Tobacco, Long> {
     fun findOneByTitleAndMaker(@Param("tobaccoTitle") tobaccoTitle: String,
                                @Param("makerTitle") makerTitle: String): Tobacco
 
+    fun existsByTobaccosId(tobaccoId: Long): Boolean
+
+
+
 }

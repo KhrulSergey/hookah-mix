@@ -1,14 +1,12 @@
 package com.codemark.hookahmix.controller
 
-import com.codemark.hookahmix.domain.Maker
-import com.codemark.hookahmix.domain.Tobacco
-import com.codemark.hookahmix.domain.TobaccoStatus
-import com.codemark.hookahmix.domain.User
+import com.codemark.hookahmix.domain.*
 import com.codemark.hookahmix.exception.InstallationCookieException
 import com.codemark.hookahmix.repository.MakerRepository
 import com.codemark.hookahmix.repository.TobaccoRepository
 import com.codemark.hookahmix.repository.UserRepository
 import com.codemark.hookahmix.util.CookieAuthorizationUtil
+import com.fasterxml.jackson.annotation.JsonView
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.dao.EmptyResultDataAccessException
 import org.springframework.http.HttpStatus

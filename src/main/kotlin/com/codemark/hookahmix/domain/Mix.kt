@@ -1,7 +1,9 @@
 package com.codemark.hookahmix.domain
 
 import com.fasterxml.jackson.annotation.JsonIgnore
+import com.fasterxml.jackson.annotation.JsonManagedReference
 import com.fasterxml.jackson.annotation.JsonValue
+import com.fasterxml.jackson.annotation.JsonView
 import javax.persistence.*;
 
 

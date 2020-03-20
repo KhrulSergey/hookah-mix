@@ -19,6 +19,6 @@ class Component {
     @JoinColumn(name = "mix_id")
     var mix: Mix? = null
 
-    var composition: Int = 0;
+    var composition: Int = 0
 
 }

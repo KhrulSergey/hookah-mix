@@ -29,4 +29,5 @@ interface MixRepository : JpaRepository<Mix, Long> {
                             @Param("mixId") mixId: Long): Int
 
     fun findByTitle(title: String): Mix
+
 }

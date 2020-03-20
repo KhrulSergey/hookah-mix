@@ -7,5 +7,7 @@ import org.springframework.stereotype.Repository
 @Repository
 interface TasteRepository : JpaRepository<Taste, Long> {
 
-    fun findByTaste(taste: String): Taste;
+    fun findByTaste(taste: String): Taste
+
+    fun existsByTaste(taste: String): Boolean
 }

@@ -9,7 +9,9 @@ import org.springframework.stereotype.Repository
 @Repository
 interface MakerRepository : JpaRepository<Maker, Long> {
 
-    fun findByTitle(title : String) : Maker;
+    fun findByTitle(title : String) : Maker
+
+    fun existsByTitle(title : String) : Boolean
 
     @Query(nativeQuery = true, value = "select * from Makers m order by m.title")
     fun findAllSortedByTitle(): List<Maker>;
@@ -19,8 +21,14 @@ interface MakerRepository : JpaRepository<Maker, Long> {
 //            "where m.title = :title")
 //    fun getOneByTobacco(@Param("title") title: String?): Maker;
 
-    @Query(nativeQuery = true, value = "select * from Makers m " +
-            "where m.title = :title order by m.title")
-    fun getOneByTobacco(@Param("title") title: String?): Maker;
+//    @Query(nativeQuery = true, value = "select * from Makers m " +
+//            "where m.title = :title order by m.title")
+//    fun getOneByTobacco(@Param("title") title: String?): Maker;
+
+    @Query(nativeQuery = true,
+            value = "select m from Makers m " +
+                    "inner join Tobaccos t on m.makers_id = t.maker_id " +
+                    "where t.title = :tobaccoTitle")
+    fun getOneByTobacco(@Param("tobaccoTitle") tobaccoTitle: String): Maker
 
 }

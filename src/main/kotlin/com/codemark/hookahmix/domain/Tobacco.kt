@@ -1,19 +1,19 @@
 package com.codemark.hookahmix.domain
 
 
-import com.fasterxml.jackson.annotation.JsonIgnore
-import com.fasterxml.jackson.annotation.JsonPropertyOrder
+import com.fasterxml.jackson.annotation.*
 import javax.persistence.*
 
 @JsonPropertyOrder("tobaccosId")
 @Entity
 @Table(name = "tobaccos")
-data class Tobacco(
-        var title: String,
-        var description: String,
-        var strength: Double = 3.0) {
+data class Tobacco(var title: String,
+                   var description: String,
+                   var strength: Double = 3.0) {
 
-    @Id @GeneratedValue(strategy = GenerationType.AUTO)
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    @JsonProperty("tobaccosId")
     @Column(name = "tobaccos_id")
     var tobaccosId: Long = 0;
 
@@ -26,6 +26,7 @@ data class Tobacco(
     @ManyToOne
     @JoinColumn(name = "maker_id")
     var maker: Maker? = null;
+
     @OneToOne
     @JoinColumn(name = "taste_id")
     var taste: Taste? = null;
@@ -63,7 +64,7 @@ data class Tobacco(
     var replacements: MutableList<Tobacco> = mutableListOf()
 
     @Transient
-    var composition: Int = 0;
+    var composition: Int = 0
 
     override fun toString(): String {
         return title;

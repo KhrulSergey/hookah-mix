@@ -6,6 +6,9 @@ import com.codemark.hookahmix.repository.FileRepository
 import com.codemark.hookahmix.repository.MakerRepository
 import com.codemark.hookahmix.repository.TasteRepository
 import com.codemark.hookahmix.repository.TobaccoRepository
+import com.codemark.hookahmix.service.MakerService
+import com.codemark.hookahmix.service.TasteService
+import com.codemark.hookahmix.service.TobaccoService
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.jsoup.select.Elements
@@ -22,6 +25,9 @@ class TobaccoParser @Autowired constructor(private var tobaccoRepository: Tobacc
                                            private var makerRepository: MakerRepository,
                                            private var tasteRepository: TasteRepository,
                                            private var fileRepository: FileRepository,
+                                           private val tasteService: TasteService,
+                                           private val makerService: MakerService,
+                                           private val tobaccoService: TobaccoService,
                                            private var imageUtil: ImageUtil){
 
 
@@ -136,10 +142,11 @@ class TobaccoParser @Autowired constructor(private var tobaccoRepository: Tobacc
                 println("Parser, description: $makerDescription")
             }
 
-            var maker: Maker = Maker();
+            var maker = Maker();
             maker.title = makerTitle;
             maker.foundingYear = makerFoundingYear;
             maker.description = makerDescription;
+
 
             var makerImage = Image();
             makerImage.image = imageUtil.save(makerImageUrl);
@@ -198,13 +205,39 @@ class TobaccoParser @Autowired constructor(private var tobaccoRepository: Tobacc
                 if (attributeTobaccoTaste != null) {
                     if (attributeTobaccoTaste.children().size > 1) {
                         tobaccoTaste = "Нет моновкуса"
-                        taste.taste = tobaccoTaste;
-                        tasteRepository.save(taste);
+
+                        if (tasteRepository.existsByTaste(tobaccoTaste)) {
+                            println("Taste $tobaccoTaste already exists!")
+                            taste = tasteRepository.findByTaste(tobaccoTaste)
+                        } else {
+                            taste.taste = tobaccoTaste;
+                            tasteRepository.save(taste);
+                        }
+
+//                        taste.taste = tobaccoTaste;
+//                        tasteRepository.save(taste);
+//                        if (!tasteService.isExist(tobaccoTaste)) {
+//                            tasteRepository.save(taste)
+//                        }
                         println("Tobacco taste: $tobaccoTaste");
 
                     } else {
+
                         tobaccoTaste = attributeTobaccoTaste.text();
-                        taste.taste = tobaccoTaste;
+
+                        if (tasteRepository.existsByTaste(tobaccoTaste)) {
+                            println("Taste $tobaccoTaste already exists!")
+                            taste = tasteRepository.findByTaste(tobaccoTaste)
+                        } else {
+                            taste.taste = tobaccoTaste;
+                            tasteRepository.save(taste);
+                        }
+
+//                        taste.taste = tobaccoTaste;
+
+//                        if (!tasteService.isExist(tobaccoTaste)) {
+//                            tasteRepository.save(taste)
+//                        }
                         tasteRepository.save(taste);
                         println("Tobacco taste: $tobaccoTaste");
                     }
@@ -215,7 +248,7 @@ class TobaccoParser @Autowired constructor(private var tobaccoRepository: Tobacc
                         tobaccoDescription,
                         tobaccoStrength
                 );
-                tobacco.maker = maker;
+//                tobacco.maker = maker;
 
                 var tobaccoImage = Image();
                 tobaccoImage.image = imageUtil.save(tobaccoImageUrl);
@@ -230,6 +263,8 @@ class TobaccoParser @Autowired constructor(private var tobaccoRepository: Tobacc
                 println("Tobacco was added to maker");
                 tobaccoRepository.save(tobacco);
                 println("Tobacco was saved");
+
+                if (tobaccoCount > 3) break;
             }
 
             makerRepository.save(maker);

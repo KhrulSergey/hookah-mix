@@ -6,9 +6,9 @@ import com.codemark.hookahmix.domain.dto.IngredientType
 import com.codemark.hookahmix.domain.dto.MixFilterInfoDto
 import com.codemark.hookahmix.domain.dto.StrengthLevel
 import com.codemark.hookahmix.exception.InstallationCookieException
-import com.codemark.hookahmix.repository.MixRepository
-import com.codemark.hookahmix.repository.UserRepository
+import com.codemark.hookahmix.repository.*
 import com.codemark.hookahmix.util.CookieAuthorizationUtil
+import com.fasterxml.jackson.annotation.JsonView
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.dao.EmptyResultDataAccessException
 import org.springframework.util.StringUtils
@@ -28,6 +28,8 @@ import kotlin.collections.ArrayList
 class MixConstructorController @Autowired constructor(
         private var userRepository: UserRepository,
         private var mixRepository: MixRepository,
+        private var componentRepository: ComponentRepository,
+        private var makerRepository: MakerRepository,
         var cookieAuthorizationUtil: CookieAuthorizationUtil) {
 
 
@@ -125,6 +127,7 @@ class MixConstructorController @Autowired constructor(
                                 if (mixTobacco.status == null ||
                                         !mixTobacco.status.equals(TobaccoStatus.CONTAIN_BAR)) {
                                     mixTobacco.status = TobaccoStatus.PURCHASES;
+
                                 }
                             }
                         }
@@ -198,7 +201,6 @@ class MixConstructorController @Autowired constructor(
         }
 
         user = userRepository.findUserByInstallationCookie(installationCookie)
-
 
 
         return 15;

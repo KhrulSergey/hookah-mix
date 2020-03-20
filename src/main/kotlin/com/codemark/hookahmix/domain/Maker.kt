@@ -1,6 +1,7 @@
 package com.codemark.hookahmix.domain
 
-import com.fasterxml.jackson.annotation.JsonIgnore
+import com.fasterxml.jackson.annotation.*
+import com.fasterxml.jackson.databind.annotation.JsonSerialize
 import lombok.AllArgsConstructor
 import javax.persistence.*
 
@@ -12,11 +13,13 @@ import javax.persistence.*
 @AllArgsConstructor
 @Entity
 @Table(name = "makers")
+@JsonPropertyOrder("makersId", "title", "description", "foundingYear", "tobaccos")
 class Maker {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     var makersId: Long = 0;
+    @JsonProperty(value = "title")
     var title: String = "";
     @Column(name = "founding_year")
     var foundingYear: String = "";

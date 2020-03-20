@@ -1,9 +1,13 @@
 package com.codemark.hookahmix.controller
 
-import com.codemark.hookahmix.domain.*
-import com.codemark.hookahmix.repository.*
+import com.codemark.hookahmix.domain.Maker
+import com.codemark.hookahmix.domain.Taste
+import com.codemark.hookahmix.domain.Tobacco
+import com.codemark.hookahmix.repository.MakerRepository
+import com.codemark.hookahmix.repository.MixRepository
+import com.codemark.hookahmix.repository.TasteRepository
+import com.codemark.hookahmix.repository.TobaccoRepository
 import com.codemark.hookahmix.service.AdminPanelService
-import com.codemark.hookahmix.util.ImageUtil
 import com.codemark.hookahmix.util.TobaccoParser
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Controller
@@ -86,7 +90,8 @@ class AdminPanelController @Autowired constructor(private val tobaccoRepository:
                           model: Model)
             : String {
 
-        adminPanelService.addComponentMix(mixTitle, makerTitle, tobaccoTitle, composition);
+        adminPanelService.addComponentMix(mixTitle, makerTitle,
+                tobaccoTitle, composition);
 
         return "redirect:/main"
     }

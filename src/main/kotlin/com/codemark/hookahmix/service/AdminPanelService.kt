@@ -57,7 +57,7 @@ class AdminPanelService @Autowired constructor(private val makerRepository: Make
         var mix = mixRepository.findByTitle(mixTitle)
         var tobacco = tobaccoRepository.findOneByTitleAndMaker(tobaccoTitle, makerTitle)
 
-        var component: Component = Component()
+        var component = Component()
         component.mix = mix
         component.tobacco = tobacco
         component.composition = composition

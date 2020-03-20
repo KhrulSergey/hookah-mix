@@ -6,4 +6,5 @@ import org.springframework.stereotype.Repository
 
 @Repository
 interface ComponentRepository : JpaRepository<Component, Long> {
+
 }
