@@ -163,6 +163,9 @@ class MixConstructorController @Autowired constructor(
             }
         }
 
+        val comparator = MixComparator()
+        Collections.sort(mixesList, comparator)
+
         return mixesList;
     }
 
