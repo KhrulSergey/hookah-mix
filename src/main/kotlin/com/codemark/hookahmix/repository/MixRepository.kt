@@ -13,12 +13,6 @@ interface MixRepository : JpaRepository<Mix, Long> {
 //    @Query()
 //    fun getAllAvailableMixes(): MutableList<Mix>
 
-//    @Query(nativeQuery = true,
-//            value = "select c.composition from components c " +
-//                    "where c.tobacco_id = :tobaccoId " +
-//                    "and c.mix_id = :mixId")
-//    fun getCompositionInMix(@Param("tobaccoId") tobaccoId: Long,
-//                            @Param("mixId") mixId: Long): Int
 
     @Query(nativeQuery = true,
             value = "select c.composition from components c " +
@@ -29,5 +23,8 @@ interface MixRepository : JpaRepository<Mix, Long> {
                             @Param("mixId") mixId: Long): Int
 
     fun findByTitle(title: String): Mix
+
+
+//    fun getAllMixes(): MutableList<Mix>
 
 }

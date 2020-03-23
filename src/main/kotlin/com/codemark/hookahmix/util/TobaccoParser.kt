@@ -153,7 +153,14 @@ class TobaccoParser @Autowired constructor(private var tobaccoRepository: Tobacc
             fileRepository.save(makerImage);
             maker.image = makerImage;
             println("Maker almost ready...")
-            makerRepository.save(maker);
+
+//            if (makerRepository.existsByTitle(makerTitle)) {
+//                println("Maker $makerTitle already exists!")
+//                maker = makerRepository.findByTitle(makerTitle)
+//            } else {
+//                makerRepository.save(maker);
+//            }
+//            makerRepository.save(maker);
             println("Maker was saved, but tobacco waiting...")
 
             /**
@@ -261,14 +268,47 @@ class TobaccoParser @Autowired constructor(private var tobaccoRepository: Tobacc
                 println("Maker was added to tobacco");
                 maker.tobaccos.add(tobacco);
                 println("Tobacco was added to maker");
-                tobaccoRepository.save(tobacco);
+
+                println(tobaccoTitle)
+                println(makerTitle)
+                println("And... " + maker.title)
+
+                if (tobaccoRepository.existsByTitle(tobaccoTitle)) {
+                    println("Tobacco $tobaccoTitle already exists!")
+                    var persistTobacco = tobaccoRepository.findByTitle(tobaccoTitle)
+                    println("Tobacco in DB: " + persistTobacco.title)
+                    if (persistTobacco.maker.toString() != tobacco.maker.toString()) {
+                        println("Makers are differents!")
+                        tobaccoRepository.save(tobacco)
+                    }
+                } else {
+                    tobaccoRepository.save(tobacco)
+                }
+
+//                if (tobaccoRepository.existsByTitleAndMaker(tobaccoTitle, maker.title) ||
+//                        !tobaccoRepository.existsByTitle(tobaccoTitle)) {
+//                    println("Tobacco $tobaccoTitle already exists!")
+//                    tobacco = tobaccoRepository.findByTitle(tobacco.title)
+//                } else {
+//                    tobaccoRepository.save(tobacco)
+//                }
+
+//                tobaccoRepository.save(tobacco);
                 println("Tobacco was saved");
 
-                if (tobaccoCount > 3) break;
+                if (tobaccoCount > 2) break;
             }
 
-            makerRepository.save(maker);
-            println("Maker was saved");
+            if (makerRepository.existsByTitle(makerTitle)) {
+                println("Maker $makerTitle already exists!")
+//                maker = makerRepository.findByTitle(makerTitle)
+//                makerRepository.save(maker)
+            } else {
+                makerRepository.save(maker);
+                println("Maker was saved");
+            }
+//            makerRepository.save(maker);
+//            println("Maker was saved");
             tobaccoCount = 0
 
         }

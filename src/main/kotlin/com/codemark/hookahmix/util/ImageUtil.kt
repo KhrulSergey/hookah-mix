@@ -1,19 +1,23 @@
 package com.codemark.hookahmix.util
 
 import com.codemark.hookahmix.exception.ImageReadException
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
-import java.io.BufferedInputStream
-import java.io.ByteArrayOutputStream
-import java.io.IOException
-import java.io.InputStream
+import java.io.*
 import java.net.URL
+import java.util.*
 
 @Component
 class ImageUtil {
 
+    @Value("\${uploadPath}")
+    var uploadPath: String = ""
+
     fun save(target: String): ByteArray {
 
+
         var url: URL = URL(target);
+
 
         var byteArrayOutputStream = ByteArrayOutputStream();
         var inputStream: InputStream;
@@ -31,4 +35,5 @@ class ImageUtil {
         }
         return byteArrayOutputStream.toByteArray();
     }
+
 }

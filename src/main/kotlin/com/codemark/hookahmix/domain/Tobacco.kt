@@ -23,10 +23,11 @@ data class Tobacco(var title: String,
     var image: Image? = null;
 
     @JsonIgnore
-    @ManyToOne
+    @ManyToOne(cascade = [CascadeType.PERSIST, CascadeType.MERGE])
     @JoinColumn(name = "maker_id")
     var maker: Maker? = null;
 
+//    @OneToOne(cascade = [CascadeType.MERGE, CascadeType.PERSIST])
     @OneToOne
     @JoinColumn(name = "taste_id")
     var taste: Taste? = null;
@@ -64,7 +65,7 @@ data class Tobacco(var title: String,
     var replacements: MutableList<Tobacco> = mutableListOf()
 
     @Transient
-    var composition: Int = 0
+    var composition: Component? = null
 
     override fun toString(): String {
         return title;

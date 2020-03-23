@@ -97,7 +97,7 @@ class AdminPanelController @Autowired constructor(private val tobaccoRepository:
     }
 
 
-    @GetMapping("/catalog_tobaccos")
+    @GetMapping("/hookah-mix/catalog_tobaccos")
     fun getAllTobaccos(@RequestParam(name = "filter", defaultValue = "", required = false)
                        filter : String,
                        model : Model) : String {
@@ -123,7 +123,7 @@ class AdminPanelController @Autowired constructor(private val tobaccoRepository:
 
 
 
-    @GetMapping("/catalog_mixes")
+    @GetMapping("/hookah-mix/catalog_mixes")
     fun getAllMixes(model : Model) : String {
 
         var mixes = mixRepository.findAll();

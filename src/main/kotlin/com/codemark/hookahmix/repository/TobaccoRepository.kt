@@ -25,6 +25,16 @@ interface TobaccoRepository : JpaRepository<Tobacco, Long> {
             "order by m.title, t.title")
     fun findAllSortedByMaker(): List<Tobacco>;
 
+    @Query(nativeQuery = true,
+            value = "select case when t.title = :tobaccoTitle and m.title = :makerTitle " +
+            "then true else false end from Tobaccos t " +
+            "inner join Makers m on t.maker_id = m.makers_id " +
+            "where t.title = :tobaccoTitle and m.title = :makerTitle")
+    fun existsByTitleAndMaker(@Param("tobaccoTitle") tobaccoTitle: String,
+                              @Param("makerTitle") makerTitle: String): Boolean
+
+    fun existsByTitle(title: String): Boolean
+
 
     @Query(nativeQuery = true,
             value = "select * from tobaccos t " +
@@ -54,6 +64,19 @@ interface TobaccoRepository : JpaRepository<Tobacco, Long> {
                                @Param("makerTitle") makerTitle: String): Tobacco
 
     fun existsByTobaccosId(tobaccoId: Long): Boolean
+
+
+    @Query(nativeQuery = true,
+            value = "select c.composition from components c " +
+                    "inner join mixes m on c.mix_id = m.mixes_id " +
+                    "inner join tobaccos t on t.tobaccos_id = c.tobacco_id " +
+                    "where m.mixes_id = :mixId " +
+                    "and t.tobaccos_id = :tobaccoId")
+    fun getCompositionInComponent(@Param("mixId") mixId: Long,
+                                  @Param("tobaccoId") tobaccoId: Long): Int
+
+
+//    fun isCorrectComposition(): Boolean
 
 
 

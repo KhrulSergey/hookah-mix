@@ -19,7 +19,7 @@ class Image {
 
     @JsonValue
     fun getImage(): String {
-        val array = Base64.getEncoder().encode(image);
+        val array = Base64.getDecoder().decode(image);
         return String(array);
     }
 

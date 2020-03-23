@@ -5,6 +5,7 @@ import com.codemark.hookahmix.domain.Maker
 import com.codemark.hookahmix.repository.MakerRepository
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
+import javax.transaction.Transactional
 
 @Service
 class MakerService @Autowired constructor(

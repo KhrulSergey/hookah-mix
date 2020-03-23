@@ -1,7 +1,6 @@
 package com.codemark.hookahmix.domain
 
 import com.fasterxml.jackson.annotation.*
-import com.fasterxml.jackson.databind.annotation.JsonSerialize
 import lombok.AllArgsConstructor
 import javax.persistence.*
 
@@ -9,7 +8,6 @@ import javax.persistence.*
 //o	Картинка
 //o	Год основания
 //o	Описание
-//o	Ценовой диапазон
 @AllArgsConstructor
 @Entity
 @Table(name = "makers")

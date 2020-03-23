@@ -1,5 +1,7 @@
 package com.codemark.hookahmix.domain
 
+import com.fasterxml.jackson.annotation.JsonValue
+import jdk.nashorn.internal.ir.annotations.Reference
 import javax.persistence.*;
 
 @Entity
@@ -19,6 +21,7 @@ class Component {
     @JoinColumn(name = "mix_id")
     var mix: Mix? = null
 
+    @JsonValue
     var composition: Int = 0
 
 }

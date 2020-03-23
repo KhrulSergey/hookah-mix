@@ -1,9 +1,6 @@
 package com.codemark.hookahmix.domain
 
-import com.fasterxml.jackson.annotation.JsonIgnore
-import com.fasterxml.jackson.annotation.JsonManagedReference
-import com.fasterxml.jackson.annotation.JsonValue
-import com.fasterxml.jackson.annotation.JsonView
+import com.fasterxml.jackson.annotation.*
 import javax.persistence.*;
 
 
@@ -42,4 +39,6 @@ class Mix {
     override fun toString(): String {
         return "Mix $title ";
     }
+
+
 }

@@ -8,14 +8,17 @@ import com.codemark.hookahmix.domain.dto.StrengthLevel
 import com.codemark.hookahmix.exception.InstallationCookieException
 import com.codemark.hookahmix.repository.*
 import com.codemark.hookahmix.util.CookieAuthorizationUtil
+import com.codemark.hookahmix.util.MixComparator
 import com.fasterxml.jackson.annotation.JsonView
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.dao.EmptyResultDataAccessException
+import org.springframework.data.domain.Sort
 import org.springframework.util.StringUtils
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import java.util.*
+import java.util.concurrent.locks.ReentrantLock
 import javax.servlet.http.Cookie
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
@@ -28,6 +31,7 @@ import kotlin.collections.ArrayList
 class MixConstructorController @Autowired constructor(
         private var userRepository: UserRepository,
         private var mixRepository: MixRepository,
+        private var tobaccoRepository: TobaccoRepository,
         private var componentRepository: ComponentRepository,
         private var makerRepository: MakerRepository,
         var cookieAuthorizationUtil: CookieAuthorizationUtil) {
@@ -37,7 +41,6 @@ class MixConstructorController @Autowired constructor(
     fun generateMixes(request: HttpServletRequest,
                       response: HttpServletResponse,
                       session: HttpSession): MutableList<Mix> {
-
 
         var installationCookie = "";
         var user: User;
@@ -54,13 +57,26 @@ class MixConstructorController @Autowired constructor(
             user = userRepository.findUserByInstallationCookie(installationCookie);
         }
 
-
         user = userRepository.findUserByInstallationCookie(installationCookie);
 
         println("User: $user")
         var mixesList: MutableList<Mix> = mixRepository.findAll();
 
         for (mix in mixesList) {
+
+            for (item in mix.tobaccoMixList) {
+
+                var component=
+                        componentRepository.getCompositionInComponent(mix.mixesId, item.tobaccosId)
+                println("Mix: " + mix.title)
+                println("Component: " + component.componentsId)
+                println("Tobacco: " + item.tobaccosId)
+                item.composition = component;
+                println("Item: " + item.tobaccosId + ", component: " + component.composition)
+
+//                item.composition =
+//                        componentRepository.getCompositionInComponent(mix.mixesId, item.tobaccosId)
+            }
 
             if (user.tobaccos.containsAll(mix.tobaccoMixList)) {
 
@@ -83,10 +99,14 @@ class MixConstructorController @Autowired constructor(
                     for (mixTobacco in mix.tobaccoMixList) {
                         mixTobacco.replacements = ArrayList();
                         mixTobacco.status = TobaccoStatus.PURCHASES;
+
+                        println("Mix: " + mix.title)
+
                         for (userTobacco in user.tobaccos) {
 
                             if (mixTobacco.tobaccosId.equals(userTobacco.tobaccosId)) {
                                 mixTobacco.status = TobaccoStatus.CONTAIN_BAR;
+
 
                             } else {
                                 if (mixTobacco.taste?.taste.equals(userTobacco.taste?.taste)) {
@@ -117,6 +137,7 @@ class MixConstructorController @Autowired constructor(
 
                         mixTobacco.replacements = ArrayList();
                         mixTobacco.status = TobaccoStatus.PURCHASES;
+
                         for (userTobacco in user.tobaccos) {
 
                             if (mixTobacco.taste?.taste.equals(userTobacco.taste?.taste)) {
@@ -141,6 +162,7 @@ class MixConstructorController @Autowired constructor(
                 }
             }
         }
+
         return mixesList;
     }
 
