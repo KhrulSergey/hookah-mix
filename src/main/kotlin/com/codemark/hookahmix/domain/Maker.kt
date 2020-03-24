@@ -25,7 +25,7 @@ class Maker {
 
     @OneToOne
     @JoinColumn(name = "file_id")
-    @JsonIgnore
+//    @JsonIgnore
     var image: Image? = null;
 
     @OneToMany(mappedBy = "maker")

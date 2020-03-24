@@ -7,6 +7,7 @@ import com.codemark.hookahmix.exception.InstallationCookieException
 import com.codemark.hookahmix.repository.MyTobaccoRepository
 import com.codemark.hookahmix.repository.TobaccoRepository
 import com.codemark.hookahmix.repository.UserRepository
+import com.codemark.hookahmix.service.UserService
 import com.codemark.hookahmix.util.CookieAuthorizationUtil
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.dao.EmptyResultDataAccessException
@@ -25,6 +26,7 @@ class ShoppingListController @Autowired constructor(
         private var userRepository: UserRepository,
         private var tobaccoRepository: TobaccoRepository,
         private var myTobaccoRepository: MyTobaccoRepository,
+        private var userService: UserService,
         var cookieAuthorizationUtil: CookieAuthorizationUtil) {
 
     @GetMapping("/my")
@@ -36,19 +38,13 @@ class ShoppingListController @Autowired constructor(
         var installationCookie = "";
         var user: User;
 
-        if (request.cookies == null || !request.cookies.any { it.value.equals("UserId") }) {
-            println("Fuck, NPE will be here!")
-            installationCookie = session.getAttribute("installationCookie").toString();
-            user = userRepository.findUserByInstallationCookie(installationCookie);
+        if (request.getHeader("X-UserId") != null) {
+            installationCookie = request.getHeader("X-UserId");
         } else {
-            installationCookie = Arrays.stream(request.cookies)
-                    .filter { i -> i.name.equals("UserId") }
-                    .findAny()
-                    .get().value
-            user = userRepository.findUserByInstallationCookie(installationCookie);
+            installationCookie = session.getAttribute("installationCookie").toString()
         }
 
-        user = userRepository.findUserByInstallationCookie(installationCookie);
+        user = userService.findUserByInstallationCookie(installationCookie)
 
         println("User: $user");
 
@@ -64,19 +60,13 @@ class ShoppingListController @Autowired constructor(
         var installationCookie = "";
         var user: User;
 
-        if (request.cookies == null || !request.cookies.any { it.value.equals("UserId") }) {
-            println("Fuck, NPE will be here!")
-            installationCookie = session.getAttribute("installationCookie").toString();
-            user = userRepository.findUserByInstallationCookie(installationCookie);
+        if (request.getHeader("X-UserId") != null) {
+            installationCookie = request.getHeader("X-UserId");
         } else {
-            installationCookie = Arrays.stream(request.cookies)
-                    .filter { i -> i.name.equals("UserId") }
-                    .findAny()
-                    .get().value
-            user = userRepository.findUserByInstallationCookie(installationCookie);
+            installationCookie = session.getAttribute("installationCookie").toString()
         }
 
-        user = userRepository.findUserByInstallationCookie(installationCookie);
+        user = userService.findUserByInstallationCookie(installationCookie)
 
         var tobacco: Tobacco = tobaccoRepository.getOne(id);
 
@@ -110,19 +100,13 @@ class ShoppingListController @Autowired constructor(
         var installationCookie = "";
         var user: User;
 
-        if (request.cookies == null || !request.cookies.any { it.value.equals("UserId") }) {
-            println("Fuck, NPE will be here!")
-            installationCookie = session.getAttribute("installationCookie").toString();
-            user = userRepository.findUserByInstallationCookie(installationCookie);
+        if (request.getHeader("X-UserId") != null) {
+            installationCookie = request.getHeader("X-UserId");
         } else {
-            installationCookie = Arrays.stream(request.cookies)
-                    .filter { i -> i.name.equals("UserId") }
-                    .findAny()
-                    .get().value
-            user = userRepository.findUserByInstallationCookie(installationCookie);
+            installationCookie = session.getAttribute("installationCookie").toString()
         }
 
-        user = userRepository.findUserByInstallationCookie(installationCookie);
+        user = userService.findUserByInstallationCookie(installationCookie)
 
         return tobaccoRepository.findLatestPurchases(user.id)
     }

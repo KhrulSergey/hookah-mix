@@ -19,7 +19,7 @@ data class Tobacco(var title: String,
 
     @OneToOne
     @JoinColumn(name = "file_id")
-    @JsonIgnore
+//    @JsonIgnore
     var image: Image? = null;
 
     @JsonIgnore

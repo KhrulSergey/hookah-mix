@@ -1,5 +1,6 @@
 package com.codemark.hookahmix.domain
 
+import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.annotation.JsonValue
 import lombok.Data
 import java.util.*
@@ -18,6 +19,7 @@ class Image {
     var image: ByteArray? = null
 
     @JsonValue
+    @JsonProperty(value = "image")
     fun getImage(): String {
         val array = Base64.getDecoder().decode(image);
         return String(array);

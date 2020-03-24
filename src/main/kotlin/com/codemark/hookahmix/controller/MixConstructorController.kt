@@ -7,19 +7,15 @@ import com.codemark.hookahmix.domain.dto.MixFilterInfoDto
 import com.codemark.hookahmix.domain.dto.StrengthLevel
 import com.codemark.hookahmix.exception.InstallationCookieException
 import com.codemark.hookahmix.repository.*
+import com.codemark.hookahmix.service.UserService
 import com.codemark.hookahmix.util.CookieAuthorizationUtil
 import com.codemark.hookahmix.util.MixComparator
-import com.fasterxml.jackson.annotation.JsonView
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.dao.EmptyResultDataAccessException
-import org.springframework.data.domain.Sort
 import org.springframework.util.StringUtils
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import java.util.*
-import java.util.concurrent.locks.ReentrantLock
-import javax.servlet.http.Cookie
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 import javax.servlet.http.HttpSession
@@ -30,6 +26,7 @@ import kotlin.collections.ArrayList
 
 class MixConstructorController @Autowired constructor(
         private var userRepository: UserRepository,
+        private var userService: UserService,
         private var mixRepository: MixRepository,
         private var tobaccoRepository: TobaccoRepository,
         private var componentRepository: ComponentRepository,
@@ -45,19 +42,13 @@ class MixConstructorController @Autowired constructor(
         var installationCookie = "";
         var user: User;
 
-        if (request.cookies == null || !request.cookies.any { it.value.equals("UserId") }) {
-            println("Fuck, NPE will be here!")
-            installationCookie = session.getAttribute("installationCookie").toString();
-            user = userRepository.findUserByInstallationCookie(installationCookie);
+        if (request.getHeader("X-UserId") != null) {
+            installationCookie = request.getHeader("X-UserId");
         } else {
-            installationCookie = Arrays.stream(request.cookies)
-                    .filter { i -> i.name.equals("UserId") }
-                    .findAny()
-                    .get().value
-            user = userRepository.findUserByInstallationCookie(installationCookie);
+            installationCookie = session.getAttribute("installationCookie").toString()
         }
 
-        user = userRepository.findUserByInstallationCookie(installationCookie);
+        user = userService.findUserByInstallationCookie(installationCookie)
 
         println("User: $user")
         var mixesList: MutableList<Mix> = mixRepository.findAll();
@@ -74,8 +65,6 @@ class MixConstructorController @Autowired constructor(
                 item.composition = component;
                 println("Item: " + item.tobaccosId + ", component: " + component.composition)
 
-//                item.composition =
-//                        componentRepository.getCompositionInComponent(mix.mixesId, item.tobaccosId)
             }
 
             if (user.tobaccos.containsAll(mix.tobaccoMixList)) {
@@ -163,8 +152,7 @@ class MixConstructorController @Autowired constructor(
             }
         }
 
-        val comparator = MixComparator()
-        Collections.sort(mixesList, comparator)
+        Collections.sort(mixesList, MixComparator())
 
         return mixesList;
     }
@@ -213,19 +201,13 @@ class MixConstructorController @Autowired constructor(
         var installationCookie = "";
         var user: User;
 
-        if (request.cookies == null || !request.cookies.any { it.value.equals("UserId") }) {
-            println("Fuck, NPE will be here!")
-            installationCookie = session.getAttribute("installationCookie").toString();
-            user = userRepository.findUserByInstallationCookie(installationCookie);
+        if (request.getHeader("X-UserId") != null) {
+            installationCookie = request.getHeader("X-UserId");
         } else {
-            installationCookie = Arrays.stream(request.cookies)
-                    .filter { i -> i.name.equals("UserId") }
-                    .findAny()
-                    .get().value
-            user = userRepository.findUserByInstallationCookie(installationCookie);
+            installationCookie = session.getAttribute("installationCookie").toString()
         }
 
-        user = userRepository.findUserByInstallationCookie(installationCookie)
+        user = userService.findUserByInstallationCookie(installationCookie)
 
 
         return 15;

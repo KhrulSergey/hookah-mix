@@ -5,6 +5,7 @@ import com.codemark.hookahmix.exception.InstallationCookieException
 import com.codemark.hookahmix.repository.MakerRepository
 import com.codemark.hookahmix.repository.TobaccoRepository
 import com.codemark.hookahmix.repository.UserRepository
+import com.codemark.hookahmix.service.UserService
 import com.codemark.hookahmix.util.CookieAuthorizationUtil
 import com.fasterxml.jackson.annotation.JsonView
 import org.springframework.beans.factory.annotation.Autowired
@@ -23,6 +24,7 @@ import javax.servlet.http.HttpSession
 class BarController @Autowired constructor(private val tobaccoRepository: TobaccoRepository,
                                            private val makerRepository: MakerRepository,
                                            private var userRepository: UserRepository,
+                                           private val userService: UserService,
                                            var cookieAuthorizationUtil: CookieAuthorizationUtil) {
 
     /**
@@ -37,17 +39,15 @@ class BarController @Autowired constructor(private val tobaccoRepository: Tobacc
         var installationCookie = "";
         var user: User;
 
-        if (request.cookies == null || !request.cookies.any { it.value.equals("UserId") }) {
-            println("Fuck, NPE will be here!")
-            installationCookie = session.getAttribute("installationCookie").toString();
-            user = userRepository.findUserByInstallationCookie(installationCookie);
+        if (request.getHeader("X-UserId") != null) {
+            println("From request...")
+            installationCookie = request.getHeader("X-UserId");
         } else {
-            installationCookie = Arrays.stream(request.cookies)
-                    .filter { i -> i.name.equals("UserId") }
-                    .findAny()
-                    .get().value
-            user = userRepository.findUserByInstallationCookie(installationCookie);
+            println("From session...")
+            installationCookie = session.getAttribute("installationCookie").toString()
         }
+
+        user = userService.findUserByInstallationCookie(installationCookie)
 
         println(user)
 
@@ -67,17 +67,13 @@ class BarController @Autowired constructor(private val tobaccoRepository: Tobacc
         var installationCookie = "";
         var user: User;
 
-        if (request.cookies == null || !request.cookies.any { it.value.equals("UserId") }) {
-            println("Fuck, NPE will be here!")
-            installationCookie = session.getAttribute("installationCookie").toString();
-            user = userRepository.findUserByInstallationCookie(installationCookie);
+        if (request.getHeader("X-UserId") != null) {
+            installationCookie = request.getHeader("X-UserId");
         } else {
-            installationCookie = Arrays.stream(request.cookies)
-                    .filter { i -> i.name.equals("UserId") }
-                    .findAny()
-                    .get().value
-            user = userRepository.findUserByInstallationCookie(installationCookie);
+            installationCookie = session.getAttribute("installationCookie").toString()
         }
+
+        user = userService.findUserByInstallationCookie(installationCookie)
 
         println(user)
 
@@ -100,17 +96,13 @@ class BarController @Autowired constructor(private val tobaccoRepository: Tobacc
         var installationCookie = "";
         var user: User;
 
-        if (request.cookies == null || !request.cookies.any { it.value.equals("UserId") }) {
-            println("Fuck, NPE will be here!")
-            installationCookie = session.getAttribute("installationCookie").toString();
-            user = userRepository.findUserByInstallationCookie(installationCookie);
+        if (request.getHeader("X-UserId") != null) {
+            installationCookie = request.getHeader("X-UserId");
         } else {
-            installationCookie = Arrays.stream(request.cookies)
-                    .filter { i -> i.name.equals("UserId") }
-                    .findAny()
-                    .get().value
-            user = userRepository.findUserByInstallationCookie(installationCookie);
+            installationCookie = session.getAttribute("installationCookie").toString()
         }
+
+        user = userService.findUserByInstallationCookie(installationCookie)
 
         var existUser =
                 userRepository.existsByInstallationCookie(installationCookie);
@@ -139,20 +131,13 @@ class BarController @Autowired constructor(private val tobaccoRepository: Tobacc
         var installationCookie = "";
         var user: User;
 
-        if (request.cookies == null || !request.cookies.any { it.value.equals("UserId") }) {
-            println("Fuck, NPE will be here!")
-            installationCookie = session.getAttribute("installationCookie").toString();
-            user = userRepository.findUserByInstallationCookie(installationCookie);
+        if (request.getHeader("X-UserId") != null) {
+            installationCookie = request.getHeader("X-UserId");
         } else {
-            installationCookie = Arrays.stream(request.cookies)
-                    .filter { i -> i.name.equals("UserId") }
-                    .findAny()
-                    .get().value
-            user = userRepository.findUserByInstallationCookie(installationCookie);
+            installationCookie = session.getAttribute("installationCookie").toString()
         }
 
-        user = userRepository
-                .findUserByInstallationCookie(installationCookie);
+        user = userService.findUserByInstallationCookie(installationCookie)
 
 
         var iterator = user.tobaccos.iterator();
