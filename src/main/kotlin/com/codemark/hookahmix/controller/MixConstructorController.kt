@@ -7,6 +7,7 @@ import com.codemark.hookahmix.domain.dto.MixFilterInfoDto
 import com.codemark.hookahmix.domain.dto.StrengthLevel
 import com.codemark.hookahmix.exception.InstallationCookieException
 import com.codemark.hookahmix.repository.*
+import com.codemark.hookahmix.service.MixService
 import com.codemark.hookahmix.service.UserService
 import com.codemark.hookahmix.util.CookieAuthorizationUtil
 import com.codemark.hookahmix.util.MixComparator
@@ -14,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.util.StringUtils
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import java.util.*
 import javax.servlet.http.HttpServletRequest
@@ -27,6 +29,7 @@ import kotlin.collections.ArrayList
 class MixConstructorController @Autowired constructor(
         private var userRepository: UserRepository,
         private var userService: UserService,
+        private var mixService: MixService,
         private var mixRepository: MixRepository,
         private var tobaccoRepository: TobaccoRepository,
         private var componentRepository: ComponentRepository,
@@ -36,8 +39,10 @@ class MixConstructorController @Autowired constructor(
 
     @GetMapping("/generator")
     fun generateMixes(request: HttpServletRequest,
-                      response: HttpServletResponse,
-                      session: HttpSession): MutableList<Mix> {
+                      session: HttpSession,
+                      status: String,
+                      strength: String,
+                      taste: String): MutableList<Mix> {
 
         var installationCookie = "";
         var user: User;
@@ -51,106 +56,8 @@ class MixConstructorController @Autowired constructor(
         user = userService.findUserByInstallationCookie(installationCookie)
 
         println("User: $user")
-        var mixesList: MutableList<Mix> = mixRepository.findAll();
 
-        for (mix in mixesList) {
-
-            for (item in mix.tobaccoMixList) {
-
-                var component=
-                        componentRepository.getCompositionInComponent(mix.mixesId, item.tobaccosId)
-                println("Mix: " + mix.title)
-                println("Component: " + component.componentsId)
-                println("Tobacco: " + item.tobaccosId)
-                item.composition = component;
-                println("Item: " + item.tobaccosId + ", component: " + component.composition)
-
-            }
-
-            if (user.tobaccos.containsAll(mix.tobaccoMixList)) {
-
-                mix.status = MixSet.MATCH_BAR;
-
-                for (tobacco in mix.tobaccoMixList) {
-                    tobacco.status = TobaccoStatus.CONTAIN_BAR;
-                }
-
-            } else {
-
-                var isTobaccoInBar: Boolean = mix.tobaccoMixList.stream()
-                        .anyMatch { i -> user.tobaccos.stream()
-                                .anyMatch { f -> StringUtils.pathEquals(
-                                        i.title, f.title) } };
-
-                if (isTobaccoInBar) {
-
-                    var existReplacements: Boolean = false;
-                    for (mixTobacco in mix.tobaccoMixList) {
-                        mixTobacco.replacements = ArrayList();
-                        mixTobacco.status = TobaccoStatus.PURCHASES;
-
-                        println("Mix: " + mix.title)
-
-                        for (userTobacco in user.tobaccos) {
-
-                            if (mixTobacco.tobaccosId.equals(userTobacco.tobaccosId)) {
-                                mixTobacco.status = TobaccoStatus.CONTAIN_BAR;
-
-
-                            } else {
-                                if (mixTobacco.taste?.taste.equals(userTobacco.taste?.taste)) {
-                                    existReplacements = true;
-                                    userTobacco.status = TobaccoStatus.CONTAIN_BAR;
-                                    mixTobacco.replacements.add(userTobacco);
-
-                                } else {
-                                    if (mixTobacco.status == null ||
-                                            !mixTobacco.status.equals(TobaccoStatus.CONTAIN_BAR)) {
-                                        mixTobacco.status = TobaccoStatus.PURCHASES;
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-                    if (existReplacements) {
-                        mix.status = MixSet.REPLACEMENT_BAR
-                    } else {
-                        mix.status = MixSet.PARTIAL_BAR
-                    }
-
-                } else {
-
-                    var existReplacements: Boolean = false;
-                    for (mixTobacco in mix.tobaccoMixList) {
-
-                        mixTobacco.replacements = ArrayList();
-                        mixTobacco.status = TobaccoStatus.PURCHASES;
-
-                        for (userTobacco in user.tobaccos) {
-
-                            if (mixTobacco.taste?.taste.equals(userTobacco.taste?.taste)) {
-                                existReplacements = true;
-                                mixTobacco.replacements.add(userTobacco);
-
-                            } else {
-                                if (mixTobacco.status == null ||
-                                        !mixTobacco.status.equals(TobaccoStatus.CONTAIN_BAR)) {
-                                    mixTobacco.status = TobaccoStatus.PURCHASES;
-
-                                }
-                            }
-                        }
-                    }
-
-                    if (existReplacements) {
-                        mix.status = MixSet.REPLACEMENT_BAR
-                    } else {
-                        mix.status = MixSet.PARTIAL_BAR
-                    }
-                }
-            }
-        }
+        var mixesList: MutableList<Mix> = mixService.showAllMixes(user)
 
         Collections.sort(mixesList, MixComparator())
 
@@ -193,10 +100,13 @@ class MixConstructorController @Autowired constructor(
         );
     }
 
+
     @GetMapping("/count")
     fun countGeneratedMix(request: HttpServletRequest,
-                          response: HttpServletResponse,
-                          session: HttpSession): Int {
+                          session: HttpSession,
+                          status: String,
+                          strength: String,
+                          taste: String): Int {
 
         var installationCookie = "";
         var user: User;
@@ -209,6 +119,7 @@ class MixConstructorController @Autowired constructor(
 
         user = userService.findUserByInstallationCookie(installationCookie)
 
+        var mix = mixService.showAllMixes(user)
 
         return 15;
     }

@@ -17,8 +17,8 @@
 <div class="container">
 
     <div>
-        <a href="/hookah-mix/catalog_tobaccos">Tobaccos List</a>
-        <a href="/hookah-mix/catalog_mixes">Mixes List</a>
+        <a href="/catalog_tobaccos">Tobaccos List</a>
+        <a href="/catalog_mixes">Mixes List</a>
     </div>
 
     <div>

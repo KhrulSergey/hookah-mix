@@ -16,7 +16,7 @@
 
 <h1>Mixes</h1>
 
-<form action="catalog_mixes" method="get">
+<form action="/catalog_mixes" method="get">
     <select name="mixes">
         <#list mixes as mix>
             <option value="${mix}">${mix}</option>
