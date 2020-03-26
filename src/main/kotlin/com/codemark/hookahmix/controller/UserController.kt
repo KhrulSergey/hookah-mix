@@ -17,9 +17,7 @@ import javax.servlet.http.HttpSession
 
 @RestController
 class UserController @Autowired constructor(
-        private val userService: UserService,
-        private val fileRepository: FileRepository,
-        private val imageUtil: ImageUtil) {
+        private val userService: UserService) {
 
 
     @GetMapping("/registration")
@@ -27,6 +25,7 @@ class UserController @Autowired constructor(
 
         var installationCookie = UUID.randomUUID().toString();
         session.setAttribute("installationCookie", installationCookie)
+
         userService.save(User(installationCookie))
 
         var jsonObject = HashMap<String, String>()

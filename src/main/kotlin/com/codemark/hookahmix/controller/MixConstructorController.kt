@@ -1,59 +1,44 @@
 package com.codemark.hookahmix.controller
 
-import com.codemark.hookahmix.domain.*
+import com.codemark.hookahmix.domain.Mix
+import com.codemark.hookahmix.domain.Taste
+import com.codemark.hookahmix.domain.User
 import com.codemark.hookahmix.domain.dto.Ingredient
 import com.codemark.hookahmix.domain.dto.IngredientType
 import com.codemark.hookahmix.domain.dto.MixFilterInfoDto
 import com.codemark.hookahmix.domain.dto.StrengthLevel
-import com.codemark.hookahmix.exception.InstallationCookieException
 import com.codemark.hookahmix.repository.*
 import com.codemark.hookahmix.service.MixService
 import com.codemark.hookahmix.service.UserService
 import com.codemark.hookahmix.util.CookieAuthorizationUtil
 import com.codemark.hookahmix.util.MixComparator
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.util.StringUtils
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import java.util.*
+import java.util.stream.Collectors.toList
 import javax.servlet.http.HttpServletRequest
-import javax.servlet.http.HttpServletResponse
 import javax.servlet.http.HttpSession
-import kotlin.collections.ArrayList
+import kotlin.streams.toList
 
 @RestController
 @RequestMapping("/api/mixes")
 
 class MixConstructorController @Autowired constructor(
-        private var userRepository: UserRepository,
         private var userService: UserService,
         private var mixService: MixService,
-        private var mixRepository: MixRepository,
-        private var tobaccoRepository: TobaccoRepository,
-        private var componentRepository: ComponentRepository,
-        private var makerRepository: MakerRepository,
-        var cookieAuthorizationUtil: CookieAuthorizationUtil) {
+        private var cookieAuthorizationUtil: CookieAuthorizationUtil) {
 
 
     @GetMapping("/generator")
     fun generateMixes(request: HttpServletRequest,
-                      session: HttpSession,
-                      status: String,
-                      strength: String,
-                      taste: String): MutableList<Mix> {
+                      session: HttpSession): MutableList<Mix> {
 
-        var installationCookie = "";
-        var user: User;
-
-        if (request.getHeader("X-UserId") != null) {
-            installationCookie = request.getHeader("X-UserId");
-        } else {
-            installationCookie = session.getAttribute("installationCookie").toString()
-        }
-
-        user = userService.findUserByInstallationCookie(installationCookie)
+        var user = userService.findUserByInstallationCookie(
+                cookieAuthorizationUtil.getInstallationCookie(request, session)
+        )
 
         println("User: $user")
 
@@ -78,7 +63,7 @@ class MixConstructorController @Autowired constructor(
         ), listOf(
                 Taste().apply {
                     tastesId = 1
-                    taste = "Яблако"
+                    taste = "Яблоко"
                 },
                 Taste().apply {
                     tastesId = 2
@@ -93,34 +78,26 @@ class MixConstructorController @Autowired constructor(
                     taste = "Арбуз"
                 },
                 Taste().apply {
-                    tastesId = 4
+                    tastesId = 5
                     taste = "Корица"
                 }
         )
         );
     }
 
-
     @GetMapping("/count")
     fun countGeneratedMix(request: HttpServletRequest,
                           session: HttpSession,
-                          status: String,
-                          strength: String,
-                          taste: String): Int {
+                          @RequestParam("status") status: String?,
+                          @RequestParam("strength") strength: String?,
+                          @RequestParam("taste") taste: String?): Int {
 
-        var installationCookie = "";
-        var user: User;
+        var user = userService.findUserByInstallationCookie(
+                cookieAuthorizationUtil.getInstallationCookie(request, session)
+        )
 
-        if (request.getHeader("X-UserId") != null) {
-            installationCookie = request.getHeader("X-UserId");
-        } else {
-            installationCookie = session.getAttribute("installationCookie").toString()
-        }
+        println("User: $user")
 
-        user = userService.findUserByInstallationCookie(installationCookie)
-
-        var mix = mixService.showAllMixes(user)
-
-        return 15;
+        return mixService.generateMixCount(user, status, strength, taste)
     }
 }

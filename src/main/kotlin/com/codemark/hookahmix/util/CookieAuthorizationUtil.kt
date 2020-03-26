@@ -1,43 +1,25 @@
 package com.codemark.hookahmix.util
 
-import com.codemark.hookahmix.domain.User
-import com.codemark.hookahmix.repository.UserRepository
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
-import java.util.*
-import javax.servlet.http.Cookie
+import javax.servlet.http.HttpServletRequest
+import javax.servlet.http.HttpSession
 
 @Component
-class CookieAuthorizationUtil @Autowired constructor(
-        private var userRepository: UserRepository) {
+class CookieAuthorizationUtil {
 
-    fun generatedInstallationCookie(): String {
-        return UUID.randomUUID().toString();
-    }
+    fun getInstallationCookie(request: HttpServletRequest,
+                              session: HttpSession): String {
 
-    fun createCookie(installationCookie: String): Cookie {
+        var installationCookie = ""
 
-        var cookie = Cookie("UserId", installationCookie);
-        cookie.path = "/";
-        cookie.maxAge = 600;
-        return cookie;
-    }
+        if (request.getHeader("X-UserId") != null) {
+            installationCookie = request.getHeader("X-UserId");
+        } else {
+            println("From session...")
+            installationCookie = session.getAttribute("installationCookie").toString()
+        }
 
-    fun createUser(installationCookie: String): Unit {
-
-        var user = User(installationCookie);
-        println("User $user was created")
-        userRepository.save(user);
-    }
-
-    fun findCurrentCookie(cookies: Array<Cookie>): String {
-
-        var currentCookie: String = Arrays.stream(cookies)
-                .filter { i -> i.name.equals("UserId") }
-                .findAny()
-                .get().value;
-
-        return currentCookie;
+        return installationCookie;
     }
 
 }

@@ -122,7 +122,6 @@ class AdminPanelController @Autowired constructor(private val tobaccoRepository:
     }
 
 
-
     @GetMapping("/catalog_mixes")
     fun getAllMixes(model : Model) : String {
 

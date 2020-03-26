@@ -9,6 +9,7 @@ import com.codemark.hookahmix.repository.MixRepository
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import org.springframework.util.StringUtils
+import kotlin.streams.toList
 
 @Service
 class MixService @Autowired constructor(
@@ -26,11 +27,11 @@ class MixService @Autowired constructor(
 
                 var component=
                         componentRepository.getCompositionInComponent(mix.mixesId, item.tobaccosId)
-                println("Mix: " + mix.title)
-                println("Component: " + component.componentsId)
-                println("Tobacco: " + item.tobaccosId)
+//                println("Mix: " + mix.title)
+//                println("Component: " + component.componentsId)
+//                println("Tobacco: " + item.tobaccosId)
                 item.composition = component;
-                println("Item: " + item.tobaccosId + ", component: " + component.composition)
+//                println("Item: " + item.tobaccosId + ", component: " + component.composition)
 
             }
 
@@ -56,7 +57,7 @@ class MixService @Autowired constructor(
                         mixTobacco.replacements = ArrayList();
                         mixTobacco.status = TobaccoStatus.PURCHASES;
 
-                        println("Mix: " + mix.title)
+//                        println("Mix: " + mix.title)
 
                         for (userTobacco in user.tobaccos) {
 
@@ -119,6 +120,52 @@ class MixService @Autowired constructor(
             }
         }
         return mixesList;
+    }
+
+    fun generateMixCount(user: User, status: String?, strength: String?, taste: String?): Int {
+
+        var mixes: MutableList<Mix> = mutableListOf()
+
+        var count: Int = 0
+        var result: MutableList<Mix> = mutableListOf()
+
+        if (status != null && status.isNotEmpty()) {
+
+            if (strength != null && strength.isNotEmpty()) {
+
+                if (taste != null && taste.isNotEmpty()) {
+
+                    mixes = showAllMixes(user)
+                    result = mixes.stream()
+                            .filter { i -> i.status.title.equals(status)
+                                    && i.strength == Integer.parseInt(strength)
+                                    && i.tags.contains(taste) }
+                            .toList().toMutableList()
+
+                } else {
+
+
+                    mixes = showAllMixes(user)
+                    result = mixes.stream()
+                            .filter { i -> i.status.title.equals(status)
+                                    && i.strength == Integer.parseInt(strength) }
+                            .toList().toMutableList()
+
+                }
+            } else {
+
+                mixes = showAllMixes(user)
+
+                result = mixes.stream()
+                        .filter { i -> i.status.title.equals(status) }
+                        .toList().toMutableList()
+
+            }
+        }
+
+        count = result.size;
+        return count;
+
     }
 
 }

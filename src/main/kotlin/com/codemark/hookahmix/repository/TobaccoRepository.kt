@@ -65,19 +65,12 @@ interface TobaccoRepository : JpaRepository<Tobacco, Long> {
 
     fun existsByTobaccosId(tobaccoId: Long): Boolean
 
-
     @Query(nativeQuery = true,
-            value = "select c.composition from components c " +
-                    "inner join mixes m on c.mix_id = m.mixes_id " +
-                    "inner join tobaccos t on t.tobaccos_id = c.tobacco_id " +
-                    "where m.mixes_id = :mixId " +
-                    "and t.tobaccos_id = :tobaccoId")
-    fun getCompositionInComponent(@Param("mixId") mixId: Long,
-                                  @Param("tobaccoId") tobaccoId: Long): Int
-
-
-//    fun isCorrectComposition(): Boolean
-
-
+            value = "select * from tobaccos t " +
+                    "inner join makers m on t.maker_id = m.makers_id " +
+                    "inner join my_tobaccos mt on mt.tobacco_id = t.tobaccos_id " +
+                    "where m.makers_id = :makerId and mt.user_id = :userId")
+    fun getTobaccosInBar(@Param("makerId") makerId: Long,
+                         @Param("userId") userId: Long): MutableSet<Tobacco>
 
 }

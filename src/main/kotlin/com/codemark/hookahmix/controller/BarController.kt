@@ -1,20 +1,19 @@
 package com.codemark.hookahmix.controller
 
-import com.codemark.hookahmix.domain.*
-import com.codemark.hookahmix.exception.InstallationCookieException
+import com.codemark.hookahmix.domain.Maker
+import com.codemark.hookahmix.domain.Tobacco
+import com.codemark.hookahmix.domain.TobaccoStatus
+import com.codemark.hookahmix.domain.User
 import com.codemark.hookahmix.repository.MakerRepository
 import com.codemark.hookahmix.repository.TobaccoRepository
 import com.codemark.hookahmix.repository.UserRepository
+import com.codemark.hookahmix.service.MakerService
 import com.codemark.hookahmix.service.UserService
 import com.codemark.hookahmix.util.CookieAuthorizationUtil
-import com.fasterxml.jackson.annotation.JsonView
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.dao.EmptyResultDataAccessException
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
-import java.util.*
-import javax.servlet.http.Cookie
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 import javax.servlet.http.HttpSession
@@ -25,6 +24,7 @@ class BarController @Autowired constructor(private val tobaccoRepository: Tobacc
                                            private val makerRepository: MakerRepository,
                                            private var userRepository: UserRepository,
                                            private val userService: UserService,
+                                           private val makerService: MakerService,
                                            var cookieAuthorizationUtil: CookieAuthorizationUtil) {
 
     /**
@@ -36,18 +36,9 @@ class BarController @Autowired constructor(private val tobaccoRepository: Tobacc
                       response: HttpServletResponse,
                       session: HttpSession): List<Maker> {
 
-        var installationCookie = "";
-        var user: User;
-
-        if (request.getHeader("X-UserId") != null) {
-            println("From request...")
-            installationCookie = request.getHeader("X-UserId");
-        } else {
-            println("From session...")
-            installationCookie = session.getAttribute("installationCookie").toString()
-        }
-
-        user = userService.findUserByInstallationCookie(installationCookie)
+        var user = userService.findUserByInstallationCookie(
+                cookieAuthorizationUtil.getInstallationCookie(request, session)
+        )
 
         println(user)
 
@@ -62,23 +53,17 @@ class BarController @Autowired constructor(private val tobaccoRepository: Tobacc
     @GetMapping("/marker/bar")
     fun findMarkersBar(request: HttpServletRequest,
                        response: HttpServletResponse,
-                       session: HttpSession): MutableList<Tobacco>? {
+                       session: HttpSession): MutableSet<Maker> {
 
-        var installationCookie = "";
-        var user: User;
 
-        if (request.getHeader("X-UserId") != null) {
-            installationCookie = request.getHeader("X-UserId");
-        } else {
-            installationCookie = session.getAttribute("installationCookie").toString()
-        }
-
-        user = userService.findUserByInstallationCookie(installationCookie)
+        var user = userService.findUserByInstallationCookie(
+                cookieAuthorizationUtil.getInstallationCookie(request, session)
+        )
 
         println(user)
-
-        return user.tobaccos;
+        return makerService.getTobaccosInBar(user)
     }
+
 
     /**
      * Метод добавления табака в бар
@@ -92,21 +77,9 @@ class BarController @Autowired constructor(private val tobaccoRepository: Tobacc
 
         var tobacco: Tobacco = tobaccoRepository.getOne(id);
 
-
-        var installationCookie = "";
-        var user: User;
-
-        if (request.getHeader("X-UserId") != null) {
-            installationCookie = request.getHeader("X-UserId");
-        } else {
-            installationCookie = session.getAttribute("installationCookie").toString()
-        }
-
-        user = userService.findUserByInstallationCookie(installationCookie)
-
-        var existUser =
-                userRepository.existsByInstallationCookie(installationCookie);
-        println("/tobacco, user exist: $existUser");
+        var user = userService.findUserByInstallationCookie(
+                cookieAuthorizationUtil.getInstallationCookie(request, session)
+        )
 
         tobacco.status = TobaccoStatus.CONTAIN_BAR;
 
