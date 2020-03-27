@@ -27,7 +27,6 @@ data class Tobacco(var title: String,
     @JoinColumn(name = "maker_id")
     var maker: Maker? = null;
 
-//    @OneToOne(cascade = [CascadeType.MERGE, CascadeType.PERSIST])
     @OneToOne
     @JoinColumn(name = "taste_id")
     var taste: Taste? = null;
@@ -65,7 +64,12 @@ data class Tobacco(var title: String,
     var replacements: MutableList<Tobacco> = mutableListOf()
 
     @Transient
-    var composition: Component? = null
+    @JsonProperty("maker")
+    @JsonIgnoreProperties("foundingYear", "description", "image", "tobaccos")
+    var mixesMaker: Maker? = null
+
+    @Transient
+    var composition: Int = 0
 
     override fun toString(): String {
         return title;

@@ -18,11 +18,14 @@ interface ComponentRepository : JpaRepository<Component, Long> {
 //    fun getCompositionInComponent(@Param("mixId") mixId: Long,
 //                                  @Param("tobaccoId") tobaccoId: Long): Component
 
-    @Query(nativeQuery = true,
-            value = "select * from components c " +
-                    "where mix_id = :mixId " +
-                    "and tobacco_id = :tobaccoId")
-    fun getCompositionInComponent(@Param("mixId") mixId: Long,
-                                  @Param("tobaccoId") tobaccoId: Long): Component
+//    @Query(nativeQuery = true,
+//            value = "select c.composition from components c " +
+//                    "where c.mix_id = :mixId " +
+//                    "and c.tobacco_id = :tobaccoId")
+//    fun getCompositionInComponent(@Param("mixId") mixId: Long,
+//                                  @Param("tobaccoId") tobaccoId: Long): Int
+
+
+
 
 }

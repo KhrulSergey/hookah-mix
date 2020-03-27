@@ -17,6 +17,7 @@ class Mix {
     var description: String = "";
     var strength: Int = 5
 
+
     @ManyToMany
     @JoinTable(
             name = "components",
@@ -25,16 +26,12 @@ class Mix {
     )
     var tobaccoMixList: MutableList<Tobacco> = mutableListOf();
 
-    @JsonIgnore
+//    @JsonIgnore
     @OneToMany(mappedBy = "mix")
     var components: MutableSet<Component> = mutableSetOf()
 
     @Transient
     var status: MixSet = MixSet.MATCH_BAR
-
-    /*
-    TODO add relations
-     */
 
     override fun toString(): String {
         return "Mix $title ";

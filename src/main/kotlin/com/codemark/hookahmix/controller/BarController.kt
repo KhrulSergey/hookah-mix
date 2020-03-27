@@ -8,6 +8,7 @@ import com.codemark.hookahmix.repository.MakerRepository
 import com.codemark.hookahmix.repository.TobaccoRepository
 import com.codemark.hookahmix.repository.UserRepository
 import com.codemark.hookahmix.service.MakerService
+import com.codemark.hookahmix.service.TobaccoService
 import com.codemark.hookahmix.service.UserService
 import com.codemark.hookahmix.util.CookieAuthorizationUtil
 import org.springframework.beans.factory.annotation.Autowired
@@ -25,6 +26,7 @@ class BarController @Autowired constructor(private val tobaccoRepository: Tobacc
                                            private var userRepository: UserRepository,
                                            private val userService: UserService,
                                            private val makerService: MakerService,
+                                           private val tobaccoService: TobaccoService,
                                            var cookieAuthorizationUtil: CookieAuthorizationUtil) {
 
     /**
@@ -84,7 +86,7 @@ class BarController @Autowired constructor(private val tobaccoRepository: Tobacc
         tobacco.status = TobaccoStatus.CONTAIN_BAR;
 
         user.tobaccos.add(tobacco);
-        userRepository.save(user);
+        userService.save(user);
 
         println("Tobacco successfully added to user ${user.installationCookie}!")
 
@@ -95,34 +97,17 @@ class BarController @Autowired constructor(private val tobaccoRepository: Tobacc
      * Метод удаления табака из бара
      */
 
-    @DeleteMapping("/delete_tobacco/{id}")
+    @GetMapping("/delete_tobacco/{id}")
     fun delete(@PathVariable("id") id: Long,
                request: HttpServletRequest,
                response: HttpServletResponse,
                session: HttpSession): ResponseEntity<String> {
 
-        var installationCookie = "";
-        var user: User;
+        var user = userService.findUserByInstallationCookie(
+                cookieAuthorizationUtil.getInstallationCookie(request, session)
+        )
 
-        if (request.getHeader("X-UserId") != null) {
-            installationCookie = request.getHeader("X-UserId");
-        } else {
-            installationCookie = session.getAttribute("installationCookie").toString()
-        }
-
-        user = userService.findUserByInstallationCookie(installationCookie)
-
-
-        var iterator = user.tobaccos.iterator();
-        while (iterator.hasNext()) {
-            var tobacco = iterator.next();
-            if (tobacco.tobaccosId == id) {
-                iterator.remove();
-                userRepository.save(user);
-                println("Tobacco ${tobacco.title} was successfully removed!");
-                println(user.tobaccos)
-            }
-        }
+        tobaccoService.deleteTobaccoFromBar(user, id);
 
         println("Tobacco was successfully removed!")
         return ResponseEntity("Tobacco with ID $id was deleted from bar", HttpStatus.OK)

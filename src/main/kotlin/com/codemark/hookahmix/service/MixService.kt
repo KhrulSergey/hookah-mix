@@ -5,6 +5,7 @@ import com.codemark.hookahmix.domain.MixSet
 import com.codemark.hookahmix.domain.TobaccoStatus
 import com.codemark.hookahmix.domain.User
 import com.codemark.hookahmix.repository.ComponentRepository
+import com.codemark.hookahmix.repository.MakerRepository
 import com.codemark.hookahmix.repository.MixRepository
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
@@ -14,7 +15,8 @@ import kotlin.streams.toList
 @Service
 class MixService @Autowired constructor(
         private val mixRepository: MixRepository,
-        private val componentRepository: ComponentRepository) {
+        private val componentRepository: ComponentRepository,
+        private val makerRepository: MakerRepository) {
 
 
     fun showAllMixes(user: User): MutableList<Mix> {
@@ -23,16 +25,17 @@ class MixService @Autowired constructor(
 
         for (mix in mixesList) {
 
+
+
             for (item in mix.tobaccoMixList) {
 
-                var component=
-                        componentRepository.getCompositionInComponent(mix.mixesId, item.tobaccosId)
+//                var component=
+//                        componentRepository.getCompositionInComponent(mix.mixesId, item.tobaccosId)
 //                println("Mix: " + mix.title)
 //                println("Component: " + component.componentsId)
 //                println("Tobacco: " + item.tobaccosId)
-                item.composition = component;
-//                println("Item: " + item.tobaccosId + ", component: " + component.composition)
 
+                item.mixesMaker = makerRepository.getOne(item.maker!!.makersId)
             }
 
             if (user.tobaccos.containsAll(mix.tobaccoMixList)) {
@@ -54,7 +57,7 @@ class MixService @Autowired constructor(
 
                     var existReplacements: Boolean = false;
                     for (mixTobacco in mix.tobaccoMixList) {
-                        mixTobacco.replacements = ArrayList();
+                        mixTobacco.replacements = ArrayList()
                         mixTobacco.status = TobaccoStatus.PURCHASES;
 
 //                        println("Mix: " + mix.title)

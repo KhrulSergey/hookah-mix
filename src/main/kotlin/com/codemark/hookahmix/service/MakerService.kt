@@ -22,18 +22,6 @@ class MakerService @Autowired constructor(
         return makerRepository.existsByTitle(title)
     }
 
-//    fun save(title: String, foundingYear: String, description: String,
-////             image: Image) {
-////
-////        var maker = Maker()
-////
-////        maker.title = title
-////        maker.foundingYear = foundingYear
-////        maker.description = description
-////
-////        makerRepository.save(maker)
-////    }
-
     fun save(maker: Maker) {
         makerRepository.save(maker)
     }
@@ -43,7 +31,6 @@ class MakerService @Autowired constructor(
 
         user.barTobaccos = makerRepository.findAllSortedByTitleAndUser(user.id)
         for (item in user.barTobaccos) {
-//            item.tobaccos = tobaccoRepository.getTobaccosInBar(item.makersId, user.id)
             item.tobaccos = tobaccoService.getTobaccosInBar(item, user)
         }
         return user.barTobaccos

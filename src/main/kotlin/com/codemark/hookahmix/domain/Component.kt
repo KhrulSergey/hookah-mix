@@ -1,8 +1,8 @@
 package com.codemark.hookahmix.domain
 
+import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.annotation.JsonValue
-import jdk.nashorn.internal.ir.annotations.Reference
-import javax.persistence.*;
+import javax.persistence.*
 
 @Entity
 @Table(name = "components")
@@ -21,7 +21,15 @@ class Component {
     @JoinColumn(name = "mix_id")
     var mix: Mix? = null
 
-    @JsonValue
+//    @JsonProperty("composition")
+//    @JsonValue
     var composition: Int = 0
+
+    @JsonProperty("composition")
+    @JsonValue
+    override fun toString(): String {
+        return "Id: " + componentsId + ", tobacco id: " +
+                tobacco!!.tobaccosId + ", composition: " + composition
+    }
 
 }

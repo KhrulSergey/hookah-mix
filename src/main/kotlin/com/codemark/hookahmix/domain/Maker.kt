@@ -12,6 +12,7 @@ import javax.persistence.*
 @Entity
 @Table(name = "makers")
 @JsonPropertyOrder("makersId", "title", "description", "foundingYear", "tobaccos")
+
 class Maker {
 
     @Id
@@ -28,6 +29,7 @@ class Maker {
 //    @JsonIgnore
     var image: Image? = null;
 
+    @JsonIgnoreProperties("maker")
     @OneToMany(mappedBy = "maker")
     var tobaccos: MutableSet<Tobacco> = mutableSetOf();
 

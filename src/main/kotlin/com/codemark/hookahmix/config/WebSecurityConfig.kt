@@ -26,7 +26,7 @@ class WebSecurityConfig : WebSecurityConfigurerAdapter() {
                     .formLogin()
                 .and()
                     .cors().disable()
-                    .csrf().disable();
+                    .csrf().disable()
     }
 
     @Bean
