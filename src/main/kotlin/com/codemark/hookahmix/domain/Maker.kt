@@ -26,7 +26,6 @@ class Maker {
 
     @OneToOne
     @JoinColumn(name = "file_id")
-//    @JsonIgnore
     var image: Image? = null;
 
     @JsonIgnoreProperties("maker")

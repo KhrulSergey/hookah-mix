@@ -28,7 +28,7 @@ class Component {
     @JsonProperty("composition")
     @JsonValue
     override fun toString(): String {
-        return "Id: " + componentsId + ", tobacco id: " +
+        return "Id: " + componentsId + ", mix id: " + mix!!.mixesId + ", tobacco id: " +
                 tobacco!!.tobaccosId + ", composition: " + composition
     }
 

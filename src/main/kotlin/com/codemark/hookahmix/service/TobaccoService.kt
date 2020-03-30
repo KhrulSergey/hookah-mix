@@ -1,8 +1,7 @@
 package com.codemark.hookahmix.service
 
-import com.codemark.hookahmix.domain.Maker
-import com.codemark.hookahmix.domain.Tobacco
-import com.codemark.hookahmix.domain.User
+import com.codemark.hookahmix.domain.*
+import com.codemark.hookahmix.repository.MyTobaccoRepository
 import com.codemark.hookahmix.repository.TobaccoRepository
 import com.codemark.hookahmix.repository.UserRepository
 import org.springframework.beans.factory.annotation.Autowired
@@ -12,15 +11,20 @@ import org.springframework.transaction.annotation.Transactional
 @Service
 class TobaccoService @Autowired constructor(
         private val tobaccoRepository: TobaccoRepository,
+        private val myTobaccoRepository: MyTobaccoRepository,
         private val userService: UserService) {
 
-    @Transactional
+
     fun save(tobacco: Tobacco) {
         tobaccoRepository.save(tobacco)
     }
 
     fun isExist(tobaccoId: Long): Boolean {
         return tobaccoRepository.existsByTobaccosId(tobaccoId)
+    }
+
+    fun getOne(id: Long): Tobacco {
+        return tobaccoRepository.getOne(id)
     }
 
     fun getTobaccosInBar(maker: Maker, user: User): MutableSet<Tobacco> {
@@ -39,6 +43,61 @@ class TobaccoService @Autowired constructor(
                 println(user.tobaccos)
             }
         }
+    }
+
+    fun addTobaccoInBar(tobaccoId: Long,
+                        user: User): Unit {
+
+        var tobacco: Tobacco = tobaccoRepository.getOne(tobaccoId)
+
+        var myTobacco = MyTobacco()
+
+        myTobacco.tobacco = tobacco
+        myTobacco.user = user
+
+        myTobacco.status = "contain bar"
+
+        user.tobaccos.add(tobacco)
+        userService.save(user)
+
+        user.myTobaccos.add(myTobacco)
+        tobacco.myTobaccos.add(myTobacco)
+
+        myTobaccoRepository.save(myTobacco)
+    }
+
+    fun addTobaccoInPurchases(tobaccoId: Long,
+                              user: User): Unit {
+
+        var tobacco: Tobacco = tobaccoRepository.getOne(tobaccoId)
+
+        var myTobacco = MyTobacco()
+
+        myTobacco.tobacco = tobacco
+        myTobacco.user = user;
+
+        myTobacco.status = "purchase"
+
+        user.latestPurchases.add(tobacco)
+
+        userService.save(user)
+
+        user.myTobaccos.add(myTobacco)
+        tobacco.myTobaccos.add(myTobacco)
+
+        myTobaccoRepository.save(myTobacco)
+    }
+
+    fun findLatestPurchases(user: User): MutableList<Tobacco> {
+        return tobaccoRepository.findLatestPurchases(user.id)
+    }
+
+    fun getTobaccosFromPurchases(user: User): MutableList<Tobacco> {
+        var result = tobaccoRepository.findAllPurchases(user.id)
+        if (result.isNotEmpty()) {
+            result.forEach { i -> i.status = TobaccoStatus.IN_PURCHASES }
+        }
+        return result
     }
 
 }

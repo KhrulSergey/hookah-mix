@@ -22,11 +22,11 @@ class Image {
     @JsonProperty(value = "image")
     fun getImage(): String {
         val array = Base64.getDecoder().decode(image);
-        return String(array);
+        return String(array)
     }
 
     override fun toString(): String {
-        return getImage();
+        return getImage()
     }
 
 

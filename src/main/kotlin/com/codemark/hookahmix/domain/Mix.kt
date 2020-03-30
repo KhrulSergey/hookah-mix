@@ -26,7 +26,7 @@ class Mix {
     )
     var tobaccoMixList: MutableList<Tobacco> = mutableListOf();
 
-//    @JsonIgnore
+    @JsonIgnore
     @OneToMany(mappedBy = "mix")
     var components: MutableSet<Component> = mutableSetOf()
 

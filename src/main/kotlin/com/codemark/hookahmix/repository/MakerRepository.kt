@@ -14,7 +14,7 @@ interface MakerRepository : JpaRepository<Maker, Long> {
     fun existsByTitle(title : String) : Boolean
 
     @Query(nativeQuery = true, value = "select * from Makers m order by m.title")
-    fun findAllSortedByTitle(): List<Maker>;
+    fun findAllSortedByTitle(): MutableList<Maker>;
 
     @Query(nativeQuery = true,
             value = "select m from Makers m " +

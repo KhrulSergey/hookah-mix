@@ -1,9 +1,6 @@
 package com.codemark.hookahmix.service
 
-import com.codemark.hookahmix.domain.Mix
-import com.codemark.hookahmix.domain.MixSet
-import com.codemark.hookahmix.domain.TobaccoStatus
-import com.codemark.hookahmix.domain.User
+import com.codemark.hookahmix.domain.*
 import com.codemark.hookahmix.repository.ComponentRepository
 import com.codemark.hookahmix.repository.MakerRepository
 import com.codemark.hookahmix.repository.MixRepository
@@ -23,18 +20,15 @@ class MixService @Autowired constructor(
 
         var mixesList = mixRepository.findAll();
 
+//        mixesList.forEach { i -> i.tobaccoMixList.stream()
+//                .forEach { t -> t.composition =
+//                        componentRepository.getCompositionInComponent(i.mixesId, t.tobaccosId)} }
+
+
+
         for (mix in mixesList) {
 
-
-
             for (item in mix.tobaccoMixList) {
-
-//                var component=
-//                        componentRepository.getCompositionInComponent(mix.mixesId, item.tobaccosId)
-//                println("Mix: " + mix.title)
-//                println("Component: " + component.componentsId)
-//                println("Tobacco: " + item.tobaccosId)
-
                 item.mixesMaker = makerRepository.getOne(item.maker!!.makersId)
             }
 

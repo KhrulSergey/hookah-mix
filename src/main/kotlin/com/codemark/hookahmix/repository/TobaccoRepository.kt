@@ -42,7 +42,7 @@ interface TobaccoRepository : JpaRepository<Tobacco, Long> {
                     "inner join users u on mt.user_id = u.users_id " +
                     "where u.users_id = :userId " +
                     "and mt.status = 'purchase'")
-    fun findAllPurchases(@Param("userId") userId: Long): MutableList<Tobacco>;
+    fun findAllPurchases(@Param("userId") userId: Long): MutableList<Tobacco>
 
     @Query(nativeQuery = true,
             value = "select * from tobaccos t " +
@@ -72,5 +72,15 @@ interface TobaccoRepository : JpaRepository<Tobacco, Long> {
                     "where m.makers_id = :makerId and mt.user_id = :userId")
     fun getTobaccosInBar(@Param("makerId") makerId: Long,
                          @Param("userId") userId: Long): MutableSet<Tobacco>
+
+
+    @Query(nativeQuery = true,
+            value = "select mt.status from my_tobaccos mt " +
+                    " where mt.user_id = :userId and tobacco_id = :tobaccoId")
+    fun getTobaccoStatus(@Param("userId") userId: Long,
+                         @Param("tobaccoId") tobaccoId: Long): String
+
+
+
 
 }

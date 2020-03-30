@@ -23,7 +23,6 @@ import javax.servlet.http.HttpSession
 @RequestMapping("/api/bar")
 class BarController @Autowired constructor(private val tobaccoRepository: TobaccoRepository,
                                            private val makerRepository: MakerRepository,
-                                           private var userRepository: UserRepository,
                                            private val userService: UserService,
                                            private val makerService: MakerService,
                                            private val tobaccoService: TobaccoService,
@@ -44,8 +43,11 @@ class BarController @Autowired constructor(private val tobaccoRepository: Tobacc
 
         println(user)
 
-        var catalogTobaccos = makerRepository.findAllSortedByTitle();
-        return catalogTobaccos;
+//        var catalogTobaccos = makerRepository.findAllSortedByTitle()
+
+        var catalogTobaccos = makerService.getTobaccosInCatalog(user)
+
+        return catalogTobaccos
     }
 
     /**
@@ -87,6 +89,8 @@ class BarController @Autowired constructor(private val tobaccoRepository: Tobacc
 
         user.tobaccos.add(tobacco);
         userService.save(user);
+
+//        tobaccoService.addTobaccoInBar(id, user)
 
         println("Tobacco successfully added to user ${user.installationCookie}!")
 
