@@ -7,12 +7,15 @@ import com.codemark.hookahmix.repository.MixRepository
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import org.springframework.util.StringUtils
+import java.util.stream.Collectors
 import kotlin.streams.toList
 
 @Service
 class MixService @Autowired constructor(
         private val mixRepository: MixRepository,
         private val componentRepository: ComponentRepository,
+        private var tobaccoService: TobaccoService,
+        private var makerService: MakerService,
         private val makerRepository: MakerRepository) {
 
 
@@ -20,11 +23,8 @@ class MixService @Autowired constructor(
 
         var mixesList = mixRepository.findAll();
 
-//        mixesList.forEach { i -> i.tobaccoMixList.stream()
-//                .forEach { t -> t.composition =
-//                        componentRepository.getCompositionInComponent(i.mixesId, t.tobaccosId)} }
-
-
+        var barTobaccos = makerService.getTobaccosInBar(user).stream()
+                .flatMap { i -> i.tobaccos.stream() }.collect(Collectors.toList())
 
         for (mix in mixesList) {
 
@@ -32,7 +32,9 @@ class MixService @Autowired constructor(
                 item.mixesMaker = makerRepository.getOne(item.maker!!.makersId)
             }
 
-            if (user.tobaccos.containsAll(mix.tobaccoMixList)) {
+//            user.tobaccos.containsAll(mix.tobaccoMixList)
+
+            if (barTobaccos.containsAll(mix.tobaccoMixList)) {
 
                 mix.status = MixSet.MATCH_BAR;
 
@@ -52,11 +54,9 @@ class MixService @Autowired constructor(
                     var existReplacements: Boolean = false;
                     for (mixTobacco in mix.tobaccoMixList) {
                         mixTobacco.replacements = ArrayList()
-                        mixTobacco.status = TobaccoStatus.PURCHASES;
+                        mixTobacco.status = TobaccoStatus.PURCHASES
 
-//                        println("Mix: " + mix.title)
-
-                        for (userTobacco in user.tobaccos) {
+                        for (userTobacco in barTobaccos) {
 
                             if (mixTobacco.tobaccosId.equals(userTobacco.tobaccosId)) {
                                 mixTobacco.status = TobaccoStatus.CONTAIN_BAR;
@@ -92,7 +92,7 @@ class MixService @Autowired constructor(
                         mixTobacco.replacements = ArrayList();
                         mixTobacco.status = TobaccoStatus.PURCHASES;
 
-                        for (userTobacco in user.tobaccos) {
+                        for (userTobacco in barTobaccos) {
 
                             if (mixTobacco.taste?.taste.equals(userTobacco.taste?.taste)) {
                                 existReplacements = true;

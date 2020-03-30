@@ -65,6 +65,7 @@ class BarController @Autowired constructor(private val tobaccoRepository: Tobacc
         )
 
         println(user)
+        println(user.tobaccos)
         return makerService.getTobaccosInBar(user)
     }
 
@@ -85,12 +86,12 @@ class BarController @Autowired constructor(private val tobaccoRepository: Tobacc
                 cookieAuthorizationUtil.getInstallationCookie(request, session)
         )
 
-        tobacco.status = TobaccoStatus.CONTAIN_BAR;
+//        tobacco.status = TobaccoStatus.CONTAIN_BAR;
 
-        user.tobaccos.add(tobacco);
-        userService.save(user);
+//        user.tobaccos.add(tobacco);
+//        userService.save(user);
 
-//        tobaccoService.addTobaccoInBar(id, user)
+        tobaccoService.addTobaccoInBar(id, user)
 
         println("Tobacco successfully added to user ${user.installationCookie}!")
 

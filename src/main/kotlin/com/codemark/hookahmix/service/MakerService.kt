@@ -36,6 +36,8 @@ class MakerService @Autowired constructor(
             for (tobacco in item.tobaccos) {
                 if (tobaccoService.getTobaccosInBar(item, user).contains(tobacco)) {
                     tobacco.status = TobaccoStatus.CONTAIN_BAR
+                } else if (tobaccoService.getTobaccosFromPurchases(user).contains(tobacco)) {
+                    tobacco.status = TobaccoStatus.IN_PURCHASES
                 } else {
                     tobacco.status = TobaccoStatus.NEED_BAR
                 }
@@ -50,8 +52,12 @@ class MakerService @Autowired constructor(
         user.barTobaccos = makerRepository.findAllSortedByTitleAndUser(user.id)
         for (item in user.barTobaccos) {
             item.tobaccos = tobaccoService.getTobaccosInBar(item, user)
-            for (tobacco in item.tobaccos) {
-                tobacco.status = TobaccoStatus.CONTAIN_BAR
+            if (item.tobaccos.isEmpty()) {
+                return emptyList<Maker>().toMutableSet()
+            } else {
+                for (tobacco in item.tobaccos) {
+                    tobacco.status = TobaccoStatus.CONTAIN_BAR
+                }
             }
         }
         return user.barTobaccos

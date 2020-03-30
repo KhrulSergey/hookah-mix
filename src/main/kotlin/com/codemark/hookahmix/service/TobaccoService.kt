@@ -39,7 +39,9 @@ class TobaccoService @Autowired constructor(
             if (tobacco.tobaccosId == id) {
                 iterator.remove();
                 userService.save(user);
+
                 println("Tobacco ${tobacco.title} was successfully removed!");
+
                 println(user.tobaccos)
             }
         }
@@ -50,20 +52,45 @@ class TobaccoService @Autowired constructor(
 
         var tobacco: Tobacco = tobaccoRepository.getOne(tobaccoId)
 
-        var myTobacco = MyTobacco()
 
-        myTobacco.tobacco = tobacco
-        myTobacco.user = user
+        if (myTobaccoRepository.existsByTobaccoIdAndUserId(user.id, tobaccoId)) {
 
-        myTobacco.status = "contain bar"
+            println("Relation is exist!")
+//            println(tobacco.title)
 
-        user.tobaccos.add(tobacco)
-        userService.save(user)
+            var myTobacco = myTobaccoRepository.findByTobaccoIdAndUserId(user.id, tobaccoId)
+            myTobacco.status = "contain bar"
+            myTobaccoRepository.save(myTobacco)
 
-        user.myTobaccos.add(myTobacco)
-        tobacco.myTobaccos.add(myTobacco)
+        } else {
 
-        myTobaccoRepository.save(myTobacco)
+            var myTobacco = MyTobacco()
+
+            myTobacco.tobacco = tobacco
+            myTobacco.user = user
+
+            myTobacco.status = "contain bar"
+
+            user.myTobaccos.add(myTobacco)
+            tobacco.myTobaccos.add(myTobacco)
+
+            myTobaccoRepository.save(myTobacco)
+        }
+
+//        var myTobacco = MyTobacco()
+//
+//        myTobacco.tobacco = tobacco
+//        myTobacco.user = user
+//
+//        myTobacco.status = "contain bar"
+
+//        user.tobaccos.add(tobacco)
+//        userService.save(user)
+
+//        user.myTobaccos.add(myTobacco)
+//        tobacco.myTobaccos.add(myTobacco)
+//
+//        myTobaccoRepository.save(myTobacco)
     }
 
     fun addTobaccoInPurchases(tobaccoId: Long,

@@ -69,7 +69,8 @@ interface TobaccoRepository : JpaRepository<Tobacco, Long> {
             value = "select * from tobaccos t " +
                     "inner join makers m on t.maker_id = m.makers_id " +
                     "inner join my_tobaccos mt on mt.tobacco_id = t.tobaccos_id " +
-                    "where m.makers_id = :makerId and mt.user_id = :userId")
+                    "where m.makers_id = :makerId and mt.user_id = :userId " +
+                    "and status = 'contain bar'")
     fun getTobaccosInBar(@Param("makerId") makerId: Long,
                          @Param("userId") userId: Long): MutableSet<Tobacco>
 
