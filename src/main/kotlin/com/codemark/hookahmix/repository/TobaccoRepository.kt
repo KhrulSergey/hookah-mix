@@ -4,9 +4,11 @@ import com.codemark.hookahmix.domain.Tobacco
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.repository.JpaRepository
+import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.query.Param
 import org.springframework.stereotype.Repository
+import javax.transaction.Transactional
 
 @Repository
 interface TobaccoRepository : JpaRepository<Tobacco, Long> {
@@ -44,14 +46,30 @@ interface TobaccoRepository : JpaRepository<Tobacco, Long> {
                     "and mt.status = 'purchase'")
     fun findAllPurchases(@Param("userId") userId: Long): MutableList<Tobacco>
 
+//    @Query(nativeQuery = true,
+//            value = "select * from tobaccos t " +
+//                    "inner join my_tobaccos mt on t.tobaccos_id = mt.tobacco_id " +
+//                    "inner join users u on mt.user_id = u.users_id " +
+//                    "where u.users_id = :userId " +
+//                    "and mt.status = 'purchase'" +
+//                    "order by t.tobaccos_id desc limit 5")
+//    fun findLatestPurchases(@Param("userId") userId: Long?): MutableList<Tobacco>
+
     @Query(nativeQuery = true,
             value = "select * from tobaccos t " +
-                    "inner join my_tobaccos mt on t.tobaccos_id = mt.tobacco_id " +
-                    "inner join users u on mt.user_id = u.users_id " +
+                    "inner join latest_purchases lt on t.tobaccos_id = lt.tobacco_id " +
+                    "inner join users u on lt.user_id = u.users_id " +
                     "where u.users_id = :userId " +
-                    "and mt.status = 'purchase'" +
                     "order by t.tobaccos_id desc limit 5")
-    fun findLatestPurchases(@Param("userId") userId: Long?): MutableList<Tobacco>
+    fun findLatestPurchases(@Param("userId") userId: Long): MutableList<Tobacco>
+
+    @Transactional
+    @Modifying
+    @Query(nativeQuery = true,
+            value = "insert into latest_purchases (user_id, tobacco_id)" +
+                    "values (:userId, :tobaccoId);")
+    fun addInLatestPurchases(@Param("userId") userId: Long,
+                             @Param("tobaccoId") tobaccoId: Long): Unit
 
     fun findByTitle(title: String): Tobacco;
 

@@ -1,6 +1,7 @@
 package com.codemark.hookahmix.service
 
 import com.codemark.hookahmix.domain.*
+import com.codemark.hookahmix.repository.MakerRepository
 import com.codemark.hookahmix.repository.MyTobaccoRepository
 import com.codemark.hookahmix.repository.TobaccoRepository
 import com.codemark.hookahmix.repository.UserRepository
@@ -12,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional
 class TobaccoService @Autowired constructor(
         private val tobaccoRepository: TobaccoRepository,
         private val myTobaccoRepository: MyTobaccoRepository,
+        private val makerRepository: MakerRepository,
         private val userService: UserService) {
 
 
@@ -60,6 +62,9 @@ class TobaccoService @Autowired constructor(
 
             var myTobacco = myTobaccoRepository.findByTobaccoIdAndUserId(user.id, tobaccoId)
             myTobacco.status = "contain bar"
+
+            tobaccoRepository.addInLatestPurchases(user.id, tobacco.tobaccosId)
+
             myTobaccoRepository.save(myTobacco)
 
         } else {
@@ -105,8 +110,8 @@ class TobaccoService @Autowired constructor(
 
         myTobacco.status = "purchase"
 
-        user.latestPurchases.add(tobacco)
-
+//        user.latestPurchases.add(tobacco)
+//
         userService.save(user)
 
         user.myTobaccos.add(myTobacco)
@@ -116,13 +121,31 @@ class TobaccoService @Autowired constructor(
     }
 
     fun findLatestPurchases(user: User): MutableList<Tobacco> {
-        return tobaccoRepository.findLatestPurchases(user.id)
+
+        var result = tobaccoRepository.findLatestPurchases(user.id)
+
+        if (result.isNotEmpty()) {
+
+            result.forEach { i -> i.mixesMaker = makerRepository.getOneByTobacco(i.title) }
+//            for (item in result) {
+//                item.mixesMaker = makerRepository.getOneByTobacco(item.title)
+//            }
+
+        }
+
+        return result;
     }
 
     fun getTobaccosFromPurchases(user: User): MutableList<Tobacco> {
         var result = tobaccoRepository.findAllPurchases(user.id)
+
         if (result.isNotEmpty()) {
-            result.forEach { i -> i.status = TobaccoStatus.IN_PURCHASES }
+
+            for (item in result) {
+                item.status = TobaccoStatus.IN_PURCHASES
+                item.mixesMaker = makerRepository.getOneByTobacco(item.title)
+            }
+
         }
         return result
     }

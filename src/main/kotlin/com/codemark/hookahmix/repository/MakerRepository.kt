@@ -17,7 +17,7 @@ interface MakerRepository : JpaRepository<Maker, Long> {
     fun findAllSortedByTitle(): MutableList<Maker>;
 
     @Query(nativeQuery = true,
-            value = "select m from Makers m " +
+            value = "select * from Makers m " +
                     "inner join Tobaccos t on m.makers_id = t.maker_id " +
                     "where t.title = :tobaccoTitle")
     fun getOneByTobacco(@Param("tobaccoTitle") tobaccoTitle: String): Maker

@@ -61,7 +61,7 @@ class ShoppingListController @Autowired constructor(
     @GetMapping("/latest")
     fun getLatestPurchases(request: HttpServletRequest,
                            response: HttpServletResponse,
-                           session: HttpSession): MutableList<Tobacco>? {
+                           session: HttpSession): MutableList<Tobacco> {
 
 
         var user = userService.findUserByInstallationCookie(
