@@ -34,19 +34,7 @@ class TobaccoService @Autowired constructor(
     }
 
     fun deleteTobaccoFromBar(user: User, id: Long): Unit {
-
-        var iterator = user.tobaccos.iterator();
-        while (iterator.hasNext()) {
-            var tobacco = iterator.next();
-            if (tobacco.tobaccosId == id) {
-                iterator.remove();
-                userService.save(user);
-
-                println("Tobacco ${tobacco.title} was successfully removed!");
-
-                println(user.tobaccos)
-            }
-        }
+        myTobaccoRepository.deleteTobaccoFromBar(user.id, id)
     }
 
     fun addTobaccoInBar(tobaccoId: Long,
@@ -58,7 +46,6 @@ class TobaccoService @Autowired constructor(
         if (myTobaccoRepository.existsByTobaccoIdAndUserId(user.id, tobaccoId)) {
 
             println("Relation is exist!")
-//            println(tobacco.title)
 
             var myTobacco = myTobaccoRepository.findByTobaccoIdAndUserId(user.id, tobaccoId)
             myTobacco.status = "contain bar"
@@ -81,21 +68,6 @@ class TobaccoService @Autowired constructor(
 
             myTobaccoRepository.save(myTobacco)
         }
-
-//        var myTobacco = MyTobacco()
-//
-//        myTobacco.tobacco = tobacco
-//        myTobacco.user = user
-//
-//        myTobacco.status = "contain bar"
-
-//        user.tobaccos.add(tobacco)
-//        userService.save(user)
-
-//        user.myTobaccos.add(myTobacco)
-//        tobacco.myTobaccos.add(myTobacco)
-//
-//        myTobaccoRepository.save(myTobacco)
     }
 
     fun addTobaccoInPurchases(tobaccoId: Long,
@@ -110,8 +82,6 @@ class TobaccoService @Autowired constructor(
 
         myTobacco.status = "purchase"
 
-//        user.latestPurchases.add(tobacco)
-//
         userService.save(user)
 
         user.myTobaccos.add(myTobacco)
@@ -125,12 +95,7 @@ class TobaccoService @Autowired constructor(
         var result = tobaccoRepository.findLatestPurchases(user.id)
 
         if (result.isNotEmpty()) {
-
             result.forEach { i -> i.mixesMaker = makerRepository.getOneByTobacco(i.title) }
-//            for (item in result) {
-//                item.mixesMaker = makerRepository.getOneByTobacco(item.title)
-//            }
-
         }
 
         return result;
@@ -148,6 +113,20 @@ class TobaccoService @Autowired constructor(
 
         }
         return result
+    }
+
+    fun deleteTobaccoFromPurchases(user: User,
+                                   tobaccoId: Long): Unit {
+        myTobaccoRepository.deleteTobaccoFromPurchases(user.id, tobaccoId)
+    }
+
+    fun getTobaccoStatus(user: User,
+                         tobaccoId: Long): String {
+        return myTobaccoRepository.getStatusByTobaccoIdAndUserId(user.id, tobaccoId)
+    }
+
+    fun findAllPurchases(user: User): MutableList<Tobacco> {
+        return tobaccoRepository.findAllPurchases(user.id)
     }
 
 }

@@ -63,11 +63,27 @@ class ShoppingListController @Autowired constructor(
                            response: HttpServletResponse,
                            session: HttpSession): MutableList<Tobacco> {
 
-
         var user = userService.findUserByInstallationCookie(
                 cookieAuthorizationUtil.getInstallationCookie(request, session)
         )
 
         return tobaccoService.findLatestPurchases(user)
+    }
+
+    @DeleteMapping("/my/{id}")
+    fun deleteTobaccoFromPurchases(@PathVariable("id") id: Long,
+                                   request: HttpServletRequest,
+                                   response: HttpServletResponse,
+                                   session: HttpSession): ResponseEntity<String> {
+
+        var user = userService.findUserByInstallationCookie(
+                cookieAuthorizationUtil.getInstallationCookie(request, session)
+        )
+
+        var tobacco = tobaccoService.getOne(id)
+
+        tobaccoService.deleteTobaccoFromPurchases(user, tobacco.tobaccosId)
+
+        return ResponseEntity("Tobacco $tobacco was removed from purchase", HttpStatus.OK)
     }
 }

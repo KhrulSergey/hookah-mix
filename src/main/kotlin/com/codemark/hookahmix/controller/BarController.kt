@@ -5,6 +5,7 @@ import com.codemark.hookahmix.domain.Tobacco
 import com.codemark.hookahmix.domain.TobaccoStatus
 import com.codemark.hookahmix.domain.User
 import com.codemark.hookahmix.repository.MakerRepository
+import com.codemark.hookahmix.repository.MyTobaccoRepository
 import com.codemark.hookahmix.repository.TobaccoRepository
 import com.codemark.hookahmix.repository.UserRepository
 import com.codemark.hookahmix.service.MakerService
@@ -22,7 +23,7 @@ import javax.servlet.http.HttpSession
 @RestController
 @RequestMapping("/api/bar")
 class BarController @Autowired constructor(private val tobaccoRepository: TobaccoRepository,
-                                           private val makerRepository: MakerRepository,
+                                           private val myTobaccoRepository: MyTobaccoRepository,
                                            private val userService: UserService,
                                            private val makerService: MakerService,
                                            private val tobaccoService: TobaccoService,
@@ -86,11 +87,6 @@ class BarController @Autowired constructor(private val tobaccoRepository: Tobacc
                 cookieAuthorizationUtil.getInstallationCookie(request, session)
         )
 
-//        tobacco.status = TobaccoStatus.CONTAIN_BAR;
-
-//        user.tobaccos.add(tobacco);
-//        userService.save(user);
-
         tobaccoService.addTobaccoInBar(id, user)
 
         println("Tobacco successfully added to user ${user.installationCookie}!")
@@ -114,7 +110,7 @@ class BarController @Autowired constructor(private val tobaccoRepository: Tobacc
 
         tobaccoService.deleteTobaccoFromBar(user, id);
 
-        println("Tobacco was successfully removed!")
         return ResponseEntity("Tobacco with ID $id was deleted from bar", HttpStatus.OK)
     }
+
 }

@@ -13,7 +13,6 @@ import kotlin.streams.toList
 @Service
 class MixService @Autowired constructor(
         private val mixRepository: MixRepository,
-        private val componentRepository: ComponentRepository,
         private var tobaccoService: TobaccoService,
         private var makerService: MakerService,
         private val makerRepository: MakerRepository) {
@@ -23,16 +22,18 @@ class MixService @Autowired constructor(
 
         var mixesList = mixRepository.findAll();
 
-        var barTobaccos = makerService.getTobaccosInBar(user).stream()
-                .flatMap { i -> i.tobaccos.stream() }.collect(Collectors.toList())
+        var barTobaccos =
+                makerService.getTobaccosInBar(user).stream()
+                        .flatMap { i -> i.tobaccos.stream() }
+                        .collect(Collectors.toList())
+
+        var purchasesTobacco = tobaccoService.findAllPurchases(user);
 
         for (mix in mixesList) {
 
             for (item in mix.tobaccoMixList) {
                 item.mixesMaker = makerRepository.getOne(item.maker!!.makersId)
             }
-
-//            user.tobaccos.containsAll(mix.tobaccoMixList)
 
             if (barTobaccos.containsAll(mix.tobaccoMixList)) {
 
@@ -71,7 +72,14 @@ class MixService @Autowired constructor(
                                 } else {
                                     if (mixTobacco.status == null ||
                                             !mixTobacco.status.equals(TobaccoStatus.CONTAIN_BAR)) {
-                                        mixTobacco.status = TobaccoStatus.PURCHASES;
+
+                                        if (purchasesTobacco.contains(mixTobacco)) {
+                                            mixTobacco.status = TobaccoStatus.IN_PURCHASES
+                                        } else {
+                                            mixTobacco.status = TobaccoStatus.PURCHASES
+                                        }
+
+//                                        mixTobacco.status = TobaccoStatus.PURCHASES;
                                     }
                                 }
                             }
@@ -101,7 +109,13 @@ class MixService @Autowired constructor(
                             } else {
                                 if (mixTobacco.status == null ||
                                         !mixTobacco.status.equals(TobaccoStatus.CONTAIN_BAR)) {
-                                    mixTobacco.status = TobaccoStatus.PURCHASES;
+
+                                    if (purchasesTobacco.contains(mixTobacco)) {
+                                        mixTobacco.status = TobaccoStatus.IN_PURCHASES
+                                    } else {
+                                        mixTobacco.status = TobaccoStatus.PURCHASES
+                                    }
+//                                    mixTobacco.status = TobaccoStatus.PURCHASES
 
                                 }
                             }
