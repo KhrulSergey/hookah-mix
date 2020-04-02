@@ -7,8 +7,8 @@ import javax.persistence.*
 @JsonPropertyOrder("tobaccosId")
 @Entity
 @Table(name = "tobaccos")
-data class Tobacco(var title: String,
-                   var description: String,
+data class Tobacco(var title: String = "",
+                   var description: String = "",
                    var strength: Double = 3.0) {
 
     @Id
@@ -71,7 +71,9 @@ data class Tobacco(var title: String,
     var composition: Int = 0
 
     override fun toString(): String {
-        return title;
+        var compositionStr: String = if (composition != 0) " - $composition%" else "";
+        var makerStr: String = if (maker != null) "${maker?.title}: " else "";
+        return makerStr + title + compositionStr;
     }
 
 }

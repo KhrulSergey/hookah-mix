@@ -142,7 +142,7 @@ class TobaccoParser @Autowired constructor(private var tobaccoRepository: Tobacc
                 println("Parser, description: $makerDescription")
             }
 
-            var maker = Maker();
+            var maker = Maker("");
             maker.title = makerTitle;
             maker.foundingYear = makerFoundingYear;
             maker.description = makerDescription;

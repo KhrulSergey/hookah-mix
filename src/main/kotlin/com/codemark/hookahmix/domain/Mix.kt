@@ -16,7 +16,7 @@ class Mix {
     var tags : String = "";
     var description: String = "";
     var strength: Int = 5
-
+    var mixUrl: String = "";
 
     @ManyToMany
     @JoinTable(
@@ -34,7 +34,7 @@ class Mix {
     var status: MixSet = MixSet.MATCH_BAR
 
     override fun toString(): String {
-        return "Mix $title ";
+        return "Mix $title";
     }
 
 

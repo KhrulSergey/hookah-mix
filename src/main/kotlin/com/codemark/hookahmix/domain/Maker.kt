@@ -12,14 +12,12 @@ import javax.persistence.*
 @Entity
 @Table(name = "makers")
 @JsonPropertyOrder("makersId", "title", "description", "foundingYear", "tobaccos")
-
-class Maker {
-
+class Maker(title: String) {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     var makersId: Long = 0;
     @JsonProperty(value = "title")
-    var title: String = "";
+    var title: String = title;
     @Column(name = "founding_year")
     var foundingYear: String = "";
     var description: String = "";

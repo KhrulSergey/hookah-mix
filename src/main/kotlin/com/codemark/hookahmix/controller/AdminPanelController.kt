@@ -8,6 +8,7 @@ import com.codemark.hookahmix.repository.MixRepository
 import com.codemark.hookahmix.repository.TasteRepository
 import com.codemark.hookahmix.repository.TobaccoRepository
 import com.codemark.hookahmix.service.AdminPanelService
+import com.codemark.hookahmix.util.MixParser
 import com.codemark.hookahmix.util.TobaccoParser
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Controller
@@ -24,12 +25,19 @@ class AdminPanelController @Autowired constructor(private val tobaccoRepository:
                                                   private val mixRepository: MixRepository,
                                                   private val tasteRepository: TasteRepository,
                                                   private val adminPanelService: AdminPanelService,
-                                                  private var tobaccoParser: TobaccoParser) {
+                                                  private var tobaccoParser: TobaccoParser,
+                                                  private var mixParser: MixParser) {
 
 
     @GetMapping()
-    fun login() : String {
+    fun login(): String {
         return "redirect:/main";
+    }
+
+    @GetMapping("/parseResult")
+    fun parseResult(model: Model): String {
+        model.addAttribute("result", "No result yet");
+        return "parseResult";
     }
 
     @GetMapping("/parse")
@@ -37,8 +45,15 @@ class AdminPanelController @Autowired constructor(private val tobaccoRepository:
         tobaccoParser.connectPage()?.let { tobaccoParser.startParse(it) };
     }
 
+    @GetMapping("/parse-mix")
+    fun parseMix(model: Model): String {
+        var result = mixParser.connectPage()?.let { mixParser.startParse(it) };
+        model.addAttribute("result", result);
+        return "parseResult";
+    }
+
     @GetMapping("/main")
-    fun main(model: Model) : String {
+    fun main(model: Model): String {
 
         var makers: List<Maker> = makerRepository.findAll();
         var tastes: List<Taste> = tasteRepository.findAll();
@@ -52,14 +67,14 @@ class AdminPanelController @Autowired constructor(private val tobaccoRepository:
     }
 
     @PostMapping("/main")
-    fun addTobacco(@RequestParam("title") title : String,
-                   @RequestParam("makers") maker : String,
-                   @RequestParam("description") description : String,
-                   @RequestParam("tastes", required = false) taste : String,
-                   @RequestParam("strength") strength : Double,
+    fun addTobacco(@RequestParam("title") title: String,
+                   @RequestParam("makers") maker: String,
+                   @RequestParam("description") description: String,
+                   @RequestParam("tastes", required = false) taste: String,
+                   @RequestParam("strength") strength: Double,
                    @RequestParam("image") image: String,
                    @RequestParam("tags") tags: String,
-                   model : Model)
+                   model: Model)
             : String {
 
         adminPanelService.addTobacco(
@@ -99,10 +114,10 @@ class AdminPanelController @Autowired constructor(private val tobaccoRepository:
 
     @GetMapping("/catalog_tobaccos")
     fun getAllTobaccos(@RequestParam(name = "filter", defaultValue = "", required = false)
-                       filter : String,
-                       model : Model) : String {
+                       filter: String,
+                       model: Model): String {
 
-        var tobaccos : List<Tobacco>;
+        var tobaccos: List<Tobacco>;
         if (filter != null && filter.isNotEmpty()) {
 
             tobaccos = tobaccoRepository.findAllByMaker(filter);
@@ -123,7 +138,7 @@ class AdminPanelController @Autowired constructor(private val tobaccoRepository:
 
 
     @GetMapping("/catalog_mixes")
-    fun getAllMixes(model : Model) : String {
+    fun getAllMixes(model: Model): String {
 
         var mixes = mixRepository.findAll();
         model.addAttribute("mixes", mixes);
