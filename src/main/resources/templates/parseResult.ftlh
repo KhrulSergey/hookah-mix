@@ -12,7 +12,7 @@
 <body>
 
 <div class="container">
-    <h2>Получение данных их источников</h2>
+    <h2>Получение данных из источников</h2>
     <div>
         <a href="/main">Go to main page</a>
     </div>
@@ -20,11 +20,36 @@
     <div class="container">
         <h4>Получить данные по миксам</h4>
         <form action="/parse-mix" method="get">
-            <label>Результат:</label>
-            <div>
-                <textarea value="${result}">${result}</textarea>
+            <div style="align-items: flex-start; flex-direction: column; flex: 1">
+                <p value="${result.status}"><strong>Статус обработки:</strong> ${result.status.title}.</p>
+                <p><strong>Список ошибок:</strong></p>
+                <div style="height: 200px; margin: 15px; overflow: scroll; border: lightskyblue inset 5px; font-size: 14px;">
+                    <#list result.errorLog as errorMsg>
+                        <pre>${errorMsg}</pre>
+                    <#else>No errors
+                    </#list>
+                </div>
+                <p><strong>Список предупреждений:</strong></p>
+                <div style="height: 50px; margin: 15px; overflow-y: scroll; border: lightskyblue inset 5px; font-size: 14px;">
+                    <#list result.warningLog as warningMsg>
+                    <pre>${warningMsg}</pre>
+                    <#else>
+                        No warnings
+                    </#list>
+                </div>
+                <p><strong>Добавленные миксы:</strong></p>
+                <div style="height: 50px; margin: 15px; overflow-y: scroll; border: lightskyblue inset 5px; font-size: 14px;">
+                    <#list result.dataList as item>
+                    <pre>${item}</pre>
+                    <#else>
+                        No data
+                    </#list>
+                </div>
+                <p><strong>Итог обработки:</strong> ${result.toString()}</p>
             </div>
             <div>
+                <label><strong>Введите количество:</strong> </label>
+                <input style="width: 50px" type="number" required name="count" value="50" min="0" step="25" placeholder="Кол-во даных для распознавания">
                 <button type="submit" class="btn btn-primary">Начать парсинг</button>
             </div>
         </form>
@@ -40,6 +65,7 @@
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"
         integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy"
         crossorigin="anonymous"></script>
+
 
 </body>
 </html>

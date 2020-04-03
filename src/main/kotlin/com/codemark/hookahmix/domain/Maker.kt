@@ -1,6 +1,8 @@
 package com.codemark.hookahmix.domain
 
-import com.fasterxml.jackson.annotation.*
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties
+import com.fasterxml.jackson.annotation.JsonProperty
+import com.fasterxml.jackson.annotation.JsonPropertyOrder
 import lombok.AllArgsConstructor
 import javax.persistence.*
 

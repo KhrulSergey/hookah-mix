@@ -1,7 +1,10 @@
 package com.codemark.hookahmix.domain
 
 
-import com.fasterxml.jackson.annotation.*
+import com.fasterxml.jackson.annotation.JsonIgnore
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties
+import com.fasterxml.jackson.annotation.JsonProperty
+import com.fasterxml.jackson.annotation.JsonPropertyOrder
 import javax.persistence.*
 
 @JsonPropertyOrder("tobaccosId")
@@ -71,8 +74,8 @@ data class Tobacco(var title: String = "",
     var composition: Int = 0
 
     override fun toString(): String {
-        var compositionStr: String = if (composition != 0) " - $composition%" else "";
-        var makerStr: String = if (maker != null) "${maker?.title}: " else "";
+        val compositionStr: String = if (composition != 0) " - $composition%" else "";
+        val makerStr: String = if (maker != null) "${maker?.title}: " else "";
         return makerStr + title + compositionStr;
     }
 

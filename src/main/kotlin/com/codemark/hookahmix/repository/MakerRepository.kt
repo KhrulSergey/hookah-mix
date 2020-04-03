@@ -5,23 +5,13 @@ import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.query.Param
 import org.springframework.stereotype.Repository
+import java.util.*
 
 @Repository
 interface MakerRepository : JpaRepository<Maker, Long> {
 
-    fun findByTitle(title : String) : Maker
-
-    fun existsByTitle(title : String) : Boolean
-
     @Query(nativeQuery = true, value = "select * from Makers m order by m.title")
     fun findAllSortedByTitle(): MutableList<Maker>;
-
-    @Query(nativeQuery = true,
-            value = "select * from Makers m " +
-                    "inner join Tobaccos t on m.makers_id = t.maker_id " +
-                    "where t.title = :tobaccoTitle")
-    fun getOneByTobacco(@Param("tobaccoTitle") tobaccoTitle: String): Maker
-
 
     @Query(nativeQuery = true,
             value = "select * from makers m " +
@@ -32,5 +22,14 @@ interface MakerRepository : JpaRepository<Maker, Long> {
                     "order by m.title")
     fun findAllSortedByTitleAndUser(@Param("userId") userId: Long): MutableSet<Maker>
 
+    fun findByTitle(title : String) : Optional<Maker>
+
+    fun existsByTitle(title : String) : Boolean
+
+    @Query(nativeQuery = true,
+            value = "select * from Makers m " +
+                    "inner join Tobaccos t on m.makers_id = t.maker_id " +
+                    "where t.title = :tobaccoTitle")
+    fun getOneByTobacco(@Param("tobaccoTitle") tobaccoTitle: String): Maker
 
 }

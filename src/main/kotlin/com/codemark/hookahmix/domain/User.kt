@@ -3,8 +3,7 @@ package com.codemark.hookahmix.domain
 import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import java.util.*
-import javax.persistence.*;
-import kotlin.jvm.Transient
+import javax.persistence.*
 
 @Entity
 @Table(name = "users")

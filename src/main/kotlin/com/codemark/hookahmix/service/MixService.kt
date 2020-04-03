@@ -15,8 +15,12 @@ class MixService @Autowired constructor(
         private val mixRepository: MixRepository,
         private var tobaccoService: TobaccoService,
         private var makerService: MakerService,
-        private val makerRepository: MakerRepository) {
+        private val makerRepository: MakerRepository,
+        private val componentRepository: ComponentRepository) {
 
+    fun getAll(): List<Mix>{
+        return mixRepository.findAll();
+    }
 
     fun showAllMixes(user: User): MutableList<Mix> {
 
@@ -179,4 +183,40 @@ class MixService @Autowired constructor(
 
     }
 
+    fun getOne(title: String): Mix {
+        return mixRepository.findByTitle(title);
+    }
+
+    fun isExist(title: String): Boolean {
+        return mixRepository.existsByTitle(title);
+    }
+
+    fun add(mix: Mix): Mix? {
+        var newMix = Mix()
+        //TODO check mix content
+        newMix.title = mix.title;
+        newMix.tags = mix.tags;
+        newMix.rating = mix.rating;
+        newMix.description = mix.description;
+        newMix.strength = mix.strength;
+        newMix = mixRepository.save(newMix);
+        //check mix creation
+        if (newMix.mixesId == 0L) return null;
+        //fill components of mix
+        var component: Component;
+        for (tobacco in newMix.tobaccoMixList) {
+            component = Component()
+            component.mix = newMix;
+            component.tobacco = tobacco;
+            component.composition = tobacco.composition;
+            newMix.components.add(component)
+            tobacco.components.add(component)
+            if(!saveMixComponent(component)) return null;
+        }
+        return newMix;
+    }
+
+    fun saveMixComponent (component: Component): Boolean{
+        return (componentRepository.save(component).componentsId != 0L);
+    }
 }

@@ -4,10 +4,8 @@ import com.codemark.hookahmix.domain.*
 import com.codemark.hookahmix.repository.MakerRepository
 import com.codemark.hookahmix.repository.MyTobaccoRepository
 import com.codemark.hookahmix.repository.TobaccoRepository
-import com.codemark.hookahmix.repository.UserRepository
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Transactional
 
 @Service
 class TobaccoService @Autowired constructor(
@@ -16,21 +14,36 @@ class TobaccoService @Autowired constructor(
         private val makerRepository: MakerRepository,
         private val userService: UserService) {
 
-
-    fun save(tobacco: Tobacco) {
-        tobaccoRepository.save(tobacco)
+    fun getAll(): List<Tobacco> {
+        return tobaccoRepository.findAll()
     }
 
-    fun isExist(tobaccoId: Long): Boolean {
-        return tobaccoRepository.existsByTobaccosId(tobaccoId)
+    fun getAllByMaker(makerTitle: String): List<Tobacco> {
+        return tobaccoRepository.findAllByMaker(makerTitle);
     }
 
     fun getOne(id: Long): Tobacco {
         return tobaccoRepository.getOne(id)
     }
 
+    fun getOne(title: String): Tobacco {
+        return tobaccoRepository.findByTitle(title)
+    }
+
+    fun getOne(title: String, maker: Maker): Tobacco? {
+        return tobaccoRepository.findByTitleAndMaker(title, maker).orElse(null);
+    }
+
+    fun isExist(tobaccoId: Long): Boolean {
+        return tobaccoRepository.existsByTobaccosId(tobaccoId)
+    }
+
     fun getTobaccosInBar(maker: Maker, user: User): MutableSet<Tobacco> {
         return tobaccoRepository.getTobaccosInBar(maker.makersId, user.id)
+    }
+
+    fun save(tobacco: Tobacco) {
+        tobaccoRepository.save(tobacco)
     }
 
     fun deleteTobaccoFromBar(user: User, id: Long): Unit {

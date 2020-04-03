@@ -1,6 +1,5 @@
 package com.codemark.hookahmix.service
 
-import com.codemark.hookahmix.domain.Image
 import com.codemark.hookahmix.domain.Maker
 import com.codemark.hookahmix.domain.TobaccoStatus
 import com.codemark.hookahmix.domain.User
@@ -8,7 +7,6 @@ import com.codemark.hookahmix.repository.MakerRepository
 import com.codemark.hookahmix.repository.TobaccoRepository
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
-import javax.transaction.Transactional
 
 @Service
 class MakerService @Autowired constructor(
@@ -16,8 +14,16 @@ class MakerService @Autowired constructor(
         private val tobaccoRepository: TobaccoRepository,
         private val tobaccoService: TobaccoService) {
 
+    fun getAll(): List<Maker>{
+        return makerRepository.findAll();
+    }
+
+    fun getOne(title: String): Maker?{
+        return makerRepository.findByTitle(title).orElse(null);
+    }
+
     fun update(title: String) {
-        var maker = makerRepository.findByTitle(title);
+        val maker = makerRepository.findByTitle(title).get();
         makerRepository.save(maker)
     }
 

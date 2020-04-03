@@ -1,5 +1,6 @@
 package com.codemark.hookahmix.repository
 
+import com.codemark.hookahmix.domain.Maker
 import com.codemark.hookahmix.domain.Tobacco
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
@@ -8,6 +9,7 @@ import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.query.Param
 import org.springframework.stereotype.Repository
+import java.util.*
 import javax.transaction.Transactional
 
 @Repository
@@ -26,6 +28,18 @@ interface TobaccoRepository : JpaRepository<Tobacco, Long> {
             "inner join Makers m on t.maker_id = m.makers_id " +
             "order by m.title, t.title")
     fun findAllSortedByMaker(): List<Tobacco>;
+
+    fun findByTitle(title: String): Tobacco;
+
+    fun findByTitleAndMaker(title: String, maker: Maker): Optional<Tobacco>;
+
+    @Query(nativeQuery = true,
+            value = "select * from tobaccos t " +
+                    "inner join makers m on t.maker_id = m.makers_id " +
+                    "where t.title = :tobaccoTitle " +
+                    "and m.title = :makerTitle")
+    fun findOneByTitleAndMaker(@Param("tobaccoTitle") tobaccoTitle: String,
+                               @Param("makerTitle") makerTitle: String): Tobacco
 
     @Query(nativeQuery = true,
             value = "select case when t.title = :tobaccoTitle and m.title = :makerTitle " +
@@ -71,15 +85,7 @@ interface TobaccoRepository : JpaRepository<Tobacco, Long> {
     fun addInLatestPurchases(@Param("userId") userId: Long,
                              @Param("tobaccoId") tobaccoId: Long): Unit
 
-    fun findByTitle(title: String): Tobacco;
 
-    @Query(nativeQuery = true,
-            value = "select * from tobaccos t " +
-                    "inner join makers m on t.maker_id = m.makers_id " +
-                    "where t.title = :tobaccoTitle " +
-                    "and m.title = :makerTitle")
-    fun findOneByTitleAndMaker(@Param("tobaccoTitle") tobaccoTitle: String,
-                               @Param("makerTitle") makerTitle: String): Tobacco
 
     fun existsByTobaccosId(tobaccoId: Long): Boolean
 

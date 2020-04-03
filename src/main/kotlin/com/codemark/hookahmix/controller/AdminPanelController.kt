@@ -1,16 +1,18 @@
 package com.codemark.hookahmix.controller
 
 import com.codemark.hookahmix.domain.Maker
+import com.codemark.hookahmix.domain.Mix
 import com.codemark.hookahmix.domain.Taste
 import com.codemark.hookahmix.domain.Tobacco
-import com.codemark.hookahmix.repository.MakerRepository
-import com.codemark.hookahmix.repository.MixRepository
+import com.codemark.hookahmix.domain.dto.DataParserInfoDto
+import com.codemark.hookahmix.domain.dto.ParseStatus
 import com.codemark.hookahmix.repository.TasteRepository
-import com.codemark.hookahmix.repository.TobaccoRepository
-import com.codemark.hookahmix.service.AdminPanelService
+import com.codemark.hookahmix.service.*
 import com.codemark.hookahmix.util.MixParser
 import com.codemark.hookahmix.util.TobaccoParser
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Value
+import org.springframework.context.annotation.PropertySource
 import org.springframework.stereotype.Controller
 import org.springframework.ui.Model
 import org.springframework.web.bind.annotation.GetMapping
@@ -18,15 +20,18 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 
+@PropertySource("classpath:parser-mixes.properties")
 @Controller
 @RequestMapping(value = ["/", "api/admin"])
-class AdminPanelController @Autowired constructor(private val tobaccoRepository: TobaccoRepository,
-                                                  private val makerRepository: MakerRepository,
-                                                  private val mixRepository: MixRepository,
-                                                  private val tasteRepository: TasteRepository,
+class AdminPanelController @Autowired constructor(private val tobaccoService: TobaccoService,
+                                                  private val makerService: MakerService,
+                                                  private val mixService: MixService,
+                                                  private val tasteService: TasteService,
                                                   private val adminPanelService: AdminPanelService,
                                                   private var tobaccoParser: TobaccoParser,
                                                   private var mixParser: MixParser) {
+    @Value("\${DEFAULT_PARSE_DATA_SIZE}")
+    var defaultParseDataSize: Int = 0;
 
 
     @GetMapping()
@@ -36,7 +41,8 @@ class AdminPanelController @Autowired constructor(private val tobaccoRepository:
 
     @GetMapping("/parseResult")
     fun parseResult(model: Model): String {
-        model.addAttribute("result", "No result yet");
+
+        model.addAttribute("result", DataParserInfoDto<Any>(status=ParseStatus.NOT_STARTED));
         return "parseResult";
     }
 
@@ -46,8 +52,10 @@ class AdminPanelController @Autowired constructor(private val tobaccoRepository:
     }
 
     @GetMapping("/parse-mix")
-    fun parseMix(model: Model): String {
-        var result = mixParser.connectPage()?.let { mixParser.startParse(it) };
+    fun parseMix(@RequestParam(required = false) count: Int?, model: Model): String {
+        var dataCount = count;
+        if (dataCount == null) dataCount = defaultParseDataSize;
+        var result: DataParserInfoDto<Mix>? = mixParser.connectPage()?.let { mixParser.startParse(it, dataCount) };
         model.addAttribute("result", result);
         return "parseResult";
     }
@@ -55,8 +63,8 @@ class AdminPanelController @Autowired constructor(private val tobaccoRepository:
     @GetMapping("/main")
     fun main(model: Model): String {
 
-        var makers: List<Maker> = makerRepository.findAll();
-        var tastes: List<Taste> = tasteRepository.findAll();
+        var makers: List<Maker> = makerService.getAll();
+        var tastes: List<Taste> = tasteService.getAll();
 //        var tobaccos: List<Tobacco> = tobaccoRepository.findAll();
 
         model.addAttribute("makers", makers);
@@ -120,7 +128,7 @@ class AdminPanelController @Autowired constructor(private val tobaccoRepository:
         var tobaccos: List<Tobacco>;
         if (filter != null && filter.isNotEmpty()) {
 
-            tobaccos = tobaccoRepository.findAllByMaker(filter);
+            tobaccos = tobaccoService.getAllByMaker(filter);
 
             model.addAttribute("tobaccos", tobaccos);
             model.addAttribute("filter", filter);
@@ -128,7 +136,7 @@ class AdminPanelController @Autowired constructor(private val tobaccoRepository:
             return "/catalog_tobaccos";
         }
 
-        tobaccos = tobaccoRepository.findAll();
+        tobaccos = tobaccoService.getAll();
 
         model.addAttribute("tobaccos", tobaccos);
         model.addAttribute("filter", filter);
@@ -140,7 +148,7 @@ class AdminPanelController @Autowired constructor(private val tobaccoRepository:
     @GetMapping("/catalog_mixes")
     fun getAllMixes(model: Model): String {
 
-        var mixes = mixRepository.findAll();
+        var mixes = mixService.getAll();
         model.addAttribute("mixes", mixes);
 
         return "/catalog_mixes";

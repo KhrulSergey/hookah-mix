@@ -1,7 +1,7 @@
 package com.codemark.hookahmix.domain
 
-import com.fasterxml.jackson.annotation.*
-import javax.persistence.*;
+import com.fasterxml.jackson.annotation.JsonIgnore
+import javax.persistence.*
 
 
 @Entity
@@ -16,6 +16,7 @@ class Mix {
     var tags : String = "";
     var description: String = "";
     var strength: Int = 5
+    @Transient
     var mixUrl: String = "";
 
     @ManyToMany

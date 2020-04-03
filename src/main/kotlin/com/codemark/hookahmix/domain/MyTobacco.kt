@@ -1,8 +1,11 @@
 package com.codemark.hookahmix.domain
 
-import lombok.*
-import javax.persistence.*;
+import lombok.AllArgsConstructor
+import lombok.Getter
+import lombok.NoArgsConstructor
+import lombok.Setter
 import java.io.Serializable
+import javax.persistence.*
 
 @Entity
 @Table(name = "my_tobaccos")
