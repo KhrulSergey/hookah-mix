@@ -1,7 +1,6 @@
 package com.codemark.hookahmix.domain
 
-import com.fasterxml.jackson.annotation.JsonView
-import javax.persistence.*;
+import javax.persistence.*
 
 @Entity
 @Table(name = "tastes")

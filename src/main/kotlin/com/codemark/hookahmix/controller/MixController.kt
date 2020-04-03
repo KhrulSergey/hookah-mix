@@ -2,12 +2,10 @@ package com.codemark.hookahmix.controller
 
 import com.codemark.hookahmix.domain.Mix
 import com.codemark.hookahmix.domain.Taste
-import com.codemark.hookahmix.domain.User
 import com.codemark.hookahmix.domain.dto.Ingredient
 import com.codemark.hookahmix.domain.dto.IngredientType
 import com.codemark.hookahmix.domain.dto.MixFilterInfoDto
 import com.codemark.hookahmix.domain.dto.StrengthLevel
-import com.codemark.hookahmix.repository.*
 import com.codemark.hookahmix.service.MixService
 import com.codemark.hookahmix.service.UserService
 import com.codemark.hookahmix.util.CookieAuthorizationUtil
@@ -18,15 +16,13 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import java.util.*
-import java.util.stream.Collectors.toList
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpSession
-import kotlin.streams.toList
 
 @RestController
 @RequestMapping("/api/mixes")
 
-class MixConstructorController @Autowired constructor(
+class MixController @Autowired constructor(
         private var userService: UserService,
         private var mixService: MixService,
         private var cookieAuthorizationUtil: CookieAuthorizationUtil) {
@@ -36,13 +32,13 @@ class MixConstructorController @Autowired constructor(
     fun generateMixes(request: HttpServletRequest,
                       session: HttpSession): MutableList<Mix> {
 
-        var user = userService.findUserByInstallationCookie(
+        val user = userService.findUserByInstallationCookie(
                 cookieAuthorizationUtil.getInstallationCookie(request, session)
         )
 
         println("User: $user")
 
-        var mixesList: MutableList<Mix> = mixService.showAllMixes(user)
+        val mixesList: MutableList<Mix> = mixService.showAllMixes(user)
 
         Collections.sort(mixesList, MixComparator())
 
@@ -92,7 +88,7 @@ class MixConstructorController @Autowired constructor(
                           @RequestParam("strength") strength: String?,
                           @RequestParam("taste") taste: String?): Int {
 
-        var user = userService.findUserByInstallationCookie(
+        val user = userService.findUserByInstallationCookie(
                 cookieAuthorizationUtil.getInstallationCookie(request, session)
         )
 

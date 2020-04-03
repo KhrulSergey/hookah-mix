@@ -1,14 +1,17 @@
 package com.codemark.hookahmix.domain
 
 
-import com.fasterxml.jackson.annotation.*
+import com.fasterxml.jackson.annotation.JsonIgnore
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties
+import com.fasterxml.jackson.annotation.JsonProperty
+import com.fasterxml.jackson.annotation.JsonPropertyOrder
 import javax.persistence.*
 
 @JsonPropertyOrder("tobaccosId")
 @Entity
 @Table(name = "tobaccos")
-data class Tobacco(var title: String,
-                   var description: String,
+data class Tobacco(var title: String = "",
+                   var description: String = "",
                    var strength: Double = 3.0) {
 
     @Id
@@ -71,7 +74,9 @@ data class Tobacco(var title: String,
     var composition: Int = 0
 
     override fun toString(): String {
-        return title;
+        val compositionStr: String = if (composition != 0) " - $composition%" else "";
+        val makerStr: String = if (maker != null) "${maker?.title}: " else "";
+        return makerStr + title + compositionStr;
     }
 
 }

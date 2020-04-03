@@ -10,6 +10,11 @@ class TasteService @Autowired constructor(
         private val tasteRepository: TasteRepository) {
 
 
+
+    fun getAll(): List<Taste> {
+        return tasteRepository.findAll();
+    }
+
     fun isExist(taste: String): Boolean {
         return tasteRepository.existsByTaste(taste)
     }

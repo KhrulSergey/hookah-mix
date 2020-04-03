@@ -2,12 +2,8 @@ package com.codemark.hookahmix.controller
 
 import com.codemark.hookahmix.domain.Maker
 import com.codemark.hookahmix.domain.Tobacco
-import com.codemark.hookahmix.domain.TobaccoStatus
-import com.codemark.hookahmix.domain.User
-import com.codemark.hookahmix.repository.MakerRepository
 import com.codemark.hookahmix.repository.MyTobaccoRepository
 import com.codemark.hookahmix.repository.TobaccoRepository
-import com.codemark.hookahmix.repository.UserRepository
 import com.codemark.hookahmix.service.MakerService
 import com.codemark.hookahmix.service.TobaccoService
 import com.codemark.hookahmix.service.UserService

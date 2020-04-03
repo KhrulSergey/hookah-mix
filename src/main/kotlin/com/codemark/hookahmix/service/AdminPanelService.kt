@@ -7,7 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 
 @Service
-class AdminPanelService @Autowired constructor(private val makerRepository: MakerRepository,
+class AdminPanelService @Autowired constructor(private val makerService: MakerService,
                                                private val tasteRepository: TasteRepository,
                                                private val tobaccoRepository: TobaccoRepository,
                                                private val fileRepository: FileRepository,
@@ -16,11 +16,11 @@ class AdminPanelService @Autowired constructor(private val makerRepository: Make
                                                private val imageUtil: ImageUtil) {
 
 
-    fun addTobacco(title: String, maker: String,
+    fun addTobacco(title: String, makerTitle: String,
                    description: String, taste: String,
                    strength: Double, image: String, tags: String) {
 
-        var findMaker: Maker = makerRepository.findByTitle(maker)
+        var findMaker: Maker = makerService.getOne(makerTitle)!!;
 
         var findTaste: Taste = tasteRepository.findByTaste(taste)
 

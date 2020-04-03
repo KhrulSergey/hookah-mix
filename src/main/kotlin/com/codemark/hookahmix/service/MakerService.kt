@@ -21,6 +21,10 @@ class MakerService @Autowired constructor(
         makerRepository.save(maker)
     }
 
+    fun getAll(): MutableList<Maker> {
+        return makerRepository.findAll()
+    }
+
     fun isExist(title: String): Boolean {
         return makerRepository.existsByTitle(title)
     }

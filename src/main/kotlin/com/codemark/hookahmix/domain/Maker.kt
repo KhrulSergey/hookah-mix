@@ -1,25 +1,27 @@
 package com.codemark.hookahmix.domain
 
-import com.fasterxml.jackson.annotation.*
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties
+import com.fasterxml.jackson.annotation.JsonProperty
+import com.fasterxml.jackson.annotation.JsonPropertyOrder
 import lombok.AllArgsConstructor
+import lombok.NoArgsConstructor
 import javax.persistence.*
 
 //o	Название
 //o	Картинка
 //o	Год основания
 //o	Описание
+@NoArgsConstructor
 @AllArgsConstructor
 @Entity
 @Table(name = "makers")
 @JsonPropertyOrder("makersId", "title", "description", "foundingYear", "tobaccos")
-
-class Maker {
-
+class Maker(title: String) {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     var makersId: Long = 0;
     @JsonProperty(value = "title")
-    var title: String = "";
+    var title: String = title;
     @Column(name = "founding_year")
     var foundingYear: String = "";
     var description: String = "";

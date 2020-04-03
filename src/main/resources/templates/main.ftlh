@@ -19,6 +19,7 @@
     <div>
         <a href="/catalog_tobaccos">Tobaccos List</a>
         <a href="/catalog_mixes">Mixes List</a>
+        <a href="/parseResult">Parse Data Source</a>
     </div>
 
     <div>

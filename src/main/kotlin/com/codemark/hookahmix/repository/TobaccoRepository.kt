@@ -23,15 +23,15 @@ interface TobaccoRepository : JpaRepository<Tobacco, Long> {
 
     @Query(nativeQuery = true,
             value = "select * from Tobaccos t " +
-            "inner join Makers m on t.maker_id = m.makers_id " +
-            "order by m.title, t.title")
+                    "inner join Makers m on t.maker_id = m.makers_id " +
+                    "order by m.title, t.title")
     fun findAllSortedByMaker(): List<Tobacco>;
 
     @Query(nativeQuery = true,
             value = "select case when t.title = :tobaccoTitle and m.title = :makerTitle " +
-            "then true else false end from Tobaccos t " +
-            "inner join Makers m on t.maker_id = m.makers_id " +
-            "where t.title = :tobaccoTitle and m.title = :makerTitle")
+                    "then true else false end from Tobaccos t " +
+                    "inner join Makers m on t.maker_id = m.makers_id " +
+                    "where t.title = :tobaccoTitle and m.title = :makerTitle")
     fun existsByTitleAndMaker(@Param("tobaccoTitle") tobaccoTitle: String,
                               @Param("makerTitle") makerTitle: String): Boolean
 

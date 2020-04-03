@@ -34,5 +34,4 @@ interface MakerRepository : JpaRepository<Maker, Long> {
                     "order by m.title")
     fun findAllSortedByTitleAndUser(@Param("userId") userId: Long): MutableSet<Maker>
 
-
 }

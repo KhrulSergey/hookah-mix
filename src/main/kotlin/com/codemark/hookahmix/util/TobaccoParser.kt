@@ -25,6 +25,9 @@ class TobaccoParser @Autowired constructor(private var tobaccoRepository: Tobacc
                                            private var makerRepository: MakerRepository,
                                            private var tasteRepository: TasteRepository,
                                            private var fileRepository: FileRepository,
+                                           private val tasteService: TasteService,
+                                           private val makerService: MakerService,
+                                           private val tobaccoService: TobaccoService,
                                            private var imageUtil: ImageUtil){
 
 
@@ -69,13 +72,13 @@ class TobaccoParser @Autowired constructor(private var tobaccoRepository: Tobacc
 
     fun connectPage(): Document? {
 
-       try {
-           document = Jsoup.connect(targetUrl)
-                   .timeout(0)
-                   .get();
-       } catch (e: IOException) {
-           throw ParsingException("Connection failed", e);
-       }
+        try {
+            document = Jsoup.connect(targetUrl)
+                    .timeout(0)
+                    .get();
+        } catch (e: IOException) {
+            throw ParsingException("Connection failed", e);
+        }
 
         return document;
     }
@@ -139,16 +142,7 @@ class TobaccoParser @Autowired constructor(private var tobaccoRepository: Tobacc
                 println("Parser, description: $makerDescription")
             }
 
-            var maker = Maker();
-//            maker.title = makerTitle;
-//            maker.foundingYear = makerFoundingYear;
-//            maker.description = makerDescription;
-//
-//
-//            var makerImage = Image();
-//            makerImage.image = imageUtil.save(makerImageUrl);
-//            fileRepository.save(makerImage);
-//            maker.image = makerImage;
+            var maker = Maker(makerTitle);
 
             if (makerRepository.existsByTitle(makerTitle)) {
                 maker = makerRepository.findByTitle(makerTitle)

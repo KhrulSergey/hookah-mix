@@ -9,7 +9,8 @@ import org.springframework.stereotype.Repository
 @Repository
 interface MixRepository : JpaRepository<Mix, Long> {
 
-
+//    fun getAllMixes(): MutableList<Mix>
+//
 //    @Query()
 //    fun getAllAvailableMixes(): MutableList<Mix>
 
@@ -24,7 +25,6 @@ interface MixRepository : JpaRepository<Mix, Long> {
 
     fun findByTitle(title: String): Mix
 
-
-//    fun getAllMixes(): MutableList<Mix>
+    fun existsByTitle(title: String): Boolean
 
 }
