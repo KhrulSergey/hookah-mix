@@ -16,8 +16,8 @@ class MakerService @Autowired constructor(
         private val tobaccoRepository: TobaccoRepository,
         private val tobaccoService: TobaccoService) {
 
-    fun update(title: String) {
-        var maker = makerRepository.findByTitle(title);
+    @Transactional
+    fun update(maker: Maker) {
         makerRepository.save(maker)
     }
 

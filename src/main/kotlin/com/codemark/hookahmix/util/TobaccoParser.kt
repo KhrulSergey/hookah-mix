@@ -25,9 +25,6 @@ class TobaccoParser @Autowired constructor(private var tobaccoRepository: Tobacc
                                            private var makerRepository: MakerRepository,
                                            private var tasteRepository: TasteRepository,
                                            private var fileRepository: FileRepository,
-                                           private val tasteService: TasteService,
-                                           private val makerService: MakerService,
-                                           private val tobaccoService: TobaccoService,
                                            private var imageUtil: ImageUtil){
 
 
@@ -95,7 +92,7 @@ class TobaccoParser @Autowired constructor(private var tobaccoRepository: Tobacc
             ++count;
             makerTitle = item.text();
             println("Parser, Item: $makerTitle");
-            println("Parser, count: $count");
+            println("Parser, maker count: $count");
 
             makerUrl = item.attr("href");
             println("Parser, URL: $makerUrl");
@@ -143,28 +140,36 @@ class TobaccoParser @Autowired constructor(private var tobaccoRepository: Tobacc
             }
 
             var maker = Maker();
-            maker.title = makerTitle;
-            maker.foundingYear = makerFoundingYear;
-            maker.description = makerDescription;
+//            maker.title = makerTitle;
+//            maker.foundingYear = makerFoundingYear;
+//            maker.description = makerDescription;
+//
+//
+//            var makerImage = Image();
+//            makerImage.image = imageUtil.save(makerImageUrl);
+//            fileRepository.save(makerImage);
+//            maker.image = makerImage;
 
+            if (makerRepository.existsByTitle(makerTitle)) {
+                maker = makerRepository.findByTitle(makerTitle)
+            } else {
 
-            var makerImage = Image();
-            makerImage.image = imageUtil.save(makerImageUrl);
-            fileRepository.save(makerImage);
-            maker.image = makerImage;
+                maker.title = makerTitle;
+                maker.foundingYear = makerFoundingYear;
+                maker.description = makerDescription;
+
+                var makerImage = Image();
+                makerImage.image = imageUtil.save(makerImageUrl);
+                fileRepository.save(makerImage);
+                maker.image = makerImage;
+
+            }
             println("Maker almost ready...")
 
-//            if (makerRepository.existsByTitle(makerTitle)) {
-//                println("Maker $makerTitle already exists!")
-//                maker = makerRepository.findByTitle(makerTitle)
-//            } else {
-//                makerRepository.save(maker);
-//            }
-//            makerRepository.save(maker);
             println("Maker was saved, but tobacco waiting...")
 
             /**
-             * start parse tobacco's page (oh, shit)
+             * start parse tobacco's page
              */
 
             var tobaccoElements = makerPage.select(tobaccosElements);
@@ -221,11 +226,7 @@ class TobaccoParser @Autowired constructor(private var tobaccoRepository: Tobacc
                             tasteRepository.save(taste);
                         }
 
-//                        taste.taste = tobaccoTaste;
-//                        tasteRepository.save(taste);
-//                        if (!tasteService.isExist(tobaccoTaste)) {
-//                            tasteRepository.save(taste)
-//                        }
+
                         println("Tobacco taste: $tobaccoTaste");
 
                     } else {
@@ -240,11 +241,6 @@ class TobaccoParser @Autowired constructor(private var tobaccoRepository: Tobacc
                             tasteRepository.save(taste);
                         }
 
-//                        taste.taste = tobaccoTaste;
-
-//                        if (!tasteService.isExist(tobaccoTaste)) {
-//                            tasteRepository.save(taste)
-//                        }
                         tasteRepository.save(taste);
                         println("Tobacco taste: $tobaccoTaste");
                     }
@@ -255,7 +251,6 @@ class TobaccoParser @Autowired constructor(private var tobaccoRepository: Tobacc
                         tobaccoDescription,
                         tobaccoStrength
                 );
-//                tobacco.maker = maker;
 
                 var tobaccoImage = Image();
                 tobaccoImage.image = imageUtil.save(tobaccoImageUrl);
@@ -275,7 +270,9 @@ class TobaccoParser @Autowired constructor(private var tobaccoRepository: Tobacc
 
                 if (tobaccoRepository.existsByTitle(tobaccoTitle)) {
                     println("Tobacco $tobaccoTitle already exists!")
-                    var persistTobacco = tobaccoRepository.findByTitle(tobaccoTitle)
+//                    var persistTobacco = tobaccoRepository.findByTitle(tobaccoTitle)
+                    var persistTobaccosSet = tobaccoRepository.findByTitle(tobaccoTitle)
+                    var persistTobacco = persistTobaccosSet.stream().findFirst().get()
                     println("Tobacco in DB: " + persistTobacco.title)
                     if (persistTobacco.maker.toString() != tobacco.maker.toString()) {
                         println("Makers are differents!")
@@ -285,30 +282,14 @@ class TobaccoParser @Autowired constructor(private var tobaccoRepository: Tobacc
                     tobaccoRepository.save(tobacco)
                 }
 
-//                if (tobaccoRepository.existsByTitleAndMaker(tobaccoTitle, maker.title) ||
-//                        !tobaccoRepository.existsByTitle(tobaccoTitle)) {
-//                    println("Tobacco $tobaccoTitle already exists!")
-//                    tobacco = tobaccoRepository.findByTitle(tobacco.title)
-//                } else {
-//                    tobaccoRepository.save(tobacco)
-//                }
-
-//                tobaccoRepository.save(tobacco);
                 println("Tobacco was saved");
 
-                if (tobaccoCount > 2) break;
+                if (tobaccoCount > 2) break
             }
 
-            if (makerRepository.existsByTitle(makerTitle)) {
-                println("Maker $makerTitle already exists!")
-//                maker = makerRepository.findByTitle(makerTitle)
-//                makerRepository.save(maker)
-            } else {
-                makerRepository.save(maker);
-                println("Maker was saved");
-            }
-//            makerRepository.save(maker);
-//            println("Maker was saved");
+            makerRepository.save(maker);
+            println("Maker was saved");
+
             tobaccoCount = 0
 
         }

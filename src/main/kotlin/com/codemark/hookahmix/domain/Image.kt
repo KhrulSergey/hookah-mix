@@ -3,9 +3,8 @@ package com.codemark.hookahmix.domain
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.annotation.JsonValue
 import lombok.Data
-import java.io.File
 import java.util.*
-import javax.persistence.*;
+import javax.persistence.*
 
 @Data
 @Entity
@@ -19,19 +18,15 @@ class Image {
     @Column(name = "file")
     var image: ByteArray? = null
 
-    @JsonValue
-    @JsonProperty(value = "image")
+
     fun getImage(): String {
         val array = Base64.getDecoder().decode(image)
         return String(array)
     }
 
-//    @JsonValue
-//    @JsonProperty(value = "image")
-//    override fun toString(): String {
-//        return File(getImage()).absolutePath
-//    }
 
+    @JsonValue
+    @JsonProperty(value = "image")
     override fun toString(): String {
         return getImage()
     }

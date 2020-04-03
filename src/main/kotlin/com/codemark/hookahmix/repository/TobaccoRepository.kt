@@ -46,15 +46,6 @@ interface TobaccoRepository : JpaRepository<Tobacco, Long> {
                     "and mt.status = 'purchase'")
     fun findAllPurchases(@Param("userId") userId: Long): MutableList<Tobacco>
 
-//    @Query(nativeQuery = true,
-//            value = "select * from tobaccos t " +
-//                    "inner join my_tobaccos mt on t.tobaccos_id = mt.tobacco_id " +
-//                    "inner join users u on mt.user_id = u.users_id " +
-//                    "where u.users_id = :userId " +
-//                    "and mt.status = 'purchase'" +
-//                    "order by t.tobaccos_id desc limit 5")
-//    fun findLatestPurchases(@Param("userId") userId: Long?): MutableList<Tobacco>
-
     @Query(nativeQuery = true,
             value = "select * from tobaccos t " +
                     "inner join latest_purchases lt on t.tobaccos_id = lt.tobacco_id " +
@@ -71,7 +62,9 @@ interface TobaccoRepository : JpaRepository<Tobacco, Long> {
     fun addInLatestPurchases(@Param("userId") userId: Long,
                              @Param("tobaccoId") tobaccoId: Long): Unit
 
-    fun findByTitle(title: String): Tobacco;
+//    fun findByTitle(title: String): Tobacco
+
+    fun findByTitle(title: String): MutableSet<Tobacco>
 
     @Query(nativeQuery = true,
             value = "select * from tobaccos t " +
@@ -98,7 +91,6 @@ interface TobaccoRepository : JpaRepository<Tobacco, Long> {
                     " where mt.user_id = :userId and tobacco_id = :tobaccoId")
     fun getTobaccoStatus(@Param("userId") userId: Long,
                          @Param("tobaccoId") tobaccoId: Long): String
-
 
 
 
