@@ -68,7 +68,7 @@ class TobaccoParser @Autowired constructor(private var tobaccoRepository: Tobacc
     var tobaccoTaste: String = "";
 
 
-    var document: Document? = null;
+    var document: Document? = null
 
     fun connectPage(): Document? {
 
@@ -79,7 +79,6 @@ class TobaccoParser @Autowired constructor(private var tobaccoRepository: Tobacc
         } catch (e: IOException) {
             throw ParsingException("Connection failed", e);
         }
-
         return document;
     }
 
@@ -114,7 +113,7 @@ class TobaccoParser @Autowired constructor(private var tobaccoRepository: Tobacc
 
             if (attributeStrength != null) {
                 tobaccoStrength = attributeStrength.text().toDouble();
-                println("Parser, strength: $tobaccoStrength");
+                println("Parser, strength: $tobaccoStrength")
             }
 
 
@@ -282,7 +281,7 @@ class TobaccoParser @Autowired constructor(private var tobaccoRepository: Tobacc
             }
 
             makerRepository.save(maker);
-            println("Maker was saved");
+            println("Maker was successfully saved");
 
             tobaccoCount = 0
 
