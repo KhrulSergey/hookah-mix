@@ -18,19 +18,15 @@ class Image {
     @Column(name = "file")
     var image: ByteArray? = null
 
-    @JsonValue
-    @JsonProperty(value = "image")
+
     fun getImage(): String {
         val array = Base64.getDecoder().decode(image)
         return String(array)
     }
 
-//    @JsonValue
-//    @JsonProperty(value = "image")
-//    override fun toString(): String {
-//        return File(getImage()).absolutePath
-//    }
 
+    @JsonValue
+    @JsonProperty(value = "image")
     override fun toString(): String {
         return getImage()
     }

@@ -4,12 +4,14 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.annotation.JsonPropertyOrder
 import lombok.AllArgsConstructor
+import lombok.NoArgsConstructor
 import javax.persistence.*
 
 //o	Название
 //o	Картинка
 //o	Год основания
 //o	Описание
+@NoArgsConstructor
 @AllArgsConstructor
 @Entity
 @Table(name = "makers")
