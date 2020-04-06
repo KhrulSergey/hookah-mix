@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional
 @Repository
 interface MyTobaccoRepository: JpaRepository<MyTobacco, MyTobacco.MyTobaccoId> {
 
+    //TODO отсортировать методы. Изучить пересечение с репо-Табаки
 
     @Query(nativeQuery = true,
             value = "select exists (" +
@@ -33,7 +34,6 @@ interface MyTobaccoRepository: JpaRepository<MyTobacco, MyTobacco.MyTobaccoId> {
                     "and mt.tobacco_id = :tobaccoId")
     fun getStatusByTobaccoIdAndUserId(@Param("userId") userId: Long,
                                        @Param("tobaccoId") tobaccoId: Long): String
-
 
     @Transactional
     @Modifying

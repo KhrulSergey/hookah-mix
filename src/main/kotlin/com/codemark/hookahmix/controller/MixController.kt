@@ -45,6 +45,7 @@ class MixController @Autowired constructor(
         return mixesList;
     }
 
+    //TODO доработать метод на реальные данные
     @GetMapping("/filter")
     fun generateFilter(): MixFilterInfoDto {
         return MixFilterInfoDto(

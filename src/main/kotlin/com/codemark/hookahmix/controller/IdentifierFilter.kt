@@ -1,5 +1,7 @@
-//package com.codemark.hookahmix.controller
-//
+package com.codemark.hookahmix.controller
+
+//TODO изучить предназначение файла
+
 //import org.springframework.stereotype.Component
 //import java.util.*
 //import javax.servlet.Filter

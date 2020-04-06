@@ -11,6 +11,8 @@ import javax.servlet.http.HttpServletResponse
 class UserService @Autowired constructor(
         private val userRepository: UserRepository) {
 
+    //TODO Удалить неиспользуемые методы
+    // Отсортировать методы
 
     fun register(response: HttpServletResponse) {
 

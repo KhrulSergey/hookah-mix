@@ -15,6 +15,7 @@ class AdminPanelService @Autowired constructor(private val makerService: MakerSe
                                                private val componentRepository: ComponentRepository,
                                                private val imageUtil: ImageUtil) {
 
+    //TODO Перенести методы в соответ. сервисы
 
     fun addTobacco(title: String, makerTitle: String,
                    description: String, taste: String,
@@ -34,8 +35,6 @@ class AdminPanelService @Autowired constructor(private val makerService: MakerSe
         newTobacco.image = tobaccoImage
 
         tobaccoRepository.save(newTobacco)
-
-
     }
 
     fun addMix(title: String, tags: String,

@@ -9,6 +9,7 @@ import org.springframework.stereotype.Repository
 @Repository
 interface ComponentRepository : JpaRepository<Component, Long> {
 
+    //TODO Удалить неиспользуемый метод?
     @Query(nativeQuery = true,
             value = "select c.composition from components c " +
                     "where c.mix_id = :mixId " +

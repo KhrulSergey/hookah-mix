@@ -15,6 +15,9 @@ import javax.transaction.Transactional
 @Repository
 interface TobaccoRepository : JpaRepository<Tobacco, Long> {
 
+    //TODO Отсортировать методы
+    //Перенести методы в репо-MyTobaccoRepo
+
     override fun findAll(pageable: Pageable) : Page<Tobacco>;
 
     @Query(nativeQuery = true,
@@ -23,6 +26,7 @@ interface TobaccoRepository : JpaRepository<Tobacco, Long> {
                     "where m.title = :filter")
     fun findAllByMaker(@Param("filter") filter : String): List<Tobacco>;
 
+    //TODO Удалить неиспользуемый метод?
     @Query(nativeQuery = true,
             value = "select * from Tobaccos t " +
             "inner join Makers m on t.maker_id = m.makers_id " +
@@ -41,6 +45,7 @@ interface TobaccoRepository : JpaRepository<Tobacco, Long> {
     fun findOneByTitleAndMaker(@Param("tobaccoTitle") tobaccoTitle: String,
                                @Param("makerTitle") makerTitle: String): Tobacco
 
+    //TODO Удалить неиспользуемый метод?
     @Query(nativeQuery = true,
             value = "select case when t.title = :tobaccoTitle and m.title = :makerTitle " +
             "then true else false end from Tobaccos t " +
@@ -60,6 +65,7 @@ interface TobaccoRepository : JpaRepository<Tobacco, Long> {
                     "and mt.status = 'purchase'")
     fun findAllPurchases(@Param("userId") userId: Long): MutableList<Tobacco>
 
+    //TODO Удалить неиспользуемый метод?
 //    @Query(nativeQuery = true,
 //            value = "select * from tobaccos t " +
 //                    "inner join my_tobaccos mt on t.tobaccos_id = mt.tobacco_id " +
@@ -99,13 +105,10 @@ interface TobaccoRepository : JpaRepository<Tobacco, Long> {
                          @Param("userId") userId: Long): MutableSet<Tobacco>
 
 
+    //TODO Удалить неиспользуемый метод?
     @Query(nativeQuery = true,
             value = "select mt.status from my_tobaccos mt " +
                     " where mt.user_id = :userId and tobacco_id = :tobaccoId")
     fun getTobaccoStatus(@Param("userId") userId: Long,
                          @Param("tobaccoId") tobaccoId: Long): String
-
-
-
-
 }

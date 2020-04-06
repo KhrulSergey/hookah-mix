@@ -15,6 +15,7 @@ interface UserRepository : JpaRepository<User, Long>{
 
     fun findUserByInstallationCookie(installationCookie: String): User;
 
+    //TODO Проверить необходимость метода. Перенести метод в репо-Табаки
     @Transactional
     @Modifying
     @Query(nativeQuery = true,
@@ -24,6 +25,7 @@ interface UserRepository : JpaRepository<User, Long>{
     fun addTobaccoInPurchases(@Param("tobaccoId") tobaccoId: Long,
                               @Param("userId") userId: Long): Unit;
 
+    //TODO Проверить необходимость метода. Перенести метод в репо-Табаки
     @Transactional
     @Modifying
     @Query(nativeQuery = true,

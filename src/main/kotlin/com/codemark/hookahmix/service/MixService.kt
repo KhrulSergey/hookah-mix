@@ -18,6 +18,9 @@ class MixService @Autowired constructor(
         private val makerRepository: MakerRepository,
         private val componentRepository: ComponentRepository) {
 
+    //TODO Удалить неиспользуемые методы
+    // Отсортировать методы
+
     fun getAll(): List<Mix>{
         return mixRepository.findAll();
     }

@@ -9,6 +9,7 @@ import org.springframework.stereotype.Repository
 @Repository
 interface MixRepository : JpaRepository<Mix, Long> {
 
+    //TODO Удалить неиспользуемые методы
 //    fun getAllMixes(): MutableList<Mix>
 //
 //    @Query()

@@ -9,7 +9,8 @@ import org.springframework.stereotype.Service
 class TasteService @Autowired constructor(
         private val tasteRepository: TasteRepository) {
 
-
+    //TODO Удалить неиспользуемые методы
+    // Отсортировать методы
 
     fun getAll(): List<Taste> {
         return tasteRepository.findAll();

@@ -19,6 +19,7 @@ class ImageUtil {
         if (!imagesFolder.exists()) {
             imagesFolder.mkdir()
         }
+        //TODO удалить жесткое расширение файла
         var fileName: String = uploadPath + "/" + UUID.randomUUID().toString() + ".jpg"
 
         var url = URL(target);

@@ -6,6 +6,7 @@ import org.springframework.stereotype.Component
 @Component
 class MixComparator: Comparator<Mix> {
 
+    //TODO Перенести метод в модель Микс!
     override fun compare(o1: Mix, o2: Mix): Int {
         return o1.status.ordinal.compareTo(o2.status.ordinal)
     }

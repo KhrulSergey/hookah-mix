@@ -14,6 +14,9 @@ class TobaccoService @Autowired constructor(
         private val makerRepository: MakerRepository,
         private val userService: UserService) {
 
+    //TODO Удалить неиспользуемые методы
+    // Отсортировать методы
+
     fun getAll(): List<Tobacco> {
         return tobaccoRepository.findAll()
     }

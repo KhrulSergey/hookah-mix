@@ -10,6 +10,7 @@ import java.util.*
 @Repository
 interface MakerRepository : JpaRepository<Maker, Long> {
 
+    //TODO Проверить возможен ли нативный запрос
     @Query(nativeQuery = true, value = "select * from Makers m order by m.title")
     fun findAllSortedByTitle(): MutableList<Maker>;
 
@@ -26,6 +27,7 @@ interface MakerRepository : JpaRepository<Maker, Long> {
 
     fun existsByTitle(title : String) : Boolean
 
+    //TODO Проверить использование метода - отрефакторить и Искать Производителя по ID
     @Query(nativeQuery = true,
             value = "select * from Makers m " +
                     "inner join Tobaccos t on m.makers_id = t.maker_id " +

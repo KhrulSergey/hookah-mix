@@ -5,6 +5,7 @@ import com.codemark.hookahmix.domain.Tobacco
 import com.fasterxml.jackson.annotation.JsonFormat
 import com.fasterxml.jackson.annotation.JsonProperty
 
+//TODO сделать описание модели
 data class MixFilterInfoDto(
     var ingredients: List<Ingredient> = ArrayList(),
     var strengthLevel: List<StrengthLevel> = ArrayList(),
