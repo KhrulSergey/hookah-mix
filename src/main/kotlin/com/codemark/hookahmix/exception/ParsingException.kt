@@ -4,6 +4,14 @@ class ParsingException(message: String?, cause: Throwable?) :
         RuntimeException(message, cause) {
 }
 
+/**Ошибки обработки данных по распознаванию  */
+class MakerParsingException(message: String?, cause: Throwable?) : RuntimeException(message, cause){
+}
+
+/**Ошибки обработки данных по распознаванию  */
+class TobaccoParsingException(message: String?, cause: Throwable?) : RuntimeException(message, cause){
+}
+
 /**Ошибки открытия URL страницы с сервисом JSOUP*/
 class JsoupConnectException(message: String?, cause: Throwable?) : RuntimeException(message, cause){
 }

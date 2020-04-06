@@ -1,9 +1,6 @@
 package com.codemark.hookahmix.service
 
-import com.codemark.hookahmix.domain.Image
-import com.codemark.hookahmix.domain.Maker
-import com.codemark.hookahmix.domain.TobaccoStatus
-import com.codemark.hookahmix.domain.User
+import com.codemark.hookahmix.domain.*
 import com.codemark.hookahmix.repository.MakerRepository
 import com.codemark.hookahmix.repository.TobaccoRepository
 import org.springframework.beans.factory.annotation.Autowired
@@ -24,27 +21,26 @@ class MakerService @Autowired constructor(
     }
 
     fun getOne(title: String): Maker?{
-        return makerRepository.findByTitle(title).orElse(null);
+        return makerRepository.findByTitle(title);
     }
-
-    fun update(title: String) {
-        val maker = makerRepository.findByTitle(title).get();
 
     @Transactional
     fun update(maker: Maker) {
         makerRepository.save(maker)
     }
 
-    fun getAll(): MutableList<Maker> {
-        return makerRepository.findAll()
-    }
-
     fun isExist(title: String): Boolean {
         return makerRepository.existsByTitle(title)
     }
 
-    fun save(maker: Maker) {
-        makerRepository.save(maker)
+    fun add(maker: Maker):Maker? {
+        var newMaker = Maker()
+        //TODO check Maker content or just save what come
+        newMaker = makerRepository.save(maker);
+        //check mix creation
+        if (newMaker.id == 0L) return null;
+        return newMaker;
+
     }
 
     fun getTobaccosInCatalog(user: User): MutableList<Maker> {

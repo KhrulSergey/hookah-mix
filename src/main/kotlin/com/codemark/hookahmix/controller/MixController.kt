@@ -59,24 +59,24 @@ class MixController @Autowired constructor(
                 StrengthLevel.STRONG
         ), listOf(
                 Taste().apply {
-                    tastesId = 1
-                    taste = "Яблоко"
+                    id = 1
+                    title = "Яблоко"
                 },
                 Taste().apply {
-                    tastesId = 2
-                    taste = "Цитрус"
+                    id = 2
+                    title = "Цитрус"
                 },
                 Taste().apply {
-                    tastesId = 3
-                    taste = "Ваниль"
+                    id = 3
+                    title = "Ваниль"
                 },
                 Taste().apply {
-                    tastesId = 4
-                    taste = "Арбуз"
+                    id = 4
+                    title = "Арбуз"
                 },
                 Taste().apply {
-                    tastesId = 5
-                    taste = "Корица"
+                    id = 5
+                    title = "Корица"
                 }
         )
         );

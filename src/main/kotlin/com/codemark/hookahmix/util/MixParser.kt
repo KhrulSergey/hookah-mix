@@ -60,7 +60,7 @@ class MixParser @Autowired constructor(private var tobaccoService: TobaccoServic
         return document;
     }
 
-    /** Распознавание ресурса со списокм миксов */
+    /** Распознавание ресурса со списком миксов */
     fun startParse(document: Document?, mixCountNeeded: Int): DataParserInfoDto<Mix> {
         mixParserInfo.status = ParseStatus.IN_PROGRESS;
         mixParserInfo.errorLog = mutableListOf();
@@ -111,7 +111,7 @@ class MixParser @Autowired constructor(private var tobaccoService: TobaccoServic
                 newMix = Mix();
                 tobaccoList.clear();
                 //Получаем ссылку на описание микса
-                newMix.mixUrl = item.attr("href");
+                newMix.sourceUrl = item.attr("href");
                 mixFullTitle = item.select("h3").text();
                 for (string in mixFullTitle.split('.')) {
                     //Получаем имя первого производителя
@@ -152,18 +152,18 @@ class MixParser @Autowired constructor(private var tobaccoService: TobaccoServic
                 /**
                  * start parsing mix's page
                  */
-                val mixPage: Document = connectPage(newMix.mixUrl)!!;
+                val mixPage: Document = connectPage(newMix.sourceUrl)!!;
                 val mixContent: Elements = mixPage.select(mixContentElement);
 
                 /** Формируем описание микса*/
                 if (mixContent.isEmpty()) {
                     throw MixParsingException(generateErrorMessage(tobaccoList, newMix, pageNumber,
-                            "Ошибка получения контента микса из источника"), null);
+                            "Ошибка получения описания микса из источника"), null);
                 }
                 mixDescription = mixContent.first().text();
                 if (mixDescription.isBlank()) {
                     throw MixParsingException(generateErrorMessage(tobaccoList, newMix, pageNumber,
-                            "Ошибка получения контента микса из источника"), null);
+                            "Ошибка получения описания микса из источника"), null);
                 }
                 newMix.description = mixDescription;
 
@@ -330,7 +330,7 @@ class MixParser @Autowired constructor(private var tobaccoService: TobaccoServic
     private fun generateErrorMessage(tobaccoList: MutableList<Tobacco>?, mix: Mix?, pageNumber: Int, message: String?): String {
         var errorMessage = "!-------------New Error-----------!" + System.lineSeparator();
         errorMessage += "Error parsing on $pageNumber page: mix '${mix?.title}' in URL:" +
-                "${System.lineSeparator()}${mix?.mixUrl}" + System.lineSeparator();
+                "${System.lineSeparator()}${mix?.sourceUrl}" + System.lineSeparator();
         errorMessage += "Message: $message" + System.lineSeparator();
         if (tobaccoList != null) {
             for (tobacco: Tobacco in tobaccoList) {
@@ -344,7 +344,7 @@ class MixParser @Autowired constructor(private var tobaccoService: TobaccoServic
         var warningMessage = "!-------------New Warning-----------!" + System.lineSeparator();
         if (mix != null) {
             warningMessage += "Problem on $pageNumber page: ${mix.title} in URL:" +
-                    "${System.lineSeparator()}${mix.mixUrl}" + System.lineSeparator();
+                    "${System.lineSeparator()}${mix.sourceUrl}" + System.lineSeparator();
         }
         warningMessage += "Message: $message" + System.lineSeparator();
         return warningMessage;

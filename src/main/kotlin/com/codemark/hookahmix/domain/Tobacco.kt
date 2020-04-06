@@ -60,7 +60,7 @@ data class Tobacco(var title: String = "",
     var components: MutableSet<Component> = mutableSetOf()
 
     @Transient
-    var status: TobaccoStatus = TobaccoStatus.NEED_BAR
+    var status: TobaccoStatus = TobaccoStatus.NULL_VALUE
 
     @Transient
     var replacements: MutableList<Tobacco> = mutableListOf()
@@ -72,6 +72,8 @@ data class Tobacco(var title: String = "",
 
     @Transient
     var composition: Int = 0
+    @Transient
+    var sourceUrl: String = "";
 
     override fun toString(): String {
         val compositionStr: String = if (composition != 0) " - $composition%" else "";

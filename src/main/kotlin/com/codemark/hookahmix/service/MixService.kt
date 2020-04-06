@@ -39,7 +39,7 @@ class MixService @Autowired constructor(
         for (mix in mixesList) {
 
             for (item in mix.tobaccoMixList) {
-                item.mixesMaker = makerRepository.getOne(item.maker!!.makersId)
+                item.mixesMaker = makerRepository.getOne(item.maker!!.id)
             }
 
             if (barTobaccos.containsAll(mix.tobaccoMixList)) {
@@ -71,13 +71,13 @@ class MixService @Autowired constructor(
 
 
                             } else {
-                                if (mixTobacco.taste?.taste.equals(userTobacco.taste?.taste)) {
+                                if (mixTobacco.taste?.title.equals(userTobacco.taste?.title)) {
                                     existReplacements = true;
                                     userTobacco.status = TobaccoStatus.CONTAIN_BAR;
                                     mixTobacco.replacements.add(userTobacco);
 
                                 } else {
-                                    if (mixTobacco.status == null ||
+                                    if (mixTobacco.status == TobaccoStatus.NULL_VALUE ||
                                             !mixTobacco.status.equals(TobaccoStatus.CONTAIN_BAR)) {
 
                                         if (purchasesTobacco.contains(mixTobacco)) {
@@ -109,12 +109,12 @@ class MixService @Autowired constructor(
 
                         for (userTobacco in barTobaccos) {
 
-                            if (mixTobacco.taste?.taste.equals(userTobacco.taste?.taste)) {
+                            if (mixTobacco.taste?.title.equals(userTobacco.taste?.title)) {
                                 existReplacements = true;
                                 mixTobacco.replacements.add(userTobacco);
 
                             } else {
-                                if (mixTobacco.status == null ||
+                                if (mixTobacco.status == TobaccoStatus.NULL_VALUE ||
                                         !mixTobacco.status.equals(TobaccoStatus.CONTAIN_BAR)) {
 
                                     if (purchasesTobacco.contains(mixTobacco)) {
@@ -196,13 +196,8 @@ class MixService @Autowired constructor(
 
     fun add(mix: Mix): Mix? {
         var newMix = Mix()
-        //TODO check mix content
-        newMix.title = mix.title;
-        newMix.tags = mix.tags;
-        newMix.rating = mix.rating;
-        newMix.description = mix.description;
-        newMix.strength = mix.strength;
-        newMix = mixRepository.save(newMix);
+        //TODO check mix content or just save what come
+        newMix = mixRepository.save(mix);
         //check mix creation
         if (newMix.mixesId == 0L) return null;
         //fill components of mix

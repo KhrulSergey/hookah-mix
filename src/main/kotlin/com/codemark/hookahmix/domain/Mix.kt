@@ -16,8 +16,9 @@ class Mix {
     var tags : String = "";
     var description: String = "";
     var strength: Int = 5
+
     @Transient
-    var mixUrl: String = "";
+    var sourceUrl: String = "";
 
     @ManyToMany
     @JoinTable(

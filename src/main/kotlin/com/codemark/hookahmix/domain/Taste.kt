@@ -4,16 +4,18 @@ import javax.persistence.*
 
 @Entity
 @Table(name = "tastes")
-class Taste {
+class Taste (title: String = "") {
 
     @Id
+    @Column(name = "tastes_id")
     @GeneratedValue(strategy = GenerationType.AUTO)
-    var tastesId : Long = 0;
-    //TODO изменить наименование поля
-    var taste : String = "";
+    var id : Long = 0;
+
+    @Column(name = "taste")
+    var title : String = title;
 
     override fun toString(): String {
-        return taste;
+        return title;
     }
 
 }

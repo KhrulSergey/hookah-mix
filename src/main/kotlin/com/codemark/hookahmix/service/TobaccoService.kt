@@ -29,10 +29,6 @@ class TobaccoService @Autowired constructor(
         return tobaccoRepository.getOne(id)
     }
 
-    fun getOne(title: String): Tobacco {
-        return tobaccoRepository.findByTitle(title)
-    }
-
     fun getOne(title: String, maker: Maker): Tobacco? {
         return tobaccoRepository.findByTitleAndMaker(title, maker).orElse(null);
     }
@@ -42,11 +38,14 @@ class TobaccoService @Autowired constructor(
     }
 
     fun getTobaccosInBar(maker: Maker, user: User): MutableSet<Tobacco> {
-        return tobaccoRepository.getTobaccosInBar(maker.makersId, user.id)
+        return tobaccoRepository.getTobaccosInBar(maker.id, user.id)
     }
 
-    fun save(tobacco: Tobacco) {
-        tobaccoRepository.save(tobacco)
+    fun add(tobacco: Tobacco): Tobacco? {
+        var newTobacco = tobaccoRepository.save(tobacco);
+        //TODO check Maker content or just save what come
+        if (newTobacco.tobaccosId == 0L) return null;
+        return newTobacco;
     }
 
     fun deleteTobaccoFromBar(user: User, id: Long): Unit {

@@ -22,7 +22,8 @@ enum class TobaccoStatus(@JsonProperty("title") val title: String) {
     NEED_BAR("В бар"),
     CONTAIN_BAR("В баре"),
     PURCHASES("Докупить"),
-    IN_PURCHASES("В покупках");
+    IN_PURCHASES("В покупках"),
+    NULL_VALUE ("Неизвестен");
 
 //    @JsonProperty("id")
     @JsonValue

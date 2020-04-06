@@ -16,15 +16,24 @@ import javax.persistence.*
 @Entity
 @Table(name = "makers")
 @JsonPropertyOrder("makersId", "title", "description", "foundingYear", "tobaccos")
-class Maker(title: String) {
+class Maker(title: String="") {
     @Id
+    @Column(name = "makers_id")
     @GeneratedValue(strategy = GenerationType.AUTO)
-    var makersId: Long = 0;
+    var id: Long = 0;
+
+    @Column(name = "title")
     @JsonProperty(value = "title")
     var title: String = title;
+
     @Column(name = "founding_year")
     var foundingYear: String = "";
+
+    @Column(name = "description")
     var description: String = "";
+
+    @Transient
+    var sourceUrl: String = "";
 
     @OneToOne
     @JoinColumn(name = "file_id")

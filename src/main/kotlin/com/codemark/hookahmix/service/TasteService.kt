@@ -16,11 +16,17 @@ class TasteService @Autowired constructor(
         return tasteRepository.findAll();
     }
 
-    fun isExist(taste: String): Boolean {
-        return tasteRepository.existsByTaste(taste)
+    fun get(title:String): Taste?{
+        return tasteRepository.findByTitle(title).orElse(null);
     }
 
-    fun save(taste: Taste) {
-        tasteRepository.save(taste)
+    fun isExist(taste: String): Boolean {
+        return tasteRepository.existsByTitle(taste)
+    }
+
+    fun add(taste: Taste): Taste? {
+        var savedTaste = tasteRepository.save(taste);
+        if(savedTaste.id == 0L) return null;
+        return savedTaste;
     }
 }

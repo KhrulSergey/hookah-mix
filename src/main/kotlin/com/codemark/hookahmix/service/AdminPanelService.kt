@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service
 
 @Service
 class AdminPanelService @Autowired constructor(private val makerService: MakerService,
-                                               private val tasteRepository: TasteRepository,
+                                               private val tasteService: TasteService,
                                                private val tobaccoRepository: TobaccoRepository,
                                                private val fileRepository: FileRepository,
                                                private val mixRepository: MixRepository,
@@ -18,12 +18,12 @@ class AdminPanelService @Autowired constructor(private val makerService: MakerSe
     //TODO Перенести методы в соответ. сервисы
 
     fun addTobacco(title: String, makerTitle: String,
-                   description: String, taste: String,
+                   description: String, tasteTitle: String,
                    strength: Double, image: String, tags: String) {
 
         var findMaker: Maker = makerService.getOne(makerTitle)!!;
 
-        var findTaste: Taste = tasteRepository.findByTaste(taste)
+        var findTaste: Taste = tasteService.get(tasteTitle)!!;
 
         var newTobacco = Tobacco(title, description, strength)
         newTobacco.maker = findMaker

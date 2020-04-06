@@ -41,14 +41,19 @@ class AdminPanelController @Autowired constructor(private val tobaccoService: To
 
     @GetMapping("/parseResult")
     fun parseResult(model: Model): String {
-
-        model.addAttribute("result", DataParserInfoDto<Any>(status=ParseStatus.NOT_STARTED));
+        model.addAttribute("resultMix", DataParserInfoDto<Any>(status = ParseStatus.NOT_STARTED));
+        model.addAttribute("resultTobacco", DataParserInfoDto<Any>(status = ParseStatus.NOT_STARTED));
         return "parseResult";
     }
 
-    @GetMapping("/parse")
-    fun parse() {
-        tobaccoParser.connectPage()?.let { tobaccoParser.startParse(it) };
+    @GetMapping("/parse-tobacco")
+    fun parseTobacco(@RequestParam(required = false) count: Int?, model: Model): String {
+        var dataCount = count;
+        if (dataCount == null) dataCount = defaultParseDataSize;
+        var result: DataParserInfoDto<Tobacco>? = tobaccoParser.connectPage()?.let { tobaccoParser.startParse(it, dataCount) };
+        model.addAttribute("resultMix", DataParserInfoDto<Any>(status = ParseStatus.NOT_STARTED));
+        model.addAttribute("resultTobacco", result);
+        return "parseResult";
     }
 
     @GetMapping("/parse-mix")
@@ -56,7 +61,8 @@ class AdminPanelController @Autowired constructor(private val tobaccoService: To
         var dataCount = count;
         if (dataCount == null) dataCount = defaultParseDataSize;
         var result: DataParserInfoDto<Mix>? = mixParser.connectPage()?.let { mixParser.startParse(it, dataCount) };
-        model.addAttribute("result", result);
+        model.addAttribute("resultTobacco", DataParserInfoDto<Any>(status = ParseStatus.NOT_STARTED));
+        model.addAttribute("resultMix", result);
         return "parseResult";
     }
 
@@ -126,7 +132,7 @@ class AdminPanelController @Autowired constructor(private val tobaccoService: To
                        model: Model): String {
 
         var tobaccos: List<Tobacco>;
-        if (filter != null && filter.isNotEmpty()) {
+        if (filter.isBlank()) {
 
             tobaccos = tobaccoService.getAllByMaker(filter);
 
