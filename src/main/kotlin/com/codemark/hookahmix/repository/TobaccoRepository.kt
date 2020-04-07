@@ -34,7 +34,7 @@ interface TobaccoRepository : JpaRepository<Tobacco, Long> {
 
     fun findByTitle(title: String): MutableSet<Tobacco>
 
-    fun findByTitleAndMaker(title: String, maker: Maker): Optional<Tobacco>;
+    fun findByTitleAndMaker(title: String, maker: Maker): Tobacco?;
 
     @Query(nativeQuery = true,
             value = "select * from tobaccos t " +

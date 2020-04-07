@@ -35,6 +35,9 @@ class Maker(title: String="") {
     @Transient
     var sourceUrl: String = "";
 
+    @Transient
+    var strength: Double = 0.0;
+
     @OneToOne
     @JoinColumn(name = "file_id")
     var image: Image? = null;

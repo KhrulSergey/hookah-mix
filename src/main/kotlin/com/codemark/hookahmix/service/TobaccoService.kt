@@ -30,7 +30,7 @@ class TobaccoService @Autowired constructor(
     }
 
     fun getOne(title: String, maker: Maker): Tobacco? {
-        return tobaccoRepository.findByTitleAndMaker(title, maker).orElse(null);
+        return tobaccoRepository.findByTitleAndMaker(title, maker);
     }
 
     fun isExist(tobaccoId: Long): Boolean {

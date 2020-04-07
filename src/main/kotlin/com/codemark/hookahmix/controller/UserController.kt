@@ -1,10 +1,7 @@
 package com.codemark.hookahmix.controller
 
-import com.codemark.hookahmix.domain.Image
 import com.codemark.hookahmix.domain.User
-import com.codemark.hookahmix.repository.FileRepository
 import com.codemark.hookahmix.service.UserService
-import com.codemark.hookahmix.util.ImageUtil
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity

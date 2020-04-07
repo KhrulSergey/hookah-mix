@@ -10,7 +10,7 @@ import org.springframework.stereotype.Repository
 interface MakerRepository : JpaRepository<Maker, Long> {
 
     //TODO Проверить возможен ли нативный запрос
-    fun findByTitle(title : String) : Maker
+    fun findByTitle(title : String) : Maker?
 
     fun findMakerByTitle(title: String): MutableSet<Maker>
 

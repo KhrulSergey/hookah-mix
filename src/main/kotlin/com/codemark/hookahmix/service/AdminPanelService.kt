@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service
 class AdminPanelService @Autowired constructor(private val makerService: MakerService,
                                                private val tasteService: TasteService,
                                                private val tobaccoRepository: TobaccoRepository,
-                                               private val fileRepository: FileRepository,
+                                               private val imageRepository: ImageRepository,
                                                private val mixRepository: MixRepository,
                                                private val componentRepository: ComponentRepository,
                                                private val imageUtil: ImageUtil) {
@@ -25,16 +25,16 @@ class AdminPanelService @Autowired constructor(private val makerService: MakerSe
 
         var findTaste: Taste = tasteService.get(tasteTitle)!!;
 
-        var newTobacco = Tobacco(title, description, strength)
-        newTobacco.maker = findMaker
-        newTobacco.taste = findTaste
+        var newTobacco = Tobacco(title, description, strength);
+        newTobacco.maker = findMaker;
+        newTobacco.taste = findTaste;
 
-        var tobaccoImage = Image()
-        tobaccoImage.image = imageUtil.save(image)
-        fileRepository.save(tobaccoImage)
-        newTobacco.image = tobaccoImage
+        var tobaccoImage = Image();
+        tobaccoImage.name = imageUtil.uploadImage(image, makerTitle);
+        imageRepository.save(tobaccoImage);
+        newTobacco.image = tobaccoImage;
 
-        tobaccoRepository.save(newTobacco)
+        tobaccoRepository.save(newTobacco);
     }
 
     fun addMix(title: String, tags: String,

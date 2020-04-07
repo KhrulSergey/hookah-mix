@@ -1,48 +1,70 @@
 package com.codemark.hookahmix.util
 
-import com.codemark.hookahmix.exception.ImageReadException
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
 import java.io.*
 import java.net.URL
+import java.nio.file.Files
+import java.nio.file.Path
+import java.nio.file.Paths
+import java.security.SecureRandom
 import java.util.*
 
 @Component
 class ImageUtil {
 
+    @Value("\${uploadDirectoryPath}")
+    var uploadDirectoryPath: String = ""
+
     @Value("\${uploadPath}")
     var uploadPath: String = ""
 
-    fun save(target: String): ByteArray {
+    @Value("\${imageExtensionName}")
+    var imageExtension: String = ""
 
-        var imagesFolder = File(uploadPath)
-        if (!imagesFolder.exists()) {
-            imagesFolder.mkdir()
+    fun getFileDirectory(): Path {
+        var uploadFullPath = Paths.get(uploadDirectoryPath + uploadPath);
+        Files.createDirectories(uploadFullPath);
+        return uploadFullPath;
+    }
+
+    @Throws(IOException::class)
+    fun uploadImage(targetUrl: String, targetTitle: String): String {
+        return uploadFile(targetUrl, targetTitle, imageExtension);
+    }
+
+    @Throws(IOException::class)
+    fun deleteFile(fileName: String): Boolean {
+        var fileToDelete: File = File(getFileDirectory().toString() + "/" + fileName);
+        if (fileToDelete.isFile) {
+            return fileToDelete.delete();
         }
-        //TODO удалить жесткое расширение файла
-        var fileName: String = uploadPath + "/" + UUID.randomUUID().toString() + ".jpg"
+        return false
+    }
 
-        var url = URL(target);
-
-
-        var outputStream: OutputStream = FileOutputStream(File(fileName))
+    @Throws(IOException::class)
+    private fun uploadFile(targetUrl: String, targetFileTitle: String, targetExtension: String): String {
+        var url = URL(targetUrl);
+        var targetFileName = targetFileTitle + "_" + generateRandomString() + targetExtension;
+        var outputStream: OutputStream = FileOutputStream(File(getFileDirectory().toString() + "/" + targetFileName));
         var inputStream: InputStream
-
-        try {
-            inputStream = url.openStream()
-            var buffer = ByteArray(8192)
-            var index = 0
-            while ({index = inputStream.read(buffer); index}() > 0) {
-                outputStream.write(buffer, 0, index)
-            }
-        } catch (e: IOException) {
-            throw ImageReadException("Failed to read", e)
+        inputStream = url.openStream()
+        var buffer = ByteArray(8192)
+        var index = 0
+        while ({ index = inputStream.read(buffer); index }() > 0) {
+            outputStream.write(buffer, 0, index)
         }
-
         inputStream.close()
         outputStream.close()
+        return targetFileName;
+    }
 
-        return Base64.getEncoder().encode(fileName.toByteArray())
+    private fun generateRandomString(): String {
+        var rand = SecureRandom();
+        val encoder = Base64.getUrlEncoder().withoutPadding()
+        val randomBytes = ByteArray(6);
+        rand.nextBytes(randomBytes);
+        return encoder.encodeToString(randomBytes);
     }
 
 }

@@ -8,7 +8,7 @@ import java.util.*
 @Repository
 interface TasteRepository : JpaRepository<Taste, Long> {
 
-    fun findByTitle(title: String): Optional<Taste>
+    fun findByTitle(title: String): Taste?
 
     fun existsByTitle(title: String): Boolean
 }

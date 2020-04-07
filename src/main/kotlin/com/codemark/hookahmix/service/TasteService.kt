@@ -17,7 +17,7 @@ class TasteService @Autowired constructor(
     }
 
     fun get(title:String): Taste?{
-        return tasteRepository.findByTitle(title).orElse(null);
+        return tasteRepository.findByTitle(title);
     }
 
     fun isExist(taste: String): Boolean {
