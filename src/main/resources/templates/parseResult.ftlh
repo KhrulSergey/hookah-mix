@@ -66,10 +66,9 @@
     <div class="spoiler-wrap <#if (resultTobacco.sourceEntriesCount > 0) > active <#else> active </#if> ">
         <div class="spoiler-head">Получить данные по табакам</div>
         <div class="spoiler-body">
-            <form action="/parse-tobacco" method="get">
+            <form action="../parse-tobacco" method="get">
                 <div style="align-items: flex-start; flex-direction: column; flex: 1">
-                    <p value="${resultTobacco.status}"><strong>Статус обработки:</strong> ${resultTobacco.status.title}.
-                    </p>
+                    <p><strong>Статус обработки:</strong> ${resultTobacco.status.title}.</p>
                     <p><strong>Список ошибок:</strong></p>
                     <div style="height: 200px; margin: 15px; overflow: scroll; border: dodgerblue inset 5px; font-size: 14px;">
                         <#list resultTobacco.errorLog as errorMsg>
@@ -107,9 +106,9 @@
     <div class="spoiler-wrap <#if (resultMix.sourceEntriesCount > 0) > active <#else> disabled </#if> ">
         <div class="spoiler-head">Получить данные по миксам</div>
         <div class="spoiler-body">
-            <form action="/parse-mix" method="get">
+            <form action="../parse-mix" method="get">
                 <div style="align-items: flex-start; flex-direction: column; flex: 1">
-                    <p value="${resultMix.status}"><strong>Статус обработки:</strong> ${resultMix.status.title}.</p>
+                    <p><strong>Статус обработки:</strong> ${resultMix.status.title}.</p>
                     <p><strong>Список ошибок:</strong></p>
                     <div style="height: 200px; margin: 15px; overflow: scroll; border: lightskyblue inset 5px; font-size: 14px;">
                         <#list resultMix.errorLog as errorMsg>

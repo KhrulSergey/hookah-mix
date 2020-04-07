@@ -25,8 +25,7 @@ import java.io.IOException
 class TobaccoParser @Autowired constructor(private var imageService: ImageService,
                                            private val tasteService: TasteService,
                                            private val makerService: MakerService,
-                                           private val tobaccoService: TobaccoService,
-                                           private var imageUtil: ImageUtil) {
+                                           private val tobaccoService: TobaccoService ) {
 
 
     @Value("\${url}")
@@ -95,17 +94,16 @@ class TobaccoParser @Autowired constructor(private var imageService: ImageServic
         tobaccoParserInfo.dataList = mutableListOf();
         tobaccoParserInfo.sourceEntriesCount = 0;
 
-        var makerListElement: Elements = document!!.select(makersElements);
+        val makerListElement: Elements = document!!.select(makersElements);
         var makerUrl: String = "";
 
         for (makerElement in makerListElement) {
             if (tobaccoParserInfo.dataList.size >= tobaccoCountNeeded) break;
             try {
-                makerUrl = makerListElement.attr("href");
+                makerUrl = makerElement.attr("href");
                 //если не нашли ссылку на производителя -> ошибка
                 if (makerUrl.isBlank()) {
-                    var makerTitle: String = makerElement.text();
-                    throw MakerParsingException("Не найдена ссылка на производителя $makerTitle", null);
+                    throw MakerParsingException("Не найдена ссылка на производителя ${makerElement.text()}", null);
                 }
                 //Запуск обработки записей табаков со страницы Производителя
                 val newTobaccoList: MutableList<Tobacco> = parseOneMaker(makerUrl, tobaccoCountNeeded);
@@ -128,6 +126,7 @@ class TobaccoParser @Autowired constructor(private var imageService: ImageServic
         val savedMaker: Maker?;
         val tobaccoList: MutableList<Tobacco> = mutableListOf();
 
+
         //Открываем детальную страницу производителя
         val makerPage: Document? = connectPage(makerUrl);
         if (makerPage == null) {
@@ -137,6 +136,13 @@ class TobaccoParser @Autowired constructor(private var imageService: ImageServic
         val makerTitle = makerPage.selectFirst(makerTitleElement).text();
         if (makerTitle.isBlank()) {
             throw MakerParsingException("Ошибка получения наименования производителя из источника $makerUrl", null);
+        }
+        var makerStrengthOfTobacco: Double = 0.0;
+        val attributeStrength = makerPage.selectFirst(makerStrengthOfTobaccoElement);
+        if (attributeStrength != null) {
+            makerStrengthOfTobacco = attributeStrength.text().toDouble();
+        } else {
+            tobaccoParserInfo.warningLog.add("Не получена крепость табака у производителя $makerTitle из источника.");
         }
         /** Проверяем наличие производителя в БД */
         newMaker = makerService.getOne(makerTitle);
@@ -148,7 +154,7 @@ class TobaccoParser @Autowired constructor(private var imageService: ImageServic
             var makerImageUrl: String = "";
             var makerFoundingYear: String = "";
             var makerDescription: String = "";
-            var makerStrengthOfTobacco: Double = 0.0;
+
 
             val attributeMakerDescription = makerPage.selectFirst(makerDescriptionElement);
             if (attributeMakerDescription == null) {
@@ -158,8 +164,7 @@ class TobaccoParser @Autowired constructor(private var imageService: ImageServic
                 makerDescription = attributeMakerDescription.text();
             }
 
-            var attributeImageMaker = makerPage.selectFirst(makerImageElement);
-
+            val attributeImageMaker = makerPage.selectFirst(makerImageElement);
             if (attributeImageMaker == null) {
                 throw MakerParsingException("Не определена ссылка на логотип у производителя $makerTitle из источника.", null);
             }
@@ -167,7 +172,7 @@ class TobaccoParser @Autowired constructor(private var imageService: ImageServic
                     attributeImageMaker.attr("style").indexOf('(') + 1,
                     attributeImageMaker.attr("style").indexOf(')'));
 
-            var attributeFoundingYear = makerPage.selectFirst(makerFoundingYearElement);
+            val attributeFoundingYear = makerPage.selectFirst(makerFoundingYearElement);
             if (attributeFoundingYear != null) {
                 makerFoundingYear = attributeFoundingYear.text()
                         .replace(("[^0-9]").toRegex(), "");
@@ -175,21 +180,15 @@ class TobaccoParser @Autowired constructor(private var imageService: ImageServic
             } else {
                 tobaccoParserInfo.warningLog.add("Не определен год основания у производителя $makerTitle из источника.");
             }
-            val attributeStrength = makerPage.selectFirst(makerStrengthOfTobaccoElement);
-            if (attributeStrength != null) {
-                makerStrengthOfTobacco = attributeStrength.text().toDouble();
-            } else {
-                tobaccoParserInfo.warningLog.add("Не получена крепость табака у производителя $makerTitle из источника.");
-            }
 
             /** Сохраняем изображение производителя */
-            var makerImageName = imageUtil.uploadImage(makerImageUrl, makerTitle);
-            if (makerImageName.isBlank()) {
+            val makerImageName = imageService.uploadImage(makerImageUrl, makerTitle);
+            if (makerImageName.isNullOrBlank()) {
                 throw MakerParsingException("Не удалось сохранить файл логотип у производителя $makerTitle на диск.", null);
             }
-            var makerImage: Image? = imageService.add(Image(makerImageName));
+            val makerImage: Image? = imageService.add(Image(makerImageName));
             if (makerImage == null) {
-                var deleteResult = imageUtil.deleteFile(makerImageName);
+                val deleteResult = imageService.deleteUploadedFile(makerImageName);
                 throw MakerParsingException("Не удалось сохранить логотип производителя $makerTitle в БД. Файл удален с диска: $deleteResult.", null);
             }
 
@@ -212,19 +211,20 @@ class TobaccoParser @Autowired constructor(private var imageService: ImageServic
         var tobaccoUrl: String;
         var newTobacco: Tobacco?;
         for (element in tobaccoElements) {
+            //Проверяем условия выполнения парсера на кол-во рассмотренных и добавленных табаков
             if (tobaccoList.size >= tobaccoCountNeeded) break;
             tobaccoParserInfo.sourceEntriesCount++;
             try {
+                /** Запуск обработки одного табака */
                 tobaccoUrl = element.attr("href");
                 if (tobaccoUrl.isBlank()) {
                     tobaccoParserInfo.warningLog.add(
                             "Не определена ссылка на страницу табака ${element.text()} у производителя ${savedMaker.title} из источника.");
                 }
-                newTobacco = parseOneTobacco(tobaccoUrl, savedMaker);
+                newTobacco = parseOneTobacco(tobaccoUrl, savedMaker, makerStrengthOfTobacco);
                 if (newTobacco != null) {
                     tobaccoList.add(newTobacco);
                 }
-
             } catch (exc: TobaccoParsingException) {
                 tobaccoParserInfo.errorLog.add(exc.message!!);
             }
@@ -233,7 +233,7 @@ class TobaccoParser @Autowired constructor(private var imageService: ImageServic
     }
 
     @Throws(TobaccoParsingException::class)
-    fun parseOneTobacco(tobaccoUrl: String, maker: Maker): Tobacco? {
+    fun parseOneTobacco(tobaccoUrl: String, maker: Maker, strengthOfTobacco:Double): Tobacco? {
         var newTobacco: Tobacco?;
         var savedTobacco: Tobacco?;
         var tobaccoTitle: String;
@@ -265,7 +265,7 @@ class TobaccoParser @Autowired constructor(private var imageService: ImageServic
             } else {
                 tobaccoParserInfo.warningLog.add("Не получено описание табака $tobaccoTitle из источника.");
             }
-            var attributeTobaccoImage = tobaccoPage.selectFirst(tobaccoImageElement);
+            val attributeTobaccoImage = tobaccoPage.selectFirst(tobaccoImageElement);
             if (attributeTobaccoImage != null) {
                 tobaccoImageUrl = attributeTobaccoImage.attr("style").substring(
                         attributeTobaccoImage.attr("style").indexOf('(') + 1,
@@ -274,7 +274,7 @@ class TobaccoParser @Autowired constructor(private var imageService: ImageServic
                 tobaccoParserInfo.warningLog.add("Не получено изображение табака $tobaccoTitle из источника.");
             }
 
-            var attributeTobaccoDetails: Elements = tobaccoPage.select(tobaccoDetailsElements);
+            val attributeTobaccoDetails: Elements = tobaccoPage.select(tobaccoDetailsElements);
             if (attributeTobaccoDetails.isNotEmpty()) {
                 for (element: Element in attributeTobaccoDetails) {
                     if (element.select("span").text().indexOf(tobaccoTasteElementText) != -1) {
@@ -298,13 +298,13 @@ class TobaccoParser @Autowired constructor(private var imageService: ImageServic
             }
 
             /** Сохраняем изображение табака */
-            var tobaccoImageName = imageUtil.uploadImage(tobaccoImageUrl, maker.title + "_" + tobaccoTitle);
-            if (tobaccoImageName.isBlank()) {
+            val tobaccoImageName = imageService.uploadImage(tobaccoImageUrl, maker.title + "_" + tobaccoTitle);
+            if (tobaccoImageName.isNullOrBlank()) {
                 throw TobaccoParsingException("Не удалось сохранить изображение для табака $tobaccoTitle на диск.", null);
             }
-            var tobaccoImage: Image? = imageService.add(Image(tobaccoTitle));
+            val tobaccoImage: Image? = imageService.add(Image(tobaccoTitle));
             if (tobaccoImage == null) {
-                var deleteResult = imageUtil.deleteFile(tobaccoImageName);
+                val deleteResult = imageService.deleteUploadedFile(tobaccoImageName);
                 throw TobaccoParsingException("Не удалось сохранить изображение для табака в БД. Файл удален с диска: $deleteResult.", null);
             }
 
@@ -312,7 +312,7 @@ class TobaccoParser @Autowired constructor(private var imageService: ImageServic
             newTobacco.title = tobaccoTitle;
             newTobacco.description = tobaccoDescription;
             newTobacco.taste = tobaccoTaste;
-            newTobacco.strength = maker.strength;
+            newTobacco.strength = strengthOfTobacco;
             newTobacco.image = tobaccoImage;
             newTobacco.maker = maker;
 
@@ -324,6 +324,4 @@ class TobaccoParser @Autowired constructor(private var imageService: ImageServic
         }
         return savedTobacco;
     }
-
-
 }

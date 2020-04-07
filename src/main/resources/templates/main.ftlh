@@ -17,13 +17,13 @@
 <div class="container">
 
     <div>
-        <a href="/catalog_tobaccos">Tobaccos List</a>
-        <a href="/catalog_mixes">Mixes List</a>
-        <a href="/parseResult">Parse Data Source</a>
+        <a href="../catalog_tobaccos">Tobaccos List</a>
+        <a href="../catalog_mixes">Mixes List</a>
+        <a href="../parseResult">Parse Data Source</a>
     </div>
 
     <div>
-        <form action="/main" method="post">
+        <form action="../main" method="post">
 
             <label><p>Tobacco:</p> </label>
             <div>
@@ -69,7 +69,7 @@
     <div class="container">
         <div class="row">
             <div class="col-sm-6">
-                <form action="/add_mix" method="post">
+                <form action="../add_mix" method="post">
 
                     <label><p>Mix: </p></label>
 
@@ -96,7 +96,7 @@
             </div>
 
             <div class="col-sm-6">
-                <form action="/add_component" method="post">
+                <form action="../add_component" method="post">
                     <div class="collapse my-3" id="collapseExample">
                         <div>
                             <label>Add component for this mix</label>

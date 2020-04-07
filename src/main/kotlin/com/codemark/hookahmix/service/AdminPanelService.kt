@@ -10,10 +10,9 @@ import org.springframework.stereotype.Service
 class AdminPanelService @Autowired constructor(private val makerService: MakerService,
                                                private val tasteService: TasteService,
                                                private val tobaccoRepository: TobaccoRepository,
-                                               private val imageRepository: ImageRepository,
+                                               private val imageService: ImageService,
                                                private val mixRepository: MixRepository,
-                                               private val componentRepository: ComponentRepository,
-                                               private val imageUtil: ImageUtil) {
+                                               private val componentRepository: ComponentRepository) {
 
     //TODO Перенести методы в соответ. сервисы
 
@@ -30,8 +29,8 @@ class AdminPanelService @Autowired constructor(private val makerService: MakerSe
         newTobacco.taste = findTaste;
 
         var tobaccoImage = Image();
-        tobaccoImage.name = imageUtil.uploadImage(image, makerTitle);
-        imageRepository.save(tobaccoImage);
+        tobaccoImage.name = imageService.uploadImage(image, makerTitle);
+        imageService.add(tobaccoImage);
         newTobacco.image = tobaccoImage;
 
         tobaccoRepository.save(newTobacco);
