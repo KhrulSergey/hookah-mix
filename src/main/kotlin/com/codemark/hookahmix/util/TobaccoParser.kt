@@ -5,10 +5,7 @@ import com.codemark.hookahmix.domain.dto.DataParserInfoDto
 import com.codemark.hookahmix.domain.dto.ParseStatus
 import com.codemark.hookahmix.exception.MakerParsingException
 import com.codemark.hookahmix.exception.TobaccoParsingException
-import com.codemark.hookahmix.repository.FileRepository
-import com.codemark.hookahmix.repository.MakerRepository
-import com.codemark.hookahmix.repository.TasteRepository
-import com.codemark.hookahmix.repository.TobaccoRepository
+import com.codemark.hookahmix.service.ImageService
 import com.codemark.hookahmix.service.MakerService
 import com.codemark.hookahmix.service.TasteService
 import com.codemark.hookahmix.service.TobaccoService
@@ -25,10 +22,7 @@ import java.io.IOException
 
 @Component
 @PropertySource(ignoreResourceNotFound = false, value = ["classpath:parser.properties"])
-class TobaccoParser @Autowired constructor(private var tobaccoRepository: TobaccoRepository,
-                                           private var makerRepository: MakerRepository,
-                                           private var tasteRepository: TasteRepository,
-                                           private var fileRepository: FileRepository,
+class TobaccoParser @Autowired constructor(private var imageService: ImageService,
                                            private val tasteService: TasteService,
                                            private val makerService: MakerService,
                                            private val tobaccoService: TobaccoService,
@@ -52,6 +46,9 @@ class TobaccoParser @Autowired constructor(private var tobaccoRepository: Tobacc
 
     @Value("\${selectMakerDescription}")
     var makerDescriptionElement: String = "";
+
+    @Value("\${selectMakerStrength}")
+    var makerStrengthOfTobaccoElement: String = "";
 
     @Value("\${tobaccosElements}")
     var tobaccosElements: String = "";
@@ -111,14 +108,13 @@ class TobaccoParser @Autowired constructor(private var tobaccoRepository: Tobacc
                     throw MakerParsingException("Не найдена ссылка на производителя $makerTitle", null);
                 }
                 //Запуск обработки записей табаков со страницы Производителя
-                val newTobaccoList: MutableList<Tobacco> = parseOneMaker(makerUrl);
+                val newTobaccoList: MutableList<Tobacco> = parseOneMaker(makerUrl, tobaccoCountNeeded);
                 if (newTobaccoList.isNotEmpty()) {
                     tobaccoParserInfo.dataList.addAll(newTobaccoList);
                 }
             } catch (exc: MakerParsingException) {
                 tobaccoParserInfo.errorLog.add(exc.message!!);
-            }
-            catch (exc: Exception) {
+            } catch (exc: Exception) {
                 tobaccoParserInfo.errorLog.add("Неизвестная ошибка" + exc.message + "вызывана " + exc.cause);
             }
         }
@@ -127,7 +123,7 @@ class TobaccoParser @Autowired constructor(private var tobaccoRepository: Tobacc
     }
 
     @Throws(MakerParsingException::class)
-    fun parseOneMaker(makerUrl: String): MutableList<Tobacco> {
+    fun parseOneMaker(makerUrl: String, tobaccoCountNeeded: Int): MutableList<Tobacco> {
         var newMaker: Maker?;
         val savedMaker: Maker?;
         val tobaccoList: MutableList<Tobacco> = mutableListOf();
@@ -137,7 +133,7 @@ class TobaccoParser @Autowired constructor(private var tobaccoRepository: Tobacc
         if (makerPage == null) {
             throw MakerParsingException("Ошибка открытия детальной страницы производителя из источника $makerUrl", null);
         }
-        /** Обработка данных о производителе*/
+        /** Обработка данных о производителе */
         val makerTitle = makerPage.selectFirst(makerTitleElement).text();
         if (makerTitle.isBlank()) {
             throw MakerParsingException("Ошибка получения наименования производителя из источника $makerUrl", null);
@@ -152,6 +148,7 @@ class TobaccoParser @Autowired constructor(private var tobaccoRepository: Tobacc
             var makerImageUrl: String = "";
             var makerFoundingYear: String = "";
             var makerDescription: String = "";
+            var makerStrengthOfTobacco: Double = 0.0;
 
             val attributeMakerDescription = makerPage.selectFirst(makerDescriptionElement);
             if (attributeMakerDescription == null) {
@@ -162,13 +159,13 @@ class TobaccoParser @Autowired constructor(private var tobaccoRepository: Tobacc
             }
 
             var attributeImageMaker = makerPage.selectFirst(makerImageElement);
-            if (attributeImageMaker != null) {
-                makerImageUrl = attributeImageMaker.attr("style").substring(
-                        attributeImageMaker.attr("style").indexOf('(') + 1,
-                        attributeImageMaker.attr("style").indexOf(')'));
-            } else {
-                tobaccoParserInfo.warningLog.add("Не определен логотип у производителя $makerTitle из источника.");
+
+            if (attributeImageMaker == null) {
+                throw MakerParsingException("Не определена ссылка на логотип у производителя $makerTitle из источника.", null);
             }
+            makerImageUrl = attributeImageMaker.attr("style").substring(
+                    attributeImageMaker.attr("style").indexOf('(') + 1,
+                    attributeImageMaker.attr("style").indexOf(')'));
 
             var attributeFoundingYear = makerPage.selectFirst(makerFoundingYearElement);
             if (attributeFoundingYear != null) {
@@ -178,19 +175,30 @@ class TobaccoParser @Autowired constructor(private var tobaccoRepository: Tobacc
             } else {
                 tobaccoParserInfo.warningLog.add("Не определен год основания у производителя $makerTitle из источника.");
             }
+            val attributeStrength = makerPage.selectFirst(makerStrengthOfTobaccoElement);
+            if (attributeStrength != null) {
+                makerStrengthOfTobacco = attributeStrength.text().toDouble();
+            } else {
+                tobaccoParserInfo.warningLog.add("Не получена крепость табака у производителя $makerTitle из источника.");
+            }
 
             /** Сохраняем изображение производителя */
-            var makerImage = Image();
-            makerImage.id = 10;
-            //TODO решить вопрос с сохранением картинок
-//            makerImage.image = imageUtil.save(makerImageUrl);
-//            fileRepository.save(makerImage);
+            var makerImageName = imageUtil.uploadImage(makerImageUrl, makerTitle);
+            if (makerImageName.isBlank()) {
+                throw MakerParsingException("Не удалось сохранить файл логотип у производителя $makerTitle на диск.", null);
+            }
+            var makerImage: Image? = imageService.add(Image(makerImageName));
+            if (makerImage == null) {
+                var deleteResult = imageUtil.deleteFile(makerImageName);
+                throw MakerParsingException("Не удалось сохранить логотип производителя $makerTitle в БД. Файл удален с диска: $deleteResult.", null);
+            }
 
             newMaker = Maker();
             newMaker.title = makerTitle;
             newMaker.description = makerDescription;
             newMaker.foundingYear = makerFoundingYear;
             newMaker.image = makerImage;
+            newMaker.strength = makerStrengthOfTobacco;
             savedMaker = makerService.add(newMaker);
             if (savedMaker == null) {
                 throw MakerParsingException("Ошибка сохранения производителя $makerTitle в БД.", null);
@@ -201,10 +209,11 @@ class TobaccoParser @Autowired constructor(private var tobaccoRepository: Tobacc
         /** Обработка списка табаков */
         val tobaccoElements = makerPage.select(tobaccosElements) ?: throw MakerParsingException(
                 "Ошибка получения списка табаков производителя ${savedMaker.title} в БД.", null);
-        tobaccoParserInfo.sourceEntriesCount += tobaccoElements.size;
         var tobaccoUrl: String;
         var newTobacco: Tobacco?;
         for (element in tobaccoElements) {
+            if (tobaccoList.size >= tobaccoCountNeeded) break;
+            tobaccoParserInfo.sourceEntriesCount++;
             try {
                 tobaccoUrl = element.attr("href");
                 if (tobaccoUrl.isBlank()) {
@@ -212,11 +221,10 @@ class TobaccoParser @Autowired constructor(private var tobaccoRepository: Tobacc
                             "Не определена ссылка на страницу табака ${element.text()} у производителя ${savedMaker.title} из источника.");
                 }
                 newTobacco = parseOneTobacco(tobaccoUrl, savedMaker);
-                if (newTobacco == null) {
-                    throw TobaccoParsingException(
-                            "Ошибка распознавания табака ${element.text()} у производителя ${savedMaker.title}.", null);
+                if (newTobacco != null) {
+                    tobaccoList.add(newTobacco);
                 }
-                tobaccoList.add(newTobacco);
+
             } catch (exc: TobaccoParsingException) {
                 tobaccoParserInfo.errorLog.add(exc.message!!);
             }
@@ -231,7 +239,6 @@ class TobaccoParser @Autowired constructor(private var tobaccoRepository: Tobacc
         var tobaccoTitle: String;
         var tobaccoDescription: String = "";
         var tobaccoImageUrl: String = "";
-        var tobaccoStrength: Double = 0.0;
         var tobaccoTaste: Taste?;
         var tobaccoTasteTitle: String = "";
         //Открываем детальную страницу табака
@@ -248,7 +255,7 @@ class TobaccoParser @Autowired constructor(private var tobaccoRepository: Tobacc
         /** Проверяем существование табака в БД */
         newTobacco = tobaccoService.getOne(tobaccoTitle, maker);
         if (newTobacco != null) {
-            savedTobacco = newTobacco;
+            savedTobacco = null;
             tobaccoParserInfo.warningLog.add("Табак ${newTobacco.title} уже существует в БД. ");
         } else {
             /** Заполняем данные о табаке со страницы */
@@ -258,53 +265,56 @@ class TobaccoParser @Autowired constructor(private var tobaccoRepository: Tobacc
             } else {
                 tobaccoParserInfo.warningLog.add("Не получено описание табака $tobaccoTitle из источника.");
             }
-            //TODO решить проблему с получением картинки из WEB
             var attributeTobaccoImage = tobaccoPage.selectFirst(tobaccoImageElement);
             if (attributeTobaccoImage != null) {
                 tobaccoImageUrl = attributeTobaccoImage.attr("style").substring(
                         attributeTobaccoImage.attr("style").indexOf('(') + 1,
                         attributeTobaccoImage.attr("style").indexOf(')'));
-            }else{
+            } else {
                 tobaccoParserInfo.warningLog.add("Не получено изображение табака $tobaccoTitle из источника.");
             }
 
-            var attributeTobaccoDetails:Elements = tobaccoPage.select(tobaccoDetailsElements);
+            var attributeTobaccoDetails: Elements = tobaccoPage.select(tobaccoDetailsElements);
             if (attributeTobaccoDetails.isNotEmpty()) {
-                for (element:Element in attributeTobaccoDetails){
-                    if(element.select("span").text().indexOf(tobaccoTasteElementText) != -1) {
+                for (element: Element in attributeTobaccoDetails) {
+                    if (element.select("span").text().indexOf(tobaccoTasteElementText) != -1) {
                         //Формируем наименование вкуса
                         tobaccoTasteTitle = element.text().substring(tobaccoTasteElementText.length);
                         tobaccoTasteTitle = tobaccoTasteTitle.trim();
                         break;
                     }
                 }
-            }
-            else{
+            } else {
                 tobaccoParserInfo.warningLog.add("Не получен вкус табака $tobaccoTitle из источника.");
                 tobaccoTasteTitle = "Нет моновкуса";
             }
             //Получаем вкус для табака из БД (существующий или новый)
             tobaccoTaste = tasteService.get(tobaccoTasteTitle);
-            if(tobaccoTaste == null){
+            if (tobaccoTaste == null) {
                 tobaccoTaste = tasteService.add(Taste(tobaccoTasteTitle));
-                if (tobaccoTaste == null){
+                if (tobaccoTaste == null) {
                     throw TobaccoParsingException("Ошибка сохранения вкуса $tobaccoTasteTitle для табака $tobaccoTitle в БД.", null);
                 }
             }
 
-            /** Сохраняем изображение производителя */
-            //TODO сохранить изображение в аплдоад и БД
-            var tobaccoImage = Image();
-            tobaccoImage.id = 10;
-//            makerImage.image = imageUtil.save(makerImageUrl);
-//            fileRepository.save(makerImage);
+            /** Сохраняем изображение табака */
+            var tobaccoImageName = imageUtil.uploadImage(tobaccoImageUrl, maker.title + "_" + tobaccoTitle);
+            if (tobaccoImageName.isBlank()) {
+                throw TobaccoParsingException("Не удалось сохранить изображение для табака $tobaccoTitle на диск.", null);
+            }
+            var tobaccoImage: Image? = imageService.add(Image(tobaccoTitle));
+            if (tobaccoImage == null) {
+                var deleteResult = imageUtil.deleteFile(tobaccoImageName);
+                throw TobaccoParsingException("Не удалось сохранить изображение для табака в БД. Файл удален с диска: $deleteResult.", null);
+            }
 
             newTobacco = Tobacco();
             newTobacco.title = tobaccoTitle;
             newTobacco.description = tobaccoDescription;
             newTobacco.taste = tobaccoTaste;
-            newTobacco.strength = tobaccoStrength;
+            newTobacco.strength = maker.strength;
             newTobacco.image = tobaccoImage;
+            newTobacco.maker = maker;
 
             //Сохраняем табак в БД
             savedTobacco = tobaccoService.add(newTobacco);
@@ -314,4 +324,6 @@ class TobaccoParser @Autowired constructor(private var tobaccoRepository: Tobacc
         }
         return savedTobacco;
     }
+
+
 }
