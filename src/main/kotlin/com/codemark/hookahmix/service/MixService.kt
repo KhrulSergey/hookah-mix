@@ -15,26 +15,26 @@ class MixService @Autowired constructor(
         private val mixRepository: MixRepository,
         private var tobaccoService: TobaccoService,
         private var makerService: MakerService,
+        private val imageService: ImageService,
         private val makerRepository: MakerRepository,
         private val componentRepository: ComponentRepository) {
 
     //TODO Удалить неиспользуемые методы
     // Отсортировать методы
 
-    fun getAll(): List<Mix>{
+    fun getAll(): List<Mix> {
         return mixRepository.findAll();
     }
 
     fun showAllMixes(user: User): MutableList<Mix> {
 
-        var mixesList = mixRepository.findAll();
+        val mixesList = mixRepository.findAll();
 
-        var barTobaccos =
-                makerService.getTobaccosInBar(user).stream()
-                        .flatMap { i -> i.tobaccos.stream() }
-                        .collect(Collectors.toList())
+        val barTobaccos = makerService.getTobaccosInBar(user).stream()
+                .flatMap { i -> i.tobaccos.stream() }
+                .collect(Collectors.toList())
 
-        var purchasesTobacco = tobaccoService.findAllPurchases(user);
+        val purchasesTobacco = tobaccoService.findAllPurchases(user);
 
         for (mix in mixesList) {
 
@@ -47,15 +47,20 @@ class MixService @Autowired constructor(
                 mix.status = MixSet.MATCH_BAR;
 
                 for (tobacco in mix.tobaccoMixList) {
+                    tobacco.image!!.name = imageService.getFileWebPath() + tobacco.image!!.name;
                     tobacco.status = TobaccoStatus.CONTAIN_BAR;
                 }
 
             } else {
 
-                var isTobaccoInBar: Boolean = mix.tobaccoMixList.stream()
-                        .anyMatch { i -> user.tobaccos.stream()
-                                .anyMatch { f -> StringUtils.pathEquals(
-                                        i.title, f.title) } };
+                val isTobaccoInBar: Boolean = mix.tobaccoMixList.stream()
+                        .anyMatch { i ->
+                            user.tobaccos.stream()
+                                    .anyMatch { f ->
+                                        StringUtils.pathEquals(
+                                                i.title, f.title)
+                                    }
+                        };
 
                 if (isTobaccoInBar) {
 
@@ -155,9 +160,11 @@ class MixService @Autowired constructor(
 
                     mixes = showAllMixes(user)
                     result = mixes.stream()
-                            .filter { i -> i.status.title.equals(status)
-                                    && i.strength == Integer.parseInt(strength)
-                                    && i.tags.contains(taste) }
+                            .filter { i ->
+                                i.status.title.equals(status)
+                                        && i.strength == Integer.parseInt(strength)
+                                        && i.tags.contains(taste)
+                            }
                             .toList().toMutableList()
 
                 } else {
@@ -165,8 +172,10 @@ class MixService @Autowired constructor(
 
                     mixes = showAllMixes(user)
                     result = mixes.stream()
-                            .filter { i -> i.status.title.equals(status)
-                                    && i.strength == Integer.parseInt(strength) }
+                            .filter { i ->
+                                i.status.title.equals(status)
+                                        && i.strength == Integer.parseInt(strength)
+                            }
                             .toList().toMutableList()
 
                 }
@@ -197,7 +206,13 @@ class MixService @Autowired constructor(
     fun add(mix: Mix): Mix? {
         var newMix = Mix()
         //TODO check mix content or just save what come
-        newMix = mixRepository.save(mix);
+        newMix.title = mix.title;
+        newMix.tags = mix.tags;
+        newMix.rating = mix.rating;
+        newMix.description = mix.description;
+        newMix.strength = mix.strength;
+        newMix = mixRepository.save(newMix);
+
         //check mix creation
         if (newMix.mixesId == 0L) return null;
         //fill components of mix
@@ -209,12 +224,12 @@ class MixService @Autowired constructor(
             component.composition = tobacco.composition;
             newMix.components.add(component)
             tobacco.components.add(component)
-            if(!saveMixComponent(component)) return null;
+            if (!saveMixComponent(component)) return null;
         }
         return newMix;
     }
 
-    fun saveMixComponent (component: Component): Boolean{
+    fun saveMixComponent(component: Component): Boolean {
         return (componentRepository.save(component).componentsId != 0L);
     }
 }

@@ -17,6 +17,15 @@ class ImageService @Autowired constructor(
         private val imageRepository: ImageRepository,
         private var imageUtil: ImageUtil) {
 
+    @Value("\${hostProtocol}")
+    var hostProtocol: String = ""
+
+    @Value("\${hostname}")
+    var hostname: String = ""
+
+    @Value("\${sitePath}")
+    var sitePath: String = ""
+
     @Value("\${uploadDirectoryPath}")
     var uploadDirectoryPath: String = ""
 
@@ -40,15 +49,21 @@ class ImageService @Autowired constructor(
         return savedImage;
     }
 
-    fun getFileDirectory(): Path {
-        val uploadFullPath = Paths.get(uploadDirectoryPath + uploadPath);
-        Files.createDirectories(uploadFullPath);
+    fun getFileWebPath(): String {
+        val uploadFullPath = hostProtocol + hostname + uploadPath;
+        return uploadFullPath;
+    }
+
+    fun getFileDirectory(): String {
+        val uploadFullPath = uploadDirectoryPath + uploadPath;
+        Files.createDirectories(Paths.get(uploadFullPath));
         return uploadFullPath;
     }
 
     fun uploadImage(targetUrl: String, targetTitle: String): String? {
-        val targetFileName = targetTitle + "_" + imageUtil.generateRandomString() + imageExtension;
-        val targetPath = getFileDirectory().toString() + "/" + targetFileName;
+        val targetFileName = (targetTitle + "_" + imageUtil.generateRandomString() + imageExtension)
+                .replace(" ", "_");
+        val targetPath = getFileDirectory() + targetFileName;
         if (imageUtil.uploadFile(targetUrl, targetPath))
             return targetFileName;
         return null;
@@ -56,7 +71,7 @@ class ImageService @Autowired constructor(
 
 
     fun deleteUploadedFile(fileName: String): Boolean {
-        val targetPath = getFileDirectory().toString() + "/" + fileName;
+        val targetPath = getFileDirectory() + fileName;
         return imageUtil.deleteFile(targetPath);
     }
 }
