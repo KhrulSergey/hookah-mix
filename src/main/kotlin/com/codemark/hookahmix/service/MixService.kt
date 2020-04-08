@@ -72,6 +72,7 @@ class MixService @Autowired constructor(
                         for (userTobacco in barTobaccos) {
 
                             if (mixTobacco.tobaccosId.equals(userTobacco.tobaccosId)) {
+                                mixTobacco.image!!.name = imageService.getFileWebPath() + mixTobacco.image!!.name;
                                 mixTobacco.status = TobaccoStatus.CONTAIN_BAR;
 
 
@@ -79,6 +80,7 @@ class MixService @Autowired constructor(
                                 if (mixTobacco.taste?.title.equals(userTobacco.taste?.title)) {
                                     existReplacements = true;
                                     userTobacco.status = TobaccoStatus.CONTAIN_BAR;
+                                    mixTobacco.image!!.name = imageService.getFileWebPath() + mixTobacco.image!!.name;
                                     mixTobacco.replacements.add(userTobacco);
 
                                 } else {
@@ -217,14 +219,17 @@ class MixService @Autowired constructor(
         if (newMix.mixesId == 0L) return null;
         //fill components of mix
         var component: Component;
-        for (tobacco in newMix.tobaccoMixList) {
+        for (tobacco in mix.tobaccoMixList) {
             component = Component()
             component.mix = newMix;
             component.tobacco = tobacco;
             component.composition = tobacco.composition;
             newMix.components.add(component)
             tobacco.components.add(component)
-            if (!saveMixComponent(component)) return null;
+            if (!saveMixComponent(component)) {
+                //TODO rollback addMix operation
+                return null
+            };
         }
         return newMix;
     }

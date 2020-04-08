@@ -14,8 +14,6 @@ class HookahMixApplication : SpringBootServletInitializer() {
 }
 
 fun main(args: Array<String>) {
-    System.setProperty("server.port", "8888");
-    System.setProperty("server.servlet.context-path", "/hookah-mix");
     SpringApplication.run(HookahMixApplication::class.java, *args)
 }
 

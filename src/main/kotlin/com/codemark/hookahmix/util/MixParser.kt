@@ -19,6 +19,7 @@ import org.springframework.stereotype.Component
 import java.io.IOException
 import java.util.regex.Matcher
 import java.util.regex.Pattern
+import kotlin.math.roundToInt
 
 
 @Component
@@ -99,7 +100,7 @@ class MixParser @Autowired constructor(private var tobaccoService: TobaccoServic
         val tobaccoList: MutableList<Tobacco> = mutableListOf();
         var newMix: Mix? = null;
         val mixList: MutableList<Mix> = mutableListOf();
-
+        //Поля для хранения распознанных данных
         var mixFullTitle: String;
         var makerTitle: String;
         var mixDescription: String;
@@ -141,7 +142,7 @@ class MixParser @Autowired constructor(private var tobaccoService: TobaccoServic
                 }
                 //Формируем наименование микса
                 newMix.title = generateMixTitle(tobaccoList);
-                //Проверяем наименование микса в БД
+                /** Проверяем наименование микса в БД */
                 if (mixService.isExist(newMix.title)) {
                     throw MixParsingException(generateErrorMessage(tobaccoList, newMix, pageNumber,
                             "Микс ${newMix.title} уже существует в БД"), null);
@@ -163,7 +164,7 @@ class MixParser @Autowired constructor(private var tobaccoService: TobaccoServic
                     throw MixParsingException(generateErrorMessage(tobaccoList, newMix, pageNumber,
                             "Ошибка получения описания микса из источника"), null);
                 }
-                newMix.description = mixDescription;
+
 
                 /** Формируем композиию табаков в миксе*/
                 mixFullCompositionText = "";
@@ -182,6 +183,8 @@ class MixParser @Autowired constructor(private var tobaccoService: TobaccoServic
                     throw MixParsingException(generateErrorMessage(tobaccoList, newMix, pageNumber,
                             "Ошибка в композиции табаков в миксе"), null);
                 }
+
+                newMix.description = mixDescription;
                 newMix.tobaccoMixList = tobaccoList;
                 val savedMix = mixService.add(newMix);
                 if (savedMix != null) {
@@ -232,12 +235,11 @@ class MixParser @Autowired constructor(private var tobaccoService: TobaccoServic
                 if (matcher.find()) {
                     tobacco.composition = matcher.group().toInt();
                     mixSumComposition += tobacco.composition;
-                    mixStrength += tobacco.strength;
+                    mixStrength += tobacco.strength * tobacco.composition / 100;
                 }
             }
         }
-        //Заполняем Крепость микса из данных о табаках
-        newMix.strength = (mixStrength / tobaccoList.size).toInt();
+
         //Для случая незаполнения композиции для табаков - заполняем его сами равноценно
         if (mixSumComposition in 1..99) {
             val listOfNullCompositionTobacco: MutableList<Int> = mutableListOf();
@@ -250,6 +252,7 @@ class MixParser @Autowired constructor(private var tobaccoService: TobaccoServic
                 val deltaComposition = (100 - mixSumComposition) / listOfNullCompositionTobacco.size;
                 for (tobaccoIndex in listOfNullCompositionTobacco) {
                     tobaccoList[tobaccoIndex].composition = deltaComposition;
+                    mixStrength +=  tobaccoList[tobaccoIndex].strength * deltaComposition / 100;
                     mixSumComposition += deltaComposition;
                 }
             }
@@ -258,6 +261,9 @@ class MixParser @Autowired constructor(private var tobaccoService: TobaccoServic
                     "Пытаемся восстановить пропорции для проблемных табаков. Результат: " +
                             if (mixSumComposition == 100) "успешно" else "ошибка"));
         }
+
+        //Заполняем Крепость микса из данных о табаках
+        newMix.strength = mixStrength.roundToInt();
         return mixSumComposition;
     }
 
