@@ -1,3 +1,4 @@
+<#import "/spring.ftl" as spring />
 <!DOCTYPE html>
 <html lang="en" xmlns="http://www.w3.org/1999/html">
 <head>
@@ -61,12 +62,12 @@
 <div class="container">
     <h2>Получение данных из источников</h2>
     <div>
-        <a href="/main">Go to main page</a>
+        <a href="<@spring.url '/main'/>">Go to main page</a>
     </div>
     <div class="spoiler-wrap <#if (resultTobacco.sourceEntriesCount > 0) > active <#else> active </#if> ">
         <div class="spoiler-head">Получить данные по табакам</div>
         <div class="spoiler-body">
-            <form action="../parse-tobacco" method="get">
+            <form action="<@spring.url '/parse-tobacco'/>" method="get">
                 <div style="align-items: flex-start; flex-direction: column; flex: 1">
                     <p><strong>Статус обработки:</strong> ${resultTobacco.status.title}.</p>
                     <p><strong>Список ошибок:</strong></p>
@@ -106,7 +107,7 @@
     <div class="spoiler-wrap <#if (resultMix.sourceEntriesCount > 0) > active <#else> disabled </#if> ">
         <div class="spoiler-head">Получить данные по миксам</div>
         <div class="spoiler-body">
-            <form action="../parse-mix" method="get">
+            <form action="<@spring.url '/parse-mix'/>" method="get">
                 <div style="align-items: flex-start; flex-direction: column; flex: 1">
                     <p><strong>Статус обработки:</strong> ${resultMix.status.title}.</p>
                     <p><strong>Список ошибок:</strong></p>
@@ -136,7 +137,7 @@
                 </div>
                 <div>
                     <label><strong>Введите количество:</strong> </label>
-                    <input style="width: 50px" type="number" required name="count" value="50" min="0" step="25"
+                    <input style="width: 50px" type="number" required name="count" value="5" min="0" step="5"
                            placeholder="Кол-во даных для распознавания">
                     <button type="submit" class="btn btn-danger">Начать парсинг</button>
                 </div>

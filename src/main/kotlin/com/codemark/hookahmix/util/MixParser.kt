@@ -75,11 +75,9 @@ class MixParser @Autowired constructor(private var tobaccoService: TobaccoServic
         //Получаем элемент "Далее" для навигации по пагинации
         var nextPageUrl: String = mixListPage.select(nextPageElement).attr("href");
         var pageNumber = 1;
-        //TODO Удалить лишний параметр в условии останова
-        var maxPageCount = 2;
 
         /**Проверяем режим остановки парсера */
-        while (nextPageUrl.isNotBlank() && mixParserInfo.dataList.size < mixCountNeeded && pageNumber < maxPageCount) {
+        while (nextPageUrl.isNotBlank() && mixParserInfo.dataList.size < mixCountNeeded) {
             val mixUrlElements: Elements = mixListPage.select(mixUriElement);
             mixParserInfo.sourceEntriesCount += mixUrlElements.size;
             //Запуск обработки одной страницы с миксами
@@ -136,7 +134,7 @@ class MixParser @Autowired constructor(private var tobaccoService: TobaccoServic
                         newTobacco = tobaccoService.getOne(title.trim(), newMaker);
                         if (newTobacco == null) {
                             throw MixParsingException(generateErrorMessage(tobaccoList, newMix, pageNumber,
-                                    "Табак не существует в БД"), null);
+                                    "Табак ${title.trim()} не существует в БД"), null);
                         }
                         tobaccoList.add(newTobacco);
                     }
@@ -146,7 +144,7 @@ class MixParser @Autowired constructor(private var tobaccoService: TobaccoServic
                 //Проверяем наименование микса в БД
                 if (mixService.isExist(newMix.title)) {
                     throw MixParsingException(generateErrorMessage(tobaccoList, newMix, pageNumber,
-                            "Микс уже существует в БД"), null);
+                            "Микс ${newMix.title} уже существует в БД"), null);
                 }
 
                 /**
@@ -179,57 +177,6 @@ class MixParser @Autowired constructor(private var tobaccoService: TobaccoServic
                     throw MixParsingException(generateErrorMessage(tobaccoList, newMix, pageNumber,
                             "Ошибка получения композиции табаков в миксе из источника"), null);
                 }
-
-                //TODO Удалить после отладки парсера
-//                /** Извлекаем числовые соотношения табаков из строки */
-//                var startTobaccoComposition: Number;
-//                var endTobaccoComposition: Number;
-//                var mixComposition: String = "";
-//                var mixSumComposition: Int = 0;
-//                var mixStrength: Double = 0.0;
-//                //Настраиваем регулярку для получения чисел из строки
-//                val pat: Pattern = Pattern.compile("[-]?[0-9]+(.[0-9]+)?")
-//                var matcher: Matcher;
-//                //Ищем название табака в описании композиции микса
-//                for (tobacco in tobaccoList) {
-//                    startTobaccoComposition = mixFullCompositionText.indexOf(tobacco.title.toLowerCase());
-//                    //Проверяем найден ли Табак в описании композиции
-//                    if (startTobaccoComposition == -1) {
-//                        //TODO Варнинг композиции
-//                        MixParsingWarning(newMix, pageNumber, "В композиции микса не найден компонент ${tobacco.title}");
-//                    } else {
-//                        endTobaccoComposition = mixFullCompositionText.indexOfAny(charArrayOf('.', ',', '\n'), startTobaccoComposition);
-//                        mixComposition = mixFullCompositionText.substring(
-//                                startTobaccoComposition + tobacco.title.length, endTobaccoComposition);
-//                        //Получаем соотношение текущего табака через регулярку
-//                        matcher = pat.matcher(mixComposition);
-//                        if (matcher.find()) {
-//                            tobacco.composition = matcher.group().toInt();
-//                            mixSumComposition += tobacco.composition;
-//                            mixStrength += tobacco.strength;
-//                        }
-//                    }
-//                }
-//                //Для случая незаполнения композиции для табаков - заполняем его сами равноценно
-//                if (mixSumComposition in 1..99) {
-//                    var listOfNullCompositionTobacco: MutableList<Int> = mutableListOf();
-//                    for (i in 0 until tobaccoList.size) {
-//                        if (tobaccoList[i].composition == 0) {
-//                            listOfNullCompositionTobacco.add(i);
-//                        }
-//                    }
-//                    if (listOfNullCompositionTobacco.isNotEmpty()) {
-//                        var deltaComposition = (100 - mixSumComposition) / listOfNullCompositionTobacco.size;
-//                        for (tobaccoIndex in listOfNullCompositionTobacco) {
-//                            tobaccoList[tobaccoIndex].composition = deltaComposition;
-//                            mixSumComposition += deltaComposition;
-//                        }
-//                    }
-//                    //TODO Варнинг композиции
-//                    MixParsingWarning(newMix, pageNumber,
-//                            "Пытаемся восстановить пропорции для проблемных табаков. Результат: " +
-//                                    "${if (mixSumComposition == 100) "успешно" else "ошибка"}");
-//                }
 
                 if (parseMixCompositionText(mixFullCompositionText, tobaccoList, newMix, pageNumber) != 100) {
                     throw MixParsingException(generateErrorMessage(tobaccoList, newMix, pageNumber,

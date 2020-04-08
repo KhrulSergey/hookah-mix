@@ -149,6 +149,7 @@ class TobaccoParser @Autowired constructor(private var imageService: ImageServic
         if (newMaker != null) {
             savedMaker = newMaker;
             tobaccoParserInfo.warningLog.add("Производитель ${newMaker.title} уже существует в БД. Исследуем его табаки.");
+            println("Maker $savedMaker already exists in DB!, next its tobacco");
         } else {
             /** Заполняем данные о производителе со страницы */
             var makerImageUrl: String = "";
@@ -202,8 +203,8 @@ class TobaccoParser @Autowired constructor(private var imageService: ImageServic
             if (savedMaker == null) {
                 throw MakerParsingException("Ошибка сохранения производителя $makerTitle в БД.", null);
             }
+            println("Maker $savedMaker was saved, next its tobacco");
         }
-        println("Maker $savedMaker was saved, next its tobacco")
 
         /** Обработка списка табаков */
         val tobaccoElements = makerPage.select(tobaccosElements) ?: throw MakerParsingException(
@@ -257,6 +258,7 @@ class TobaccoParser @Autowired constructor(private var imageService: ImageServic
         if (newTobacco != null) {
             savedTobacco = null;
             tobaccoParserInfo.warningLog.add("Табак ${newTobacco.title} уже существует в БД. ");
+            println("Tobacco  ${newTobacco.title} already exists in DB!")
         } else {
             /** Заполняем данные о табаке со страницы */
             val attributeTobaccoDescription = tobaccoPage.selectFirst(tobaccoDescriptionElement);
@@ -302,7 +304,7 @@ class TobaccoParser @Autowired constructor(private var imageService: ImageServic
             if (tobaccoImageName.isNullOrBlank()) {
                 throw TobaccoParsingException("Не удалось сохранить изображение для табака $tobaccoTitle на диск.", null);
             }
-            val tobaccoImage: Image? = imageService.add(Image(tobaccoTitle));
+            val tobaccoImage: Image? = imageService.add(Image(tobaccoImageName));
             if (tobaccoImage == null) {
                 val deleteResult = imageService.deleteUploadedFile(tobaccoImageName);
                 throw TobaccoParsingException("Не удалось сохранить изображение для табака в БД. Файл удален с диска: $deleteResult.", null);
@@ -321,6 +323,7 @@ class TobaccoParser @Autowired constructor(private var imageService: ImageServic
             if (savedTobacco == null) {
                 throw TobaccoParsingException("Ошибка сохранения  табака ${newTobacco.title} в БД", null);
             }
+            println("Tobacco ${newTobacco.title} was saved in DB");
         }
         return savedTobacco;
     }

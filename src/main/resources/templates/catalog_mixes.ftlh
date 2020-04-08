@@ -1,5 +1,4 @@
-
-
+<#import "/spring.ftl" as spring />
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -16,7 +15,7 @@
 
 <h1>Mixes</h1>
 
-<form action="../catalog_mixes" method="get">
+<form action="<@spring.url '/catalog_mixes'/>" method="get">
     <select name="mixes">
         <#list mixes as mix>
             <option value="${mix}">${mix}</option>

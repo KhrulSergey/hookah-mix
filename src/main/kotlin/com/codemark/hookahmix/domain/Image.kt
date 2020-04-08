@@ -14,6 +14,8 @@ class Image (name:String? = "") {
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "files_id")
     var id: Long = 0
+    @JsonValue
+    @JsonProperty(value = "image")
     @Column(name = "name")
     var name: String? = name
 
@@ -22,8 +24,6 @@ class Image (name:String? = "") {
 //        return String(array)
 //    }
 
-    @JsonValue
-    @JsonProperty(value = "image")
     override fun toString(): String {
         return "Image filename:$name";
     }

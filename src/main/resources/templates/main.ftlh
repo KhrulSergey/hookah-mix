@@ -1,4 +1,4 @@
-
+<#import "/spring.ftl" as spring />
 <!DOCTYPE html>
 <html lang="en" xmlns="http://www.w3.org/1999/html">
 <head>
@@ -17,15 +17,15 @@
 <div class="container">
 
     <div>
-        <a href="../catalog_tobaccos">Tobaccos List</a>
-        <a href="../catalog_mixes">Mixes List</a>
-        <a href="../parseResult">Parse Data Source</a>
+        <a href="<@spring.url '/catalog_tobaccos'/>">Tobaccos List</a>
+        <a href="<@spring.url '/catalog_mixes'/>">Mixes List</a>
+        <a href="<@spring.url '/parseResult'/>">Parse Data Source</a>
     </div>
 
     <div>
-        <form action="../main" method="post">
+        <form action=<@spring.url '/main'/> method="post">
 
-            <label><p>Tobacco:</p> </label>
+            <label>Tobacco:</label>
             <div>
                 <p><input type="text" class="form-control col-sm-3" name="title" required placeholder="Title" /></p>
             </div>
@@ -69,9 +69,9 @@
     <div class="container">
         <div class="row">
             <div class="col-sm-6">
-                <form action="../add_mix" method="post">
+                <form action="<@spring.url '/add_mix'/>" method="post">
 
-                    <label><p>Mix: </p></label>
+                    <label>Mix:</label>
 
                     <div>
                         <p><input type="text" class="form-control col-sm-6" name="title" required placeholder="Mix title"/></p>
@@ -96,7 +96,7 @@
             </div>
 
             <div class="col-sm-6">
-                <form action="../add_component" method="post">
+                <form action="<@spring.url '/add_component'/>" method="post">
                     <div class="collapse my-3" id="collapseExample">
                         <div>
                             <label>Add component for this mix</label>

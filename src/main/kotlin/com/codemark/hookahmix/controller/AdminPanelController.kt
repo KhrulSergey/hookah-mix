@@ -44,34 +44,34 @@ class AdminPanelController @Autowired constructor(private val tobaccoService: To
     fun parseResult(model: Model): String {
         model.addAttribute("resultMix", DataParserInfoDto<Any>(status = ParseStatus.NOT_STARTED));
         model.addAttribute("resultTobacco", DataParserInfoDto<Any>(status = ParseStatus.NOT_STARTED));
-        return "parseResult";
+        return "/parseResult";
     }
 
     @GetMapping("/parse-tobacco")
     fun parseTobacco(@RequestParam(required = false) count: Int?, model: Model): String {
         var dataCount = count;
         if (dataCount == null) dataCount = defaultParseDataSize;
-        var result: DataParserInfoDto<Tobacco>? = tobaccoParser.connectPage()?.let { tobaccoParser.startParse(it, dataCount) };
+        val result: DataParserInfoDto<Tobacco>? = tobaccoParser.connectPage()?.let { tobaccoParser.startParse(it, dataCount) };
         model.addAttribute("resultMix", DataParserInfoDto<Any>(status = ParseStatus.NOT_STARTED));
         model.addAttribute("resultTobacco", result);
-        return "parseResult";
+        return "/parseResult";
     }
 
     @GetMapping("/parse-mix")
     fun parseMix(@RequestParam(required = false) count: Int?, model: Model): String {
         var dataCount = count;
         if (dataCount == null) dataCount = defaultParseDataSize;
-        var result: DataParserInfoDto<Mix>? = mixParser.connectPage()?.let { mixParser.startParse(it, dataCount) };
+        val result: DataParserInfoDto<Mix>? = mixParser.connectPage()?.let { mixParser.startParse(it, dataCount) };
         model.addAttribute("resultTobacco", DataParserInfoDto<Any>(status = ParseStatus.NOT_STARTED));
         model.addAttribute("resultMix", result);
-        return "parseResult";
+        return "/parseResult";
     }
 
     @GetMapping("/main")
     fun main(model: Model): String {
 
-        var makers: List<Maker> = makerService.getAll();
-        var tastes: List<Taste> = tasteService.getAll();
+        val makers: List<Maker> = makerService.getAll();
+        val tastes: List<Taste> = tasteService.getAll();
 //        var tobaccos: List<Tobacco> = tobaccoRepository.findAll();
 
         model.addAttribute("makers", makers);
@@ -155,7 +155,7 @@ class AdminPanelController @Autowired constructor(private val tobaccoService: To
     @GetMapping("/catalog_mixes")
     fun getAllMixes(model: Model): String {
 
-        var mixes = mixService.getAll();
+        val mixes = mixService.getAll();
         model.addAttribute("mixes", mixes);
 
         return "/catalog_mixes";

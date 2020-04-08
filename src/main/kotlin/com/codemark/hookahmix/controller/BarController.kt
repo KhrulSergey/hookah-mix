@@ -31,17 +31,17 @@ class BarController @Autowired constructor(private val tobaccoRepository: Tobacc
      */
 
     @GetMapping("/marker/catalog")
-    fun findMarkersBy(request: HttpServletRequest,
-                      response: HttpServletResponse,
-                      session: HttpSession): List<Maker> {
+    fun getMakerCatalog(request: HttpServletRequest,
+                        response: HttpServletResponse,
+                        session: HttpSession): List<Maker> {
 
-        var user = userService.findUserByInstallationCookie(
+        val user = userService.findUserByInstallationCookie(
                 cookieAuthorizationUtil.getInstallationCookie(request, session)
         )
 
         println(user)
 
-        var catalogTobaccos = makerService.getTobaccosInCatalog(user)
+        val catalogTobaccos = makerService.getTobaccosInCatalog(user)
 
         return catalogTobaccos
     }
@@ -51,12 +51,12 @@ class BarController @Autowired constructor(private val tobaccoRepository: Tobacc
      */
 
     @GetMapping("/marker/bar")
-    fun findMarkersBar(request: HttpServletRequest,
-                       response: HttpServletResponse,
-                       session: HttpSession): MutableSet<Maker> {
+    fun getUserBar(request: HttpServletRequest,
+                   response: HttpServletResponse,
+                   session: HttpSession): MutableSet<Maker> {
 
 
-        var user = userService.findUserByInstallationCookie(
+        val user = userService.findUserByInstallationCookie(
                 cookieAuthorizationUtil.getInstallationCookie(request, session)
         )
 
@@ -76,9 +76,9 @@ class BarController @Autowired constructor(private val tobaccoRepository: Tobacc
                    response: HttpServletResponse,
                    session: HttpSession): ResponseEntity<String> {
 
-        var tobacco: Tobacco = tobaccoRepository.getOne(id);
+        val tobacco: Tobacco = tobaccoRepository.getOne(id);
 
-        var user = userService.findUserByInstallationCookie(
+        val user = userService.findUserByInstallationCookie(
                 cookieAuthorizationUtil.getInstallationCookie(request, session)
         )
 
@@ -99,7 +99,7 @@ class BarController @Autowired constructor(private val tobaccoRepository: Tobacc
                response: HttpServletResponse,
                session: HttpSession): ResponseEntity<String> {
 
-        var user = userService.findUserByInstallationCookie(
+        val user = userService.findUserByInstallationCookie(
                 cookieAuthorizationUtil.getInstallationCookie(request, session)
         )
 
