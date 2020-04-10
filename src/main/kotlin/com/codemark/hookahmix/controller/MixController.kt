@@ -32,16 +32,11 @@ class MixController @Autowired constructor(
     fun generateMixes(request: HttpServletRequest,
                       session: HttpSession): MutableList<Mix> {
 
-        val user = userService.findUserByInstallationCookie(
-                cookieAuthorizationUtil.getInstallationCookie(request, session)
-        )
-
-        println("User: $user")
-
-        val mixesList: MutableList<Mix> = mixService.showAllMixes(user)
-
-        Collections.sort(mixesList, MixComparator())
-
+        val user = userService.findUserByInstallationCookie(cookieAuthorizationUtil
+                .getInstallationCookie(request, session));
+        println("User: $user");
+        val mixesList: MutableList<Mix> = mixService.showAllMixes(user);
+        Collections.sort(mixesList, MixComparator());
         return mixesList;
     }
 
@@ -78,8 +73,7 @@ class MixController @Autowired constructor(
                     id = 5
                     title = "Корица"
                 }
-        )
-        );
+        ));
     }
 
     @GetMapping("/count")
@@ -89,12 +83,9 @@ class MixController @Autowired constructor(
                           @RequestParam("strength") strength: String?,
                           @RequestParam("taste") taste: String?): Int {
 
-        val user = userService.findUserByInstallationCookie(
-                cookieAuthorizationUtil.getInstallationCookie(request, session)
-        )
-
-        println("User: $user")
-
-        return mixService.generateMixCount(user, status, strength, taste)
+        val user = userService.findUserByInstallationCookie(cookieAuthorizationUtil
+                .getInstallationCookie(request, session));
+        println("User: $user");
+        return mixService.generateMixCount(user, status, strength, taste);
     }
 }

@@ -1,6 +1,9 @@
 package com.codemark.hookahmix.util
 
-import com.codemark.hookahmix.domain.*
+import com.codemark.hookahmix.domain.Image
+import com.codemark.hookahmix.domain.Maker
+import com.codemark.hookahmix.domain.Taste
+import com.codemark.hookahmix.domain.Tobacco
 import com.codemark.hookahmix.domain.dto.DataParserInfoDto
 import com.codemark.hookahmix.domain.dto.ParseStatus
 import com.codemark.hookahmix.exception.MakerParsingException
@@ -237,7 +240,7 @@ class TobaccoParser @Autowired constructor(private var imageService: ImageServic
     fun parseOneTobacco(tobaccoUrl: String, maker: Maker, strengthOfTobacco:Double): Tobacco? {
         var newTobacco: Tobacco?;
         var savedTobacco: Tobacco?;
-        var tobaccoTitle: String;
+        val tobaccoTitle: String;
         var tobaccoDescription: String = "";
         var tobaccoImageUrl: String = "";
         var tobaccoTaste: Taste?;
@@ -291,7 +294,7 @@ class TobaccoParser @Autowired constructor(private var imageService: ImageServic
                 tobaccoTasteTitle = "Нет моновкуса";
             }
             //Получаем вкус для табака из БД (существующий или новый)
-            tobaccoTaste = tasteService.get(tobaccoTasteTitle);
+            tobaccoTaste = tasteService.getOne(tobaccoTasteTitle);
             if (tobaccoTaste == null) {
                 tobaccoTaste = tasteService.add(Taste(tobaccoTasteTitle));
                 if (tobaccoTaste == null) {
@@ -319,7 +322,7 @@ class TobaccoParser @Autowired constructor(private var imageService: ImageServic
             newTobacco.maker = maker;
 
             //Сохраняем табак в БД
-            savedTobacco = tobaccoService.add(newTobacco);
+            savedTobacco = tobaccoService.addOne(newTobacco);
             if (savedTobacco == null) {
                 throw TobaccoParsingException("Ошибка сохранения  табака ${newTobacco.title} в БД", null);
             }

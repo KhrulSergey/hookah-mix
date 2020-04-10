@@ -16,21 +16,18 @@ import javax.servlet.http.HttpSession
 class UserController @Autowired constructor(
         private val userService: UserService) {
 
-
     @GetMapping("/registration")
     fun register(session: HttpSession): ResponseEntity<Map<String, String>> {
 
+        //TODO перенести логику в сервис
         var installationCookie = UUID.randomUUID().toString();
-        session.setAttribute("installationCookie", installationCookie)
+        session.setAttribute("installationCookie", installationCookie);
 
-        userService.save(User(installationCookie))
+        userService.save(User(installationCookie));
 
-        var jsonObject = HashMap<String, String>()
-        jsonObject.put("userId", installationCookie)
+        var jsonObject = HashMap<String, String>();
+        jsonObject.put("userId", installationCookie);
 
-        return ResponseEntity(jsonObject, HttpStatus.OK)
+        return ResponseEntity(jsonObject, HttpStatus.OK);
     }
-
-
-
 }

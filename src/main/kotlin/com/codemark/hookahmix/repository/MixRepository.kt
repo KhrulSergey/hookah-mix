@@ -9,23 +9,16 @@ import org.springframework.stereotype.Repository
 @Repository
 interface MixRepository : JpaRepository<Mix, Long> {
 
-    //TODO Удалить неиспользуемые методы
-//    fun getAllMixes(): MutableList<Mix>
-//
-//    @Query()
-//    fun getAllAvailableMixes(): MutableList<Mix>
-
-
     @Query(nativeQuery = true,
             value = "select c.composition from components c " +
                     "inner join mixes m on m.mixes_id = c.mix_id " +
                     "where c.tobacco_id = :tobaccoId " +
                     "and c.mix_id = :mixId")
     fun getCompositionInMix(@Param("tobaccoId") tobaccoId: Long,
-                            @Param("mixId") mixId: Long): Int
+                            @Param("mixId") mixId: Long): Int;
 
-    fun findByTitle(title: String): Mix
+    fun findByTitle(title: String): Mix;
 
-    fun existsByTitle(title: String): Boolean
+    fun existsByTitle(title: String): Boolean;
 
 }

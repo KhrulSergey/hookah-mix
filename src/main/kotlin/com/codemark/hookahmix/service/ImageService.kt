@@ -6,9 +6,7 @@ import com.codemark.hookahmix.util.ImageUtil
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
-import java.io.IOException
 import java.nio.file.Files
-import java.nio.file.Path
 import java.nio.file.Paths
 
 
@@ -22,9 +20,6 @@ class ImageService @Autowired constructor(
 
     @Value("\${hostname}")
     var hostname: String = ""
-
-    @Value("\${sitePath}")
-    var sitePath: String = ""
 
     @Value("\${uploadDirectoryPath}")
     var uploadDirectoryPath: String = ""
@@ -49,6 +44,8 @@ class ImageService @Autowired constructor(
         return savedImage;
     }
 
+    /** Возвращает URI хранилища на сервере */
+    /** По-умолчанию используется автоконвертация из ImagePathConverter */
     fun getFileWebPath(): String {
         val uploadFullPath = hostProtocol + hostname + uploadPath;
         return uploadFullPath;
@@ -68,7 +65,6 @@ class ImageService @Autowired constructor(
             return targetFileName;
         return null;
     }
-
 
     fun deleteUploadedFile(fileName: String): Boolean {
         val targetPath = getFileDirectory() + fileName;

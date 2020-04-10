@@ -1,15 +1,15 @@
 package com.codemark.hookahmix.service
 
 import com.codemark.hookahmix.domain.*
-import com.codemark.hookahmix.repository.*
-import com.codemark.hookahmix.util.ImageUtil
+import com.codemark.hookahmix.repository.ComponentRepository
+import com.codemark.hookahmix.repository.MixRepository
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 
 @Service
 class AdminPanelService @Autowired constructor(private val makerService: MakerService,
                                                private val tasteService: TasteService,
-                                               private val tobaccoRepository: TobaccoRepository,
+                                               private val tobaccoService: TobaccoService,
                                                private val imageService: ImageService,
                                                private val mixRepository: MixRepository,
                                                private val componentRepository: ComponentRepository) {
@@ -20,50 +20,50 @@ class AdminPanelService @Autowired constructor(private val makerService: MakerSe
                    description: String, tasteTitle: String,
                    strength: Double, image: String, tags: String) {
 
-        var findMaker: Maker = makerService.getOne(makerTitle)!!;
+        val findMaker: Maker = makerService.getOne(makerTitle)!!;
 
-        var findTaste: Taste = tasteService.get(tasteTitle)!!;
+        val findTaste: Taste = tasteService.getOne(tasteTitle)!!;
 
-        var newTobacco = Tobacco(title, description, strength);
+        val newTobacco = Tobacco(title, description, strength);
         newTobacco.maker = findMaker;
         newTobacco.taste = findTaste;
 
-        var tobaccoImage = Image();
+        val tobaccoImage = Image();
         tobaccoImage.name = imageService.uploadImage(image, makerTitle);
         imageService.add(tobaccoImage);
         newTobacco.image = tobaccoImage;
 
-        tobaccoRepository.save(newTobacco);
+        tobaccoService.addOne(newTobacco);
     }
 
     fun addMix(title: String, tags: String,
                description: String, strength: String) {
 
-        var mix = Mix()
-        mix.title = title
-        mix.tags = tags
-        mix.rating = 0
-        mix.description = description
-        mix.strength = Integer.parseInt(strength)
+        val mix = Mix();
+        mix.title = title;
+        mix.tags = tags;
+        mix.rating = 0;
+        mix.description = description;
+        mix.strength = Integer.parseInt(strength);
 
-        mixRepository.save(mix)
+        mixRepository.save(mix);
     }
 
     fun addComponentMix(mixTitle: String, makerTitle: String,
                         tobaccoTitle: String, composition: Int) {
 
-        var mix = mixRepository.findByTitle(mixTitle)
-        var tobacco = tobaccoRepository.findOneByTitleAndMaker(tobaccoTitle, makerTitle)
+        val mix = mixRepository.findByTitle(mixTitle);
+        val maker = makerService.getOne(makerTitle);
+        val tobacco = tobaccoService.getOne(tobaccoTitle, maker!!);
 
-        var component = Component()
-        component.mix = mix
-        component.tobacco = tobacco
-        component.composition = composition
+        val component = Component();
+        component.mix = mix;
+        component.tobacco = tobacco;
+        component.composition = composition;
 
-        mix.components.add(component)
-        tobacco.components.add(component)
+        mix.components.add(component);
+//        tobacco!!.components.add(component);
 
-        componentRepository.save(component)
-
+        componentRepository.save(component);
     }
 }

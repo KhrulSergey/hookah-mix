@@ -15,9 +15,5 @@ interface ComponentRepository : JpaRepository<Component, Long> {
                     "where c.mix_id = :mixId " +
                     "and c.tobacco_id = :tobaccoId")
     fun getCompositionInComponent(@Param("mixId") mixId: Long,
-                                  @Param("tobaccoId") tobaccoId: Long): Int
-
-
-
-
+                                  @Param("tobaccoId") tobaccoId: Long): Int;
 }

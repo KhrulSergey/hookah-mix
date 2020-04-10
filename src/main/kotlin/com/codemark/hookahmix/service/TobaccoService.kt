@@ -1,147 +1,230 @@
 package com.codemark.hookahmix.service
 
 import com.codemark.hookahmix.domain.*
-import com.codemark.hookahmix.repository.MakerRepository
-import com.codemark.hookahmix.repository.MyTobaccoRepository
+import com.codemark.hookahmix.repository.PurchaseRepository
 import com.codemark.hookahmix.repository.TobaccoRepository
+import com.codemark.hookahmix.repository.UserTobaccosRepository
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 
+/** Сервис для работы с каталогом Табаков и "Мои табаки" для пользователя */
 @Service
 class TobaccoService @Autowired constructor(
         private val tobaccoRepository: TobaccoRepository,
-        private val myTobaccoRepository: MyTobaccoRepository,
-        private val makerRepository: MakerRepository,
-        private val userService: UserService) {
+        private val purchaseRepository: PurchaseRepository,
+        private val makerService: MakerService,
+        private val userTobaccosRepository: UserTobaccosRepository) {
 
-    //TODO Удалить неиспользуемые методы
-    // Отсортировать методы
+//<editor-fold desc="ПУБЛИЧНЫЕ МЕТОДЫ">
 
-    fun getAll(): List<Tobacco> {
-        return tobaccoRepository.findAll()
-    }
-
-    fun getAllByMaker(makerTitle: String): List<Tobacco> {
-        return tobaccoRepository.findAllByMaker(makerTitle);
-    }
-
+    //<editor-fold desc="Получение записей">
     fun getOne(id: Long): Tobacco {
-        return tobaccoRepository.getOne(id)
+        return tobaccoRepository.getOne(id);
     }
 
     fun getOne(title: String, maker: Maker): Tobacco? {
         return tobaccoRepository.findByTitleAndMaker(title, maker);
     }
 
-    fun isExist(tobaccoId: Long): Boolean {
-        return tobaccoRepository.existsByTobaccosId(tobaccoId)
+    fun getAll(): List<Tobacco> {
+        return tobaccoRepository.findAll();
     }
 
-    fun getTobaccosInBar(maker: Maker, user: User): MutableSet<Tobacco> {
-        return tobaccoRepository.getTobaccosInBar(maker.id, user.id)
+    //TODO преобразовать метод и искать по ID maker
+    fun getAllByMaker(makerTitle: String): List<Tobacco> {
+        return tobaccoRepository.findAllByMaker(makerTitle);
     }
 
-    fun add(tobacco: Tobacco): Tobacco? {
-        var newTobacco = tobaccoRepository.save(tobacco);
-        //TODO check Maker content or just save what come
-        if (newTobacco.tobaccosId == 0L) return null;
+    /** Возвращает список ВСЕХ производителей с вложенным списком их табаков.
+     * В табаках проставлен статус для указанного пользователя
+     * @param user - Пользователь, для которого формируем статусы табаков
+     */
+    fun getMakersAndStatusTobaccosInCatalogForUser(user: User): MutableList<Maker> {
+        val makerList = makerService.getAllSortedByTitle();
+        //Фича отключена т.к. в списках табаков статус TobaccoStatus.PURCHASED не нужен бизнесу
+        //val userPurchasedTobaccos = getAllUserLatestPurchasedTobacco(user);
+        //getFilledStatusTobaccoMakerList(makerList, userPurchasedTobaccos);
+
+        //Переприсваиваем статусы табаков для списка "Мои табаки" (мой бар и корзина)
+        val userTobaccos = getAllUserTobacco(user);
+        getFilledStatusTobaccoMakerList(makerList, userTobaccos);
+        return makerList;
+    }
+
+    /** Возвращает список производителей с вложенным списком их табаков, из наличия в баре у пользователя.
+     * В табаках проставлен статус для указанного пользователя
+     * @param user - Пользователь, для которого формируем статусы табаков
+     */
+    fun getMakersAndStatusTobaccosInBarForUser(user: User): MutableSet<Maker> {
+        val userTobaccos = getAllUserTobaccoInBar(user);
+        return createListOfMakersForTobaccosList(userTobaccos);
+    }
+
+    /** Возвращает список всех пользовательских табаков с любыми статусами */
+    fun getAllUserTobacco(user: User): MutableList<Tobacco> {
+        val userTobaccoList: MutableList<Tobacco> = mutableListOf()
+        for (userTobaccoRelation in user.userTobaccos) {
+            userTobaccoRelation.tobacco?.status = userTobaccoRelation.status;
+            userTobaccoList.add(userTobaccoRelation.tobacco!!);
+        }
+        return userTobaccoList
+    }
+
+    /** Возвращает список всех пользовательских табаков со статусом "В баре" */
+    fun getAllUserTobaccoInBar(user: User): MutableList<Tobacco> {
+        val userTobaccoList: MutableList<Tobacco> = mutableListOf();
+        for (userTobaccoRelation in user.userTobaccos
+                .filter { userTobacco -> userTobacco.status == TobaccoStatus.CONTAIN_BAR }) {
+            userTobaccoRelation.tobacco?.status = userTobaccoRelation.status;
+            userTobaccoList.add(userTobaccoRelation.tobacco!!);
+        }
+        return userTobaccoList;
+    }
+
+    /** Возвращает список всех пользовательских табаков с статусом "В корзине" (покупках) */
+    fun getAllUserTobaccoInPurchases(user: User): MutableList<Tobacco> {
+        val userTobaccoList: MutableList<Tobacco> = mutableListOf()
+        for (userTobaccoRelation in user.userTobaccos
+                .filter { userTobacco -> userTobacco.status == TobaccoStatus.IN_PURCHASES }) {
+            userTobaccoRelation.tobacco?.status = userTobaccoRelation.status;
+            userTobaccoList.add(userTobaccoRelation.tobacco!!);
+        }
+        return userTobaccoList
+    }
+
+    /** Возвращает список всех купленных (заказанных) табаков Пользователем */
+    fun getAllFromLatestPurchases(user: User): MutableSet<Tobacco> {
+        return tobaccoRepository.findLatestPurchases(user.id);
+    }
+    //</editor-fold>
+
+    //<editor-fold desc="Добавление записей">
+    /** Добавляет Табак в каталог Табаков */
+    fun addOne(tobacco: Tobacco): Tobacco? {
+        //TODO check Tobacco content or just save what come
+        val newTobacco = tobaccoRepository.save(tobacco);
+        if (newTobacco.id == 0L) return null;
         return newTobacco;
     }
 
-    fun deleteTobaccoFromBar(user: User, id: Long): Unit {
-        myTobaccoRepository.deleteTobaccoFromBar(user.id, id)
-    }
-
-    fun addTobaccoInBar(tobaccoId: Long,
-                        user: User): Unit {
-
-        var tobacco: Tobacco = tobaccoRepository.getOne(tobaccoId)
-
-
-        if (myTobaccoRepository.existsByTobaccoIdAndUserId(user.id, tobaccoId)) {
-
-            println("Relation is exist!")
-
-            var myTobacco = myTobaccoRepository.findByTobaccoIdAndUserId(user.id, tobaccoId)
-            myTobacco.status = "contain bar"
-
-            tobaccoRepository.addInLatestPurchases(user.id, tobacco.tobaccosId)
-
-            myTobaccoRepository.save(myTobacco)
-
-        } else {
-
-            var myTobacco = MyTobacco()
-
-            myTobacco.tobacco = tobacco
-            myTobacco.user = user
-
-            myTobacco.status = "contain bar"
-
-            user.myTobaccos.add(myTobacco)
-            tobacco.myTobaccos.add(myTobacco)
-
-            myTobaccoRepository.save(myTobacco)
-        }
-    }
-
-    fun addTobaccoInPurchases(tobaccoId: Long,
-                              user: User): Unit {
-
-        var tobacco: Tobacco = tobaccoRepository.getOne(tobaccoId)
-
-        var myTobacco = MyTobacco()
-
-        myTobacco.tobacco = tobacco
-        myTobacco.user = user;
-
-        myTobacco.status = "purchase"
-
-        userService.save(user)
-
-        user.myTobaccos.add(myTobacco)
-        tobacco.myTobaccos.add(myTobacco)
-
-        myTobaccoRepository.save(myTobacco)
-    }
-
-    fun findLatestPurchases(user: User): MutableList<Tobacco> {
-
-        var result = tobaccoRepository.findLatestPurchases(user.id)
-
-        if (result.isNotEmpty()) {
-            result.forEach { i -> i.mixesMaker = makerRepository.getOneByTobacco(i.title) }
-        }
-
-        return result;
-    }
-
-    fun getTobaccosFromPurchases(user: User): MutableList<Tobacco> {
-        var result = tobaccoRepository.findAllPurchases(user.id)
-
-        if (result.isNotEmpty()) {
-
-            for (item in result) {
-                item.status = TobaccoStatus.IN_PURCHASES
-                item.mixesMaker = makerRepository.getOneByTobacco(item.title)
+    /** Добавление табака в бар */
+    fun addOneInBar(tobaccoId: Long, user: User): Tobacco? {
+        val tobacco: Tobacco? = tobaccoRepository.findById(tobaccoId).orElse(null);
+        var userTobaccoInBar: UserTobacco? = null;
+        if (tobacco != null) {
+            //Поиск существующих записей в UserTobacco.
+            userTobaccoInBar = userTobaccosRepository.findAllByUserAndTobacco(user, tobacco).firstOrNull();
+            if (userTobaccoInBar != null) {
+                if (userTobaccoInBar.status == TobaccoStatus.IN_PURCHASES) {
+                    //Если табак был в покупках и переходит в бар, значит его купили -> добавить в заказы и перезатереть статус
+                    addOneInLatestPurchases(tobaccoId, user);
+                }
+            } else {
+                userTobaccoInBar = UserTobacco(user, tobacco);
             }
-
+            userTobaccoInBar.status = TobaccoStatus.CONTAIN_BAR;
+            userTobaccoInBar = userTobaccosRepository.save(userTobaccoInBar);
         }
-        return result
+        return if (userTobaccoInBar != null) tobacco else null;
     }
 
-    fun deleteTobaccoFromPurchases(user: User,
-                                   tobaccoId: Long): Unit {
-        myTobaccoRepository.deleteTobaccoFromPurchases(user.id, tobaccoId)
+    /** Добавление табака в корзину (покупки) */
+    fun addOneInPurchases(tobaccoId: Long, user: User): Tobacco? {
+        val tobacco: Tobacco? = tobaccoRepository.findById(tobaccoId).orElse(null);
+        var userTobaccoInBar: UserTobacco? = null;
+        if (tobacco != null) {
+            //Поиск существующих записей в UserTobacco.
+            userTobaccoInBar = userTobaccosRepository.findAllByUserAndTobacco(user, tobacco).firstOrNull();
+            if (userTobaccoInBar == null) userTobaccoInBar = UserTobacco(user, tobacco);
+            userTobaccoInBar.status = TobaccoStatus.IN_PURCHASES;
+            userTobaccoInBar = userTobaccosRepository.save(userTobaccoInBar);
+        }
+        return if (userTobaccoInBar != null) tobacco else null
     }
 
-    fun getTobaccoStatus(user: User,
-                         tobaccoId: Long): String {
-        return myTobaccoRepository.getStatusByTobaccoIdAndUserId(user.id, tobaccoId)
+    /** Добавить табак в последние покупки */
+    fun addOneInLatestPurchases(tobaccoId: Long, user: User): Boolean {
+        val tobacco: Tobacco? = tobaccoRepository.findById(tobaccoId).orElse(null);
+        if (tobacco != null) {
+            //Поиск существующих записей в UserTobacco.
+            if (!purchaseRepository.isExistLatestPurchases(user.id, tobacco.id)) {
+                purchaseRepository.addInLatestPurchases(user.id, tobacco.id);
+            }
+            return true
+        }
+        return false
+    }
+    //</editor-fold>
+
+    //<editor-fold desc="Удаление записей">
+    /** Удаление табака из списка пользовательских табаков */
+    fun deleteOneFromUserTobaccos(user: User, tobaccoId: Long): Boolean {
+        val userTobacco: UserTobacco? =
+                userTobaccosRepository.findAllByUserIdAndTobaccoId(user.id, tobaccoId).firstOrNull();
+        if (userTobacco != null) {
+            userTobaccosRepository.delete(userTobacco);
+            return true;
+        }
+        return false;
     }
 
-    fun findAllPurchases(user: User): MutableList<Tobacco> {
-        return tobaccoRepository.findAllPurchases(user.id)
+    /** Удалить табак из последних покупок */
+    fun deleteOneFromLatestPurchases(user: User, tobaccoId: Long): Boolean {
+        val tobacco: Tobacco? = tobaccoRepository.findById(tobaccoId).orElse(null);
+        if (tobacco != null) {
+            //Поиск существующих записей в UserTobacco.
+            if (!purchaseRepository.isExistLatestPurchases(user.id, tobacco.id)) {
+                purchaseRepository.deleteOneFromLatestPurchases(user.id, tobacco.id);
+            }
+            return true
+        }
+        return false
+    }
+    //</editor-fold>
+//</editor-fold>
+
+//<editor-fold desc="ВНУТРЕННИЕ МЕТОДЫ">
+    /** Вспомогательная функция-обертка для создания списка производителей
+     * из переданного списка табаков tobaccoList
+     */
+    private fun createListOfMakersForTobaccosList(tobaccoList: MutableList<Tobacco>): MutableSet<Maker> {
+        val makerList: MutableSet<Maker> = mutableSetOf();
+        var currentMaker: Maker?;
+        for (tobacco in tobaccoList) {
+            currentMaker = makerList.firstOrNull { maker: Maker -> maker.id == tobacco.maker?.id }
+            if (currentMaker == null) {
+                currentMaker = tobacco.maker!!;
+                currentMaker.tobaccos = mutableSetOf(tobacco);
+            } else {
+                currentMaker.tobaccos.add(tobacco);
+            }
+            makerList.add(currentMaker);
+        }
+        return makerList;
     }
 
+    /** Вспомогательная функция для заполнения статусов табака
+     * из tobaccoList извлекаем табаки и их статусы присваиваем соотв. табакам из makerList.tobaccos
+     */
+    private fun getFilledStatusTobaccoMakerList(makerList: MutableList<Maker>, tobaccoList: MutableList<Tobacco>) {
+        //Идем по списку переданных табаков
+        for (tobacco in tobaccoList) {
+            makerList.firstOrNull { maker: Maker -> maker.id == tobacco.maker?.id }?.tobaccos
+                    ?.firstOrNull { value: Tobacco -> value.id == tobacco.id }
+                    ?.status = tobacco.status;
+        }
+    }
+
+    /**
+     * Подсчет времени выполнения переданной в параметре функции
+     * @return Время выполнения in nanoseconds
+     */
+    private final fun countRunTime(observerFunction: () -> Any): Long {
+        val start = System.nanoTime();
+        observerFunction();
+        val finish = System.nanoTime();
+        return finish - start;
+    }
+//</editor-fold>
 }
+

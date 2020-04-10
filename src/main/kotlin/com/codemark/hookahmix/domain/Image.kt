@@ -1,5 +1,6 @@
 package com.codemark.hookahmix.domain
 
+import com.codemark.hookahmix.util.ImagePathConverter
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.annotation.JsonValue
 import lombok.Data
@@ -13,20 +14,15 @@ class Image (name:String? = "") {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "files_id")
-    var id: Long = 0
+    var id: Long = 0;
+
     @JsonValue
     @JsonProperty(value = "image")
     @Column(name = "name")
-    var name: String? = name
-
-//    fun getImage(): String {
-//        val array = Base64.getDecoder().decode(image)
-//        return String(array)
-//    }
+    @Convert(converter = ImagePathConverter::class)
+    var name: String? = name;
 
     override fun toString(): String {
-        return "Image filename:$name";
+        return "Image file URI:$name";
     }
-
-
 }

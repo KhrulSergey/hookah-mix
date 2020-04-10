@@ -1,6 +1,6 @@
 package com.codemark.hookahmix.domain
 
-
+import com.codemark.hookahmix.util.TobaccoStatusConverter
 import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty
@@ -10,68 +10,72 @@ import javax.persistence.*
 @JsonPropertyOrder("tobaccosId")
 @Entity
 @Table(name = "tobaccos")
-data class Tobacco(var title: String = "",
-                   var description: String = "",
-                   var strength: Double = 3.0) {
+class Tobacco(title: String = "",
+              description: String = "",
+              strength: Double = 0.0) {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @JsonProperty("tobaccosId")
     @Column(name = "tobaccos_id")
-    var tobaccosId: Long = 0;
+    var id: Long = 0;
+
+    @Column(name = "title")
+    var title: String = title;
+
+    @Column(name = "description")
+    var description: String = description;
+
+    @Column(name = "strength")
+    var strength: Double = strength;
 
     @OneToOne
     @JoinColumn(name = "file_id")
     var image: Image? = null;
 
-    @JsonIgnore
-    @ManyToOne(cascade = [CascadeType.PERSIST, CascadeType.MERGE])
-    @JoinColumn(name = "maker_id")
-    var maker: Maker? = null;
-
     @OneToOne
     @JoinColumn(name = "taste_id")
     var taste: Taste? = null;
 
-    @JsonIgnore
-    @ManyToMany
-    @JoinTable(
-            name = "my_tobaccos",
-            joinColumns = [JoinColumn(name = "tobacco_id")],
-            inverseJoinColumns = [JoinColumn(name = "user_id")]
-    )
-    var users: MutableList<User> = mutableListOf();
+    @ManyToOne(cascade = [CascadeType.PERSIST, CascadeType.MERGE], fetch = FetchType.LAZY)
+    @JoinColumn(name = "maker_id")
+    @JsonProperty("maker")
+    @JsonIgnoreProperties("foundingYear", "description", "tobaccos")
+    var maker: Maker? = null;
 
     @JsonIgnore
-    @ManyToMany
-    @JoinTable(
-            name = "components",
-            joinColumns = [JoinColumn(name = "tobacco_id")],
-            inverseJoinColumns = [JoinColumn(name = "mix_id")]
-    )
-    var mixList: MutableList<Mix> = mutableListOf();
+    @OneToMany(mappedBy = "tobacco", fetch = FetchType.LAZY)
+    var userTobaccos: MutableList<UserTobacco> = mutableListOf();
 
-    @JsonIgnore
-    @OneToMany(mappedBy = "tobacco")
-    var myTobaccos: MutableSet<MyTobacco> = mutableSetOf();
+//    @JsonIgnore
+//    @ManyToMany
+//    @JoinTable(
+//            name = "components",
+//            joinColumns = [JoinColumn(name = "tobacco_id")],
+//            inverseJoinColumns = [JoinColumn(name = "mix_id")]
+//    )
+//    var mixList: MutableList<Mix> = mutableListOf();
 
-    @JsonIgnore
-    @OneToMany(mappedBy = "tobacco")
-    var components: MutableSet<Component> = mutableSetOf()
+//    @JsonIgnore
+//    @OneToMany(mappedBy = "tobacco")
+//    var components: MutableSet<Component> = mutableSetOf()
 
+    /** Дополнительные поля */
+    //Статус табака для пользователя
     @Transient
+    @Convert(converter = TobaccoStatusConverter::class)
     var status: TobaccoStatus = TobaccoStatus.NULL_VALUE
 
+    //Список табаков-замен из тех табаков что есть у пользователя в баре
     @Transient
     var replacements: MutableList<Tobacco> = mutableListOf()
 
-    @Transient
-    @JsonProperty("maker")
-    @JsonIgnoreProperties("foundingYear", "description", "image", "tobaccos")
-    var mixesMaker: Maker? = null
-
+    //Соотношение табака в миксе
     @Transient
     var composition: Int = 0
+
+    //Источник получения табака
+    @JsonIgnore
     @Transient
     var sourceUrl: String = "";
 

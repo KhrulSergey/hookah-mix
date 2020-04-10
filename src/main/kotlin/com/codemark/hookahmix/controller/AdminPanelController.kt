@@ -6,9 +6,7 @@ import com.codemark.hookahmix.domain.Taste
 import com.codemark.hookahmix.domain.Tobacco
 import com.codemark.hookahmix.domain.dto.DataParserInfoDto
 import com.codemark.hookahmix.domain.dto.ParseStatus
-import com.codemark.hookahmix.repository.TasteRepository
 import com.codemark.hookahmix.service.*
-import com.codemark.hookahmix.util.ImageUtil
 import com.codemark.hookahmix.util.MixParser
 import com.codemark.hookahmix.util.TobaccoParser
 import org.springframework.beans.factory.annotation.Autowired

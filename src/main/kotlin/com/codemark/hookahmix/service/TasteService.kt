@@ -16,7 +16,7 @@ class TasteService @Autowired constructor(
         return tasteRepository.findAll();
     }
 
-    fun get(title:String): Taste?{
+    fun getOne(title:String): Taste?{
         return tasteRepository.findByTitle(title);
     }
 
@@ -25,7 +25,7 @@ class TasteService @Autowired constructor(
     }
 
     fun add(taste: Taste): Taste? {
-        var savedTaste = tasteRepository.save(taste);
+        val savedTaste = tasteRepository.save(taste);
         if(savedTaste.id == 0L) return null;
         return savedTaste;
     }

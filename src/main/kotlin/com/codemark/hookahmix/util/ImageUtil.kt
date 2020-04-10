@@ -1,12 +1,8 @@
 package com.codemark.hookahmix.util
 
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
 import java.io.*
 import java.net.URL
-import java.nio.file.Files
-import java.nio.file.Path
-import java.nio.file.Paths
 import java.security.SecureRandom
 import java.util.*
 

@@ -2,18 +2,19 @@ package com.codemark.hookahmix.domain
 
 import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
-import java.util.*
 import javax.persistence.*
 
 @Entity
 @Table(name = "users")
-class User (@Column(name = "installation_cookie")
-            var installationCookie: String = "") {
+class User(installationCookie: String = "") {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "users_id")
     var id: Long = 0;
+
+    @Column(name = "installation_cookie")
+    var installationCookie: String = installationCookie;
 
     @ManyToMany
     @JoinTable(
@@ -24,18 +25,10 @@ class User (@Column(name = "installation_cookie")
     var tobaccos: MutableList<Tobacco> = mutableListOf();
 
     @JsonIgnore
-    @OneToMany(mappedBy = "user")
-    var myTobaccos: MutableSet<MyTobacco> = mutableSetOf();
-
-    @Transient
-    var latestPurchases: Queue<Tobacco> = ArrayDeque(); // delete?
-
-    @JsonIgnoreProperties("tobaccos")
-    @Transient
-    var barTobaccos: MutableSet<Maker> = mutableSetOf()
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+    var userTobaccos: MutableList<UserTobacco> = mutableListOf();
 
     override fun toString(): String {
-        return "User(installationCookie='$installationCookie', id=$id)"
+        return "User(installationCookie='$installationCookie', id=$id)";
     }
-
 }

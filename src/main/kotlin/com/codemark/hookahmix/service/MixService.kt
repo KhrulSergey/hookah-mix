@@ -30,24 +30,20 @@ class MixService @Autowired constructor(
 
         val mixesList = mixRepository.findAll();
 
-        val barTobaccos = makerService.getTobaccosInBar(user).stream()
-                .flatMap { i -> i.tobaccos.stream() }
+        val barTobaccos = tobaccoService.getMakersAndStatusTobaccosInBarForUser(user).stream()
+                .flatMap { tobacco -> tobacco.tobaccos.stream() }
                 .collect(Collectors.toList())
 
-        val purchasesTobacco = tobaccoService.findAllPurchases(user);
+        val purchasesTobacco = tobaccoService.getAllUserTobaccoInPurchases(user);
 
         for (mix in mixesList) {
-
-            for (item in mix.tobaccoMixList) {
-                item.mixesMaker = makerRepository.getOne(item.maker!!.id)
-            }
 
             if (barTobaccos.containsAll(mix.tobaccoMixList)) {
 
                 mix.status = MixSet.MATCH_BAR;
 
                 for (tobacco in mix.tobaccoMixList) {
-                    tobacco.image!!.name = imageService.getFileWebPath() + tobacco.image!!.name;
+
                     tobacco.status = TobaccoStatus.CONTAIN_BAR;
                 }
 
@@ -67,12 +63,12 @@ class MixService @Autowired constructor(
                     var existReplacements: Boolean = false;
                     for (mixTobacco in mix.tobaccoMixList) {
                         mixTobacco.replacements = ArrayList()
-                        mixTobacco.status = TobaccoStatus.PURCHASES
+                        mixTobacco.status = TobaccoStatus.PURCHASED
 
                         for (userTobacco in barTobaccos) {
 
-                            if (mixTobacco.tobaccosId.equals(userTobacco.tobaccosId)) {
-                                mixTobacco.image!!.name = imageService.getFileWebPath() + mixTobacco.image!!.name;
+                            if (mixTobacco.id.equals(userTobacco.id)) {
+
                                 mixTobacco.status = TobaccoStatus.CONTAIN_BAR;
 
 
@@ -80,7 +76,7 @@ class MixService @Autowired constructor(
                                 if (mixTobacco.taste?.title.equals(userTobacco.taste?.title)) {
                                     existReplacements = true;
                                     userTobacco.status = TobaccoStatus.CONTAIN_BAR;
-                                    mixTobacco.image!!.name = imageService.getFileWebPath() + mixTobacco.image!!.name;
+
                                     mixTobacco.replacements.add(userTobacco);
 
                                 } else {
@@ -90,7 +86,7 @@ class MixService @Autowired constructor(
                                         if (purchasesTobacco.contains(mixTobacco)) {
                                             mixTobacco.status = TobaccoStatus.IN_PURCHASES
                                         } else {
-                                            mixTobacco.status = TobaccoStatus.PURCHASES
+                                            mixTobacco.status = TobaccoStatus.PURCHASED
                                         }
 
 //                                        mixTobacco.status = TobaccoStatus.PURCHASES;
@@ -112,7 +108,7 @@ class MixService @Autowired constructor(
                     for (mixTobacco in mix.tobaccoMixList) {
 
                         mixTobacco.replacements = ArrayList();
-                        mixTobacco.status = TobaccoStatus.PURCHASES;
+                        mixTobacco.status = TobaccoStatus.PURCHASED;
 
                         for (userTobacco in barTobaccos) {
 
@@ -127,7 +123,7 @@ class MixService @Autowired constructor(
                                     if (purchasesTobacco.contains(mixTobacco)) {
                                         mixTobacco.status = TobaccoStatus.IN_PURCHASES
                                     } else {
-                                        mixTobacco.status = TobaccoStatus.PURCHASES
+                                        mixTobacco.status = TobaccoStatus.PURCHASED
                                     }
 //                                    mixTobacco.status = TobaccoStatus.PURCHASES
 
@@ -225,7 +221,7 @@ class MixService @Autowired constructor(
             component.tobacco = tobacco;
             component.composition = tobacco.composition;
             newMix.components.add(component)
-            tobacco.components.add(component)
+//            tobacco.components.add(component)
             if (!saveMixComponent(component)) {
                 //TODO rollback addMix operation
                 return null

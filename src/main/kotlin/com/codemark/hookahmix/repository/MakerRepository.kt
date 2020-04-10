@@ -9,29 +9,17 @@ import org.springframework.stereotype.Repository
 @Repository
 interface MakerRepository : JpaRepository<Maker, Long> {
 
-    //TODO Проверить возможен ли нативный запрос
     fun findByTitle(title : String) : Maker?
-
-    fun findMakerByTitle(title: String): MutableSet<Maker>
 
     fun existsByTitle(title : String) : Boolean
 
-    @Query(nativeQuery = true, value = "select * from Makers m order by m.title")
-    fun findAllSortedByTitle(): MutableList<Maker>;
 
-    //TODO Проверить использование метода - отрефакторить и Искать Производителя по ID
-    @Query(nativeQuery = true,
-            value = "select * from Makers m " +
-                    "inner join Tobaccos t on m.makers_id = t.maker_id " +
-                    "where t.title = :tobaccoTitle")
-    fun getOneByTobacco(@Param("tobaccoTitle") tobaccoTitle: String): Maker
+    fun findAllByOrderByTitleAsc(): MutableList<Maker>;
 
     @Query(nativeQuery = true,
-            value = "select * from makers m " +
-                    "inner join tobaccos t on m.makers_id = t.maker_id " +
+            value = "select * from makers m inner join tobaccos t on m.makers_id = t.maker_id " +
                     "inner join my_tobaccos mt on t.tobaccos_id = mt.tobacco_id " +
                     "inner join users u on mt.user_id = u.users_id " +
-                    "where u.users_id = :userId " +
-                    "order by m.title")
-    fun findAllSortedByTitleAndUser(@Param("userId") userId: Long): MutableSet<Maker>
+                    "where u.users_id = :userId order by m.title")
+    fun findAllSortedByTitleAndUser(@Param("userId") userId: Long): MutableSet<Maker>;
 }

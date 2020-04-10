@@ -1,7 +1,7 @@
 package com.codemark.hookahmix.domain
 
+import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
-import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.annotation.JsonPropertyOrder
 import lombok.AllArgsConstructor
 import lombok.NoArgsConstructor
@@ -15,7 +15,7 @@ import javax.persistence.*
 @AllArgsConstructor
 @Entity
 @Table(name = "makers")
-@JsonPropertyOrder("makersId", "title", "description", "foundingYear", "tobaccos")
+@JsonPropertyOrder( "title", "id", "description", "image", "foundingYear", "tobaccos")
 class Maker(title: String="") {
     @Id
     @Column(name = "makers_id")
@@ -23,7 +23,6 @@ class Maker(title: String="") {
     var id: Long = 0;
 
     @Column(name = "title")
-    @JsonProperty(value = "title")
     var title: String = title;
 
     @Column(name = "founding_year")
@@ -32,12 +31,6 @@ class Maker(title: String="") {
     @Column(name = "description")
     var description: String = "";
 
-    @Transient
-    var sourceUrl: String = "";
-
-    @Transient
-    var strength: Double = 0.0;
-
     @OneToOne
     @JoinColumn(name = "file_id")
     var image: Image? = null;
@@ -45,6 +38,15 @@ class Maker(title: String="") {
     @JsonIgnoreProperties("maker")
     @OneToMany(mappedBy = "maker")
     var tobaccos: MutableSet<Tobacco> = mutableSetOf();
+
+    /** Дополнительные поля */
+    @Transient
+    @JsonIgnore
+    var sourceUrl: String = "";
+
+    @Transient
+    @JsonIgnore
+    var strength: Double = 0.0;
 
     override fun toString(): String {
         return title;
