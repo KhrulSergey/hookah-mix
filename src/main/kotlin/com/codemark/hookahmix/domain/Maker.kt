@@ -15,8 +15,8 @@ import javax.persistence.*
 @AllArgsConstructor
 @Entity
 @Table(name = "makers")
-@JsonPropertyOrder( "title", "id", "description", "image", "foundingYear", "tobaccos")
-class Maker(title: String="") {
+@JsonPropertyOrder("title", "id", "description", "image", "foundingYear", "tobaccos")
+class Maker(title: String = "") {
     @Id
     @Column(name = "makers_id")
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -37,7 +37,10 @@ class Maker(title: String="") {
 
     @JsonIgnoreProperties("maker")
     @OneToMany(mappedBy = "maker")
-    var tobaccos: MutableSet<Tobacco> = mutableSetOf();
+    var tobaccos: MutableSet<Tobacco> = mutableSetOf()
+        get() {
+            return field.sortedBy { tobacco -> tobacco.title }.toMutableSet();
+        };
 
     /** Дополнительные поля */
     @Transient

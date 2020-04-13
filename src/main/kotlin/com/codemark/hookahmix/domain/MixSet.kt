@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonValue
 
 @JsonFormat(shape = JsonFormat.Shape.OBJECT)
 enum class MixSet(@JsonProperty("title") val title: String) {
+    NULL_VALUE("Неизвестен"),
     MATCH_BAR("Все есть"),
     REPLACEMENT_BAR("С заменой"),
     PARTIAL_BAR("Нужно докупить");

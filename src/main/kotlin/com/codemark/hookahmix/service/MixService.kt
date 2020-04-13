@@ -6,7 +6,6 @@ import com.codemark.hookahmix.repository.MakerRepository
 import com.codemark.hookahmix.repository.MixRepository
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
-import org.springframework.util.StringUtils
 import java.util.stream.Collectors
 import kotlin.streams.toList
 
@@ -28,116 +27,52 @@ class MixService @Autowired constructor(
 
     fun showAllMixes(user: User): MutableList<Mix> {
 
-        val mixesList = mixRepository.findAll();
+        val mixesList = getAll().toMutableList();
+        val userTobaccosList = tobaccoService.getAllUserTobacco(user);
+        val barTobaccos = tobaccoService.getAllUserTobaccoInBar(user);
 
-        val barTobaccos = tobaccoService.getMakersAndStatusTobaccosInBarForUser(user).stream()
-                .flatMap { tobacco -> tobacco.tobaccos.stream() }
-                .collect(Collectors.toList())
-
-        val purchasesTobacco = tobaccoService.getAllUserTobaccoInPurchases(user);
-
+        var currentTobaccoList: MutableList<Tobacco>;
+        var currentTobacco: Tobacco? = null;
         for (mix in mixesList) {
-
+            currentTobaccoList = mutableListOf();
+            //Если все табаки есть в баре у пользователя, то микс со статусом MixSet.MATCH_BAR
+            //а табаки со статусом TobaccoStatus.CONTAIN_BAR
             if (barTobaccos.containsAll(mix.tobaccoMixList)) {
 
                 mix.status = MixSet.MATCH_BAR;
-
-                for (tobacco in mix.tobaccoMixList) {
-
-                    tobacco.status = TobaccoStatus.CONTAIN_BAR;
+                for (component in mix.components) {
+                    currentTobacco = component.tobacco!!;
+                    currentTobacco.status = TobaccoStatus.CONTAIN_BAR;
+                    currentTobaccoList.add(currentTobacco);
                 }
 
             } else {
-
-                val isTobaccoInBar: Boolean = mix.tobaccoMixList.stream()
-                        .anyMatch { i ->
-                            user.tobaccos.stream()
-                                    .anyMatch { f ->
-                                        StringUtils.pathEquals(
-                                                i.title, f.title)
-                                    }
-                        };
-
-                if (isTobaccoInBar) {
-
-                    var existReplacements: Boolean = false;
-                    for (mixTobacco in mix.tobaccoMixList) {
-                        mixTobacco.replacements = ArrayList()
-                        mixTobacco.status = TobaccoStatus.PURCHASED
-
-                        for (userTobacco in barTobaccos) {
-
-                            if (mixTobacco.id.equals(userTobacco.id)) {
-
-                                mixTobacco.status = TobaccoStatus.CONTAIN_BAR;
-
-
-                            } else {
-                                if (mixTobacco.taste?.title.equals(userTobacco.taste?.title)) {
-                                    existReplacements = true;
-                                    userTobacco.status = TobaccoStatus.CONTAIN_BAR;
-
-                                    mixTobacco.replacements.add(userTobacco);
-
-                                } else {
-                                    if (mixTobacco.status == TobaccoStatus.NULL_VALUE ||
-                                            !mixTobacco.status.equals(TobaccoStatus.CONTAIN_BAR)) {
-
-                                        if (purchasesTobacco.contains(mixTobacco)) {
-                                            mixTobacco.status = TobaccoStatus.IN_PURCHASES
-                                        } else {
-                                            mixTobacco.status = TobaccoStatus.PURCHASED
-                                        }
-
-//                                        mixTobacco.status = TobaccoStatus.PURCHASES;
-                                    }
-                                }
-                            }
+                //Проверяем каждый табак из Микса на наличие в баре и замен
+                for (mixComponent in mix.components) {
+                    currentTobacco = mixComponent.tobacco!!;
+                    if (barTobaccos.contains(currentTobacco)) {
+                        currentTobacco.status = TobaccoStatus.CONTAIN_BAR;
+                    } else {
+                        //Ищем статус табака для указанного юзера
+                        currentTobacco.status = userTobaccosList
+                                .firstOrNull() { tobacco -> tobacco.id == mixComponent.tobacco?.id }?.status
+                                ?: TobaccoStatus.NULL_VALUE;
+                        //Ищем замены из бара
+                        val replacementList = barTobaccos
+                                .filter { tobacco -> tobacco.taste?.id == mixComponent.tobacco?.taste?.id };
+                        //Если для каждого табака будет замена из бара, то статус микса меняем на "Есть с заменой"
+                        if (replacementList.isNotEmpty()) {
+                            currentTobacco.replacements = replacementList.toMutableList();
+                            mix.status = MixSet.REPLACEMENT_BAR;
+                        }
+                        else{
+                            //Иначе статус - "Нужно докупить" для микса
+                            mix.status = MixSet.PARTIAL_BAR;
                         }
                     }
-
-                    if (existReplacements) {
-                        mix.status = MixSet.REPLACEMENT_BAR
-                    } else {
-                        mix.status = MixSet.PARTIAL_BAR
-                    }
-
-                } else {
-
-                    var existReplacements: Boolean = false;
-                    for (mixTobacco in mix.tobaccoMixList) {
-
-                        mixTobacco.replacements = ArrayList();
-                        mixTobacco.status = TobaccoStatus.PURCHASED;
-
-                        for (userTobacco in barTobaccos) {
-
-                            if (mixTobacco.taste?.title.equals(userTobacco.taste?.title)) {
-                                existReplacements = true;
-                                mixTobacco.replacements.add(userTobacco);
-
-                            } else {
-                                if (mixTobacco.status == TobaccoStatus.NULL_VALUE ||
-                                        !mixTobacco.status.equals(TobaccoStatus.CONTAIN_BAR)) {
-
-                                    if (purchasesTobacco.contains(mixTobacco)) {
-                                        mixTobacco.status = TobaccoStatus.IN_PURCHASES
-                                    } else {
-                                        mixTobacco.status = TobaccoStatus.PURCHASED
-                                    }
-//                                    mixTobacco.status = TobaccoStatus.PURCHASES
-
-                                }
-                            }
-                        }
-                    }
-
-                    if (existReplacements) {
-                        mix.status = MixSet.REPLACEMENT_BAR
-                    } else {
-                        mix.status = MixSet.PARTIAL_BAR
-                    }
+                    currentTobaccoList.add(currentTobacco);
                 }
+                mix.tobaccoMixList = currentTobaccoList;
             }
         }
         return mixesList;

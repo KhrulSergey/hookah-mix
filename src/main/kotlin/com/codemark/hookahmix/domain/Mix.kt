@@ -10,15 +10,26 @@ class Mix {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    var mixesId : Long = 0;
-    var title : String = "";
-    var rating : Int = 0;
-    var tags : String = "";
-    var description: String = "";
-    var strength: Int = 5
+    var mixesId: Long = 0;
 
-    @Transient
-    var sourceUrl: String = "";
+    @Column(name = "title")
+    var title: String = "";
+
+    @Column(name = "rating")
+    var rating: Int = 0;
+
+    @Column(name = "tags")
+    var tags: String = "";
+
+    @Column(name = "description")
+    var description: String = "";
+
+    @Column(name = "strength")
+    var strength: Int = 0
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "mix")
+    var components: MutableSet<Component> = mutableSetOf()
 
     @ManyToMany
     @JoinTable(
@@ -28,12 +39,13 @@ class Mix {
     )
     var tobaccoMixList: MutableList<Tobacco> = mutableListOf();
 
-    @JsonIgnore
-    @OneToMany(mappedBy = "mix")
-    var components: MutableSet<Component> = mutableSetOf()
+    @Transient
+    var sourceUrl: String = "";
 
     @Transient
-    var status: MixSet = MixSet.MATCH_BAR
+    var status: MixSet = MixSet.NULL_VALUE
+
+
 
     override fun toString(): String {
         return "Mix $title";
