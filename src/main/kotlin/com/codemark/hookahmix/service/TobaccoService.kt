@@ -135,7 +135,14 @@ class TobaccoService @Autowired constructor(
         if (tobacco != null) {
             //Поиск существующих записей в UserTobacco.
             userTobaccoInBar = userTobaccosRepository.findAllByUserAndTobacco(user, tobacco).firstOrNull();
-            if (userTobaccoInBar == null) userTobaccoInBar = UserTobacco(user, tobacco);
+            if (userTobaccoInBar != null) {
+                //Если табак был в баре и его пытаются добавить в покупки -> запретить действие
+               if (userTobaccoInBar.status == TobaccoStatus.CONTAIN_BAR){
+                   return null;
+               }
+            }else{
+                userTobaccoInBar = UserTobacco(user, tobacco);
+            }
             userTobaccoInBar.status = TobaccoStatus.IN_PURCHASES;
             userTobaccoInBar = userTobaccosRepository.save(userTobaccoInBar);
         }
@@ -188,7 +195,7 @@ class TobaccoService @Autowired constructor(
      * из переданного списка табаков tobaccoList
      */
     private fun createListOfMakersForTobaccosList(tobaccoList: MutableList<Tobacco>): MutableSet<Maker> {
-        val makerList: MutableSet<Maker> = mutableSetOf();
+        var makerList: MutableSet<Maker> = mutableSetOf();
         var currentMaker: Maker?;
         for (tobacco in tobaccoList) {
             currentMaker = makerList.firstOrNull { maker: Maker -> maker.id == tobacco.maker?.id }
@@ -200,6 +207,7 @@ class TobaccoService @Autowired constructor(
             }
             makerList.add(currentMaker);
         }
+        makerList = makerList.sortedBy(Maker::title).toMutableSet();
         return makerList;
     }
 

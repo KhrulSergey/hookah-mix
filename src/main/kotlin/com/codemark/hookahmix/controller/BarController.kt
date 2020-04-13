@@ -21,7 +21,7 @@ class BarController @Autowired constructor(private val userService: UserService,
     /**
      * Метод получения  структурированого списка табаков для экрана Все табаки
      */
-    @GetMapping("/marker/catalog")
+    @GetMapping("/maker/catalog")
     fun getMakerCatalog(request: HttpServletRequest,
                         response: HttpServletResponse,
                         session: HttpSession): List<Maker> {
@@ -35,7 +35,7 @@ class BarController @Autowired constructor(private val userService: UserService,
     /**
      * Метод получения структурированого списка табаков для экрана В баре
      */
-    @GetMapping("/marker/bar")
+    @GetMapping("/maker/bar")
     fun getUserBar(request: HttpServletRequest,
                    response: HttpServletResponse,
                    session: HttpSession): MutableSet<Maker> {
@@ -45,7 +45,6 @@ class BarController @Autowired constructor(private val userService: UserService,
         println(user);
         return tobaccoService.getMakersAndStatusTobaccosInBarForUser(user);
     }
-
 
     /**
      * Метод добавления табака в бар
@@ -63,7 +62,7 @@ class BarController @Autowired constructor(private val userService: UserService,
     }
 
     /**
-     * Метод удаления табака из бара
+     * Метод удаления табака из Моих табаков (из бара и корзины)
      */
     @GetMapping("/delete_tobacco/{id}")
     fun delete(@PathVariable("id") id: Long,

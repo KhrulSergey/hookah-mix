@@ -26,17 +26,15 @@ interface PurchaseRepository : JpaRepository<User, Tobacco> {
      * Добавляет табак в список купленных
      */
     @Transactional
-    @Modifying
     @Query(nativeQuery = true,
-            value = "select EXISTS( select from latest_purchases " +
-                    "where user_id = :userId and tobacco_id = :tobaccoId)::int")
+            value = "select case when EXISTS( select from latest_purchases where user_id = :userId and tobacco_id = :tobaccoId) then true else false end")
     fun isExistLatestPurchases(@Param("userId") userId: Long,
                                @Param("tobaccoId") tobaccoId: Long): Boolean;
 
     /**
      * Удаляет табак из списка купленных
      */
-    @org.springframework.transaction.annotation.Transactional
+    @Transactional
     @Modifying
     @Query(nativeQuery = true,
             value = "delete from latest_purchases lt where lt.user_id = :userId and lt.tobacco_id = :tobaccoId")
