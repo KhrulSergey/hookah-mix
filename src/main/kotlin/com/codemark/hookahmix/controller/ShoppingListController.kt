@@ -39,7 +39,8 @@ class ShoppingListController @Autowired constructor(
         val user = userService.findUserByInstallationCookie(cookieAuthorizationUtil
                 .getInstallationCookie(request, session));
         val tobacco: Tobacco? = tobaccoService.addOneInPurchases(id, user);
-        return ResponseEntity("Tobacco $tobacco was added in purchases: ${tobacco != null}", HttpStatus.OK);
+        val status = if (tobacco != null) HttpStatus.OK else HttpStatus.NOT_FOUND;
+        return ResponseEntity("Tobacco $tobacco was added in purchases: ${tobacco != null}", status);
     }
 
     @GetMapping("/latest")

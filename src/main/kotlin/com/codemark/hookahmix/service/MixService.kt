@@ -6,7 +6,6 @@ import com.codemark.hookahmix.repository.MakerRepository
 import com.codemark.hookahmix.repository.MixRepository
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
-import java.util.stream.Collectors
 import kotlin.streams.toList
 
 @Service
@@ -25,7 +24,8 @@ class MixService @Autowired constructor(
         return mixRepository.findAll();
     }
 
-    fun showAllMixes(user: User): MutableList<Mix> {
+    /** Возвращает список миксов и его компонентов, с проставленными статусами согласно наличия табаков у Пользователя */
+    fun getAllForUser(user: User): MutableList<Mix> {
 
         val mixesList = getAll().toMutableList();
         val userTobaccosList = tobaccoService.getAllUserTobacco(user);
@@ -38,14 +38,12 @@ class MixService @Autowired constructor(
             //Если все табаки есть в баре у пользователя, то микс со статусом MixSet.MATCH_BAR
             //а табаки со статусом TobaccoStatus.CONTAIN_BAR
             if (barTobaccos.containsAll(mix.tobaccoMixList)) {
-
                 mix.status = MixSet.MATCH_BAR;
                 for (component in mix.components) {
                     currentTobacco = component.tobacco!!;
                     currentTobacco.status = TobaccoStatus.CONTAIN_BAR;
                     currentTobaccoList.add(currentTobacco);
                 }
-
             } else {
                 //Проверяем каждый табак из Микса на наличие в баре и замен
                 for (mixComponent in mix.components) {
@@ -72,6 +70,7 @@ class MixService @Autowired constructor(
                     }
                     currentTobaccoList.add(currentTobacco);
                 }
+                //Формируем список табаков-компонентов в миксе с заполненными данными
                 mix.tobaccoMixList = currentTobaccoList;
             }
         }
@@ -91,7 +90,7 @@ class MixService @Autowired constructor(
 
                 if (taste != null && taste.isNotEmpty()) {
 
-                    mixes = showAllMixes(user)
+                    mixes = getAllForUser(user)
                     result = mixes.stream()
                             .filter { i ->
                                 i.status.title.equals(status)
@@ -103,7 +102,7 @@ class MixService @Autowired constructor(
                 } else {
 
 
-                    mixes = showAllMixes(user)
+                    mixes = getAllForUser(user)
                     result = mixes.stream()
                             .filter { i ->
                                 i.status.title.equals(status)
@@ -114,7 +113,7 @@ class MixService @Autowired constructor(
                 }
             } else {
 
-                mixes = showAllMixes(user)
+                mixes = getAllForUser(user)
 
                 result = mixes.stream()
                         .filter { i -> i.status.title.equals(status) }

@@ -94,7 +94,8 @@ class TobaccoService @Autowired constructor(
 
     /** Возвращает список всех купленных (заказанных) табаков Пользователем */
     fun getAllFromLatestPurchases(user: User): MutableSet<Tobacco> {
-        return tobaccoRepository.findLatestPurchases(user.id);
+        var purchasesTobaccos = tobaccoRepository.findLatestPurchases(user.id);
+        return purchasesTobaccos.sortedBy { tobacco ->  tobacco.title}.toMutableSet();
     }
     //</editor-fold>
 
@@ -137,10 +138,10 @@ class TobaccoService @Autowired constructor(
             userTobaccoInBar = userTobaccosRepository.findAllByUserAndTobacco(user, tobacco).firstOrNull();
             if (userTobaccoInBar != null) {
                 //Если табак был в баре и его пытаются добавить в покупки -> запретить действие
-               if (userTobaccoInBar.status == TobaccoStatus.CONTAIN_BAR){
-                   return null;
-               }
-            }else{
+                if (userTobaccoInBar.status == TobaccoStatus.CONTAIN_BAR) {
+                    return null;
+                }
+            } else {
                 userTobaccoInBar = UserTobacco(user, tobacco);
             }
             userTobaccoInBar.status = TobaccoStatus.IN_PURCHASES;
@@ -201,13 +202,15 @@ class TobaccoService @Autowired constructor(
             currentMaker = makerList.firstOrNull { maker: Maker -> maker.id == tobacco.maker?.id }
             if (currentMaker == null) {
                 currentMaker = tobacco.maker!!;
-                currentMaker.tobaccos = mutableSetOf(tobacco);
-            } else {
-                currentMaker.tobaccos.add(tobacco);
+                currentMaker.tobaccos = mutableSetOf();
+                makerList.add(currentMaker);
             }
-            makerList.add(currentMaker);
+            currentMaker.tobaccos.add(tobacco);
         }
         makerList = makerList.sortedBy(Maker::title).toMutableSet();
+        for (maker in makerList){
+            maker.tobaccos = maker.tobaccos.sortedBy { tobacco -> tobacco.title }.toMutableSet();
+        }
         return makerList;
     }
 
@@ -220,6 +223,9 @@ class TobaccoService @Autowired constructor(
             makerList.firstOrNull { maker: Maker -> maker.id == tobacco.maker?.id }?.tobaccos
                     ?.firstOrNull { value: Tobacco -> value.id == tobacco.id }
                     ?.status = tobacco.status;
+        }
+        for (maker in makerList){
+            maker.tobaccos = maker.tobaccos.sortedBy { tobacco -> tobacco.title }.toMutableSet();
         }
     }
 

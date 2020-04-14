@@ -35,7 +35,7 @@ class MixController @Autowired constructor(
         val user = userService.findUserByInstallationCookie(cookieAuthorizationUtil
                 .getInstallationCookie(request, session));
         println("User: $user");
-        val mixesList: MutableList<Mix> = mixService.showAllMixes(user);
+        val mixesList: MutableList<Mix> = mixService.getAllForUser(user);
         Collections.sort(mixesList, MixComparator());
         return mixesList;
     }

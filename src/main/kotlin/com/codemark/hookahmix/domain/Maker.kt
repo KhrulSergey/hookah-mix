@@ -37,10 +37,7 @@ class Maker(title: String = "") {
 
     @JsonIgnoreProperties("maker")
     @OneToMany(mappedBy = "maker")
-    var tobaccos: MutableSet<Tobacco> = mutableSetOf()
-        get() {
-            return field.sortedBy { tobacco -> tobacco.title }.toMutableSet();
-        };
+    var tobaccos: MutableSet<Tobacco> = mutableSetOf();
 
     /** Дополнительные поля */
     @Transient
