@@ -5,9 +5,12 @@ import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.annotation.JsonPropertyOrder
+import org.hibernate.search.annotations.Field
+import org.hibernate.search.annotations.Indexed
 import javax.persistence.*
 
 @JsonPropertyOrder("tobaccosId")
+@Indexed
 @Entity
 @Table(name = "tobaccos")
 class Tobacco(title: String = "",
@@ -20,6 +23,7 @@ class Tobacco(title: String = "",
     @Column(name = "tobaccos_id")
     var id: Long = 0;
 
+    @Field
     @Column(name = "title")
     var title: String = title;
 
@@ -47,6 +51,7 @@ class Tobacco(title: String = "",
     @OneToMany(mappedBy = "tobacco", fetch = FetchType.LAZY)
     var userTobaccos: MutableList<UserTobacco> = mutableListOf();
 
+//    @IndexedEmbedded
 //    @JsonIgnore
 //    @ManyToMany
 //    @JoinTable(
@@ -55,7 +60,8 @@ class Tobacco(title: String = "",
 //            inverseJoinColumns = [JoinColumn(name = "mix_id")]
 //    )
 //    var mixList: MutableList<Mix> = mutableListOf();
-
+//
+//    @ContainedIn
 //    @JsonIgnore
 //    @OneToMany(mappedBy = "tobacco")
 //    var components: MutableSet<Component> = mutableSetOf()

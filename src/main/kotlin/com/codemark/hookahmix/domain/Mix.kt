@@ -1,9 +1,12 @@
 package com.codemark.hookahmix.domain
 
 import com.fasterxml.jackson.annotation.JsonIgnore
+import org.hibernate.search.annotations.Field
+import org.hibernate.search.annotations.Indexed
+import org.hibernate.search.annotations.IndexedEmbedded
 import javax.persistence.*
 
-
+@Indexed
 @Entity
 @Table(name = "mixes")
 class Mix {
@@ -12,12 +15,14 @@ class Mix {
     @GeneratedValue(strategy = GenerationType.AUTO)
     var mixesId: Long = 0;
 
+    @Field
     @Column(name = "title")
     var title: String = "";
 
     @Column(name = "rating")
     var rating: Int = 0;
 
+    @Field
     @Column(name = "tags")
     var tags: String = "";
 
@@ -31,6 +36,7 @@ class Mix {
     @OneToMany(mappedBy = "mix")
     var components: MutableSet<Component> = mutableSetOf()
 
+    @IndexedEmbedded(depth=3)
     @ManyToMany
     @JoinTable(
             name = "components",

@@ -21,7 +21,6 @@ import javax.servlet.http.HttpSession
 
 @RestController
 @RequestMapping("/api/mixes")
-
 class MixController @Autowired constructor(
         private var userService: UserService,
         private var mixService: MixService,
@@ -29,14 +28,20 @@ class MixController @Autowired constructor(
 
 
     @GetMapping("/generator")
-    fun generateMixes(request: HttpServletRequest,
+    fun generateMixes(@RequestParam(required = false) search: String?, request: HttpServletRequest,
                       session: HttpSession): MutableList<Mix> {
 
         val user = userService.findUserByInstallationCookie(cookieAuthorizationUtil
                 .getInstallationCookie(request, session));
         println("User: $user");
-        val mixesList: MutableList<Mix> = mixService.getAllForUser(user);
+        val mixesList: MutableList<Mix> = mixService.getAllForUserWithSearch(user, search);
         Collections.sort(mixesList, MixComparator());
+        return mixesList;
+    }
+
+    @GetMapping("/search")
+    fun search(text: String): MutableList<Mix> {
+        val mixesList: MutableList<Mix> = mixService.search(text);
         return mixesList;
     }
 

@@ -2,8 +2,8 @@ package com.codemark.hookahmix.service
 
 import com.codemark.hookahmix.domain.*
 import com.codemark.hookahmix.repository.ComponentRepository
-import com.codemark.hookahmix.repository.MakerRepository
 import com.codemark.hookahmix.repository.MixRepository
+import com.codemark.hookahmix.service.searchBuilder.MixSearch
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import kotlin.streams.toList
@@ -12,22 +12,24 @@ import kotlin.streams.toList
 class MixService @Autowired constructor(
         private val mixRepository: MixRepository,
         private var tobaccoService: TobaccoService,
-        private var makerService: MakerService,
-        private val imageService: ImageService,
-        private val makerRepository: MakerRepository,
-        private val componentRepository: ComponentRepository) {
+        private val componentRepository: ComponentRepository,
+        private val mixSearch: MixSearch) {
 
     //TODO Удалить неиспользуемые методы
     // Отсортировать методы
 
-    fun getAll(): List<Mix> {
-        return mixRepository.findAll();
+    fun getAll(): MutableList<Mix> {
+        return mixRepository.findAll().toMutableList();
     }
 
-    /** Возвращает список миксов и его компонентов, с проставленными статусами согласно наличия табаков у Пользователя */
-    fun getAllForUser(user: User): MutableList<Mix> {
-
-        val mixesList = getAll().toMutableList();
+    /** Возвращает список миксов и его компонентов, с проставленными статусами согласно наличия табаков у Пользователя
+     *  Также осуществляется поиск по миксам при необходимости*/
+    fun getAllForUserWithSearch(user: User, searchQuery: String? = null): MutableList<Mix> {
+        val mixesList = if (searchQuery.isNullOrBlank()) {
+            getAll();
+        } else {
+            search(searchQuery);
+        }
         val userTobaccosList = tobaccoService.getAllUserTobacco(user);
         val barTobaccos = tobaccoService.getAllUserTobaccoInBar(user);
 
@@ -62,8 +64,7 @@ class MixService @Autowired constructor(
                         if (replacementList.isNotEmpty()) {
                             currentTobacco.replacements = replacementList.toMutableList();
                             mix.status = MixSet.REPLACEMENT_BAR;
-                        }
-                        else{
+                        } else {
                             //Иначе статус - "Нужно докупить" для микса
                             mix.status = MixSet.PARTIAL_BAR;
                         }
@@ -75,6 +76,10 @@ class MixService @Autowired constructor(
             }
         }
         return mixesList;
+    }
+
+    fun search(text: String): MutableList<Mix> {
+        return mixSearch.searchMixes(text);
     }
 
     fun generateMixCount(user: User, status: String?, strength: String?, taste: String?): Int {
@@ -90,7 +95,7 @@ class MixService @Autowired constructor(
 
                 if (taste != null && taste.isNotEmpty()) {
 
-                    mixes = getAllForUser(user)
+                    mixes = getAllForUserWithSearch(user)
                     result = mixes.stream()
                             .filter { i ->
                                 i.status.title.equals(status)
@@ -102,7 +107,7 @@ class MixService @Autowired constructor(
                 } else {
 
 
-                    mixes = getAllForUser(user)
+                    mixes = getAllForUserWithSearch(user)
                     result = mixes.stream()
                             .filter { i ->
                                 i.status.title.equals(status)
@@ -113,7 +118,7 @@ class MixService @Autowired constructor(
                 }
             } else {
 
-                mixes = getAllForUser(user)
+                mixes = getAllForUserWithSearch(user)
 
                 result = mixes.stream()
                         .filter { i -> i.status.title.equals(status) }

@@ -1,10 +1,11 @@
 HELP.md
 target/
-hookah-mix-mobile-client/
 node-modules/
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**
 !**/src/test/**
+lucene
+/lucene/
 
 ### STS ###
 .apt_generated
@@ -34,3 +35,4 @@ build/
 
 ### VS Code ###
 .vscode/
+
