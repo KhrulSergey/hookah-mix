@@ -5,14 +5,14 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonPropertyOrder
 import lombok.AllArgsConstructor
 import lombok.NoArgsConstructor
+import org.hibernate.search.annotations.Field
+import org.hibernate.search.annotations.Indexed
+import org.hibernate.search.annotations.IndexedEmbedded
 import javax.persistence.*
 
-//o	Название
-//o	Картинка
-//o	Год основания
-//o	Описание
 @NoArgsConstructor
 @AllArgsConstructor
+@Indexed
 @Entity
 @Table(name = "makers")
 @JsonPropertyOrder("title", "id", "description", "image", "foundingYear", "tobaccos")
@@ -22,6 +22,7 @@ class Maker(title: String = "") {
     @GeneratedValue(strategy = GenerationType.AUTO)
     var id: Long = 0;
 
+    @Field
     @Column(name = "title")
     var title: String = title;
 
@@ -35,6 +36,7 @@ class Maker(title: String = "") {
     @JoinColumn(name = "file_id")
     var image: Image? = null;
 
+    @IndexedEmbedded(depth=3)
     @JsonIgnoreProperties("maker")
     @OneToMany(mappedBy = "maker")
     var tobaccos: MutableSet<Tobacco> = mutableSetOf();

@@ -31,7 +31,7 @@ class MixController @Autowired constructor(
     fun generateMixes(@RequestParam(required = false) search: String?, request: HttpServletRequest,
                       session: HttpSession): MutableList<Mix> {
 
-        val user = userService.findUserByInstallationCookie(cookieAuthorizationUtil
+        val user = userService.getOneByInstallationCookie(cookieAuthorizationUtil
                 .getInstallationCookie(request, session));
         println("User: $user");
         val mixesList: MutableList<Mix> = mixService.getAllForUserWithSearch(user, search);
@@ -88,7 +88,7 @@ class MixController @Autowired constructor(
                           @RequestParam("strength") strength: String?,
                           @RequestParam("taste") taste: String?): Int {
 
-        val user = userService.findUserByInstallationCookie(cookieAuthorizationUtil
+        val user = userService.getOneByInstallationCookie(cookieAuthorizationUtil
                 .getInstallationCookie(request, session));
         println("User: $user");
         return mixService.generateMixCount(user, status, strength, taste);

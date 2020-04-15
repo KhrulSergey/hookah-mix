@@ -5,8 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.annotation.JsonPropertyOrder
-import org.hibernate.search.annotations.Field
-import org.hibernate.search.annotations.Indexed
+import org.hibernate.search.annotations.*
 import javax.persistence.*
 
 @JsonPropertyOrder("tobaccosId")
@@ -41,6 +40,7 @@ class Tobacco(title: String = "",
     @JoinColumn(name = "taste_id")
     var taste: Taste? = null;
 
+    @IndexedEmbedded(depth=3)
     @ManyToOne(cascade = [CascadeType.PERSIST, CascadeType.MERGE], fetch = FetchType.LAZY)
     @JoinColumn(name = "maker_id")
     @JsonProperty("maker")

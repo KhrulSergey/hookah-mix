@@ -4,6 +4,7 @@ import com.codemark.hookahmix.domain.*
 import com.codemark.hookahmix.repository.PurchaseRepository
 import com.codemark.hookahmix.repository.TobaccoRepository
 import com.codemark.hookahmix.repository.UserTobaccosRepository
+import com.codemark.hookahmix.service.searchBuilder.TobaccoSearch
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 
@@ -12,8 +13,9 @@ import org.springframework.stereotype.Service
 class TobaccoService @Autowired constructor(
         private val tobaccoRepository: TobaccoRepository,
         private val purchaseRepository: PurchaseRepository,
+        private val userTobaccosRepository: UserTobaccosRepository,
         private val makerService: MakerService,
-        private val userTobaccosRepository: UserTobaccosRepository) {
+        private val tobaccoSearch: TobaccoSearch) {
 
 //<editor-fold desc="ПУБЛИЧНЫЕ МЕТОДЫ">
 
@@ -39,8 +41,12 @@ class TobaccoService @Autowired constructor(
      * В табаках проставлен статус для указанного пользователя
      * @param user - Пользователь, для которого формируем статусы табаков
      */
-    fun getMakersAndStatusTobaccosInCatalogForUser(user: User): MutableList<Maker> {
-        val makerList = makerService.getAllSortedByTitle();
+    fun getMakersAndStatusTobaccosInCatalogForUser(user: User, searchQuery: String? = null): MutableList<Maker> {
+        val makerList = if (searchQuery.isNullOrBlank()) {
+            makerService.getAllSortedByTitle();
+        } else {
+            searchCatalogTobacco(searchQuery);
+        }
         //Фича отключена т.к. в списках табаков статус TobaccoStatus.PURCHASED не нужен бизнесу
         //val userPurchasedTobaccos = getAllUserLatestPurchasedTobacco(user);
         //getFilledStatusTobaccoMakerList(makerList, userPurchasedTobaccos);
@@ -55,8 +61,14 @@ class TobaccoService @Autowired constructor(
      * В табаках проставлен статус для указанного пользователя
      * @param user - Пользователь, для которого формируем статусы табаков
      */
-    fun getMakersAndStatusTobaccosInBarForUser(user: User): MutableSet<Maker> {
-        val userTobaccos = getAllUserTobaccoInBar(user);
+    fun getMakersAndStatusTobaccosInBarForUser(user: User, searchQuery: String? = null): MutableSet<Maker> {
+
+        val userTobaccos = if (searchQuery.isNullOrBlank()) {
+            getAllUserTobaccoInBar(user);
+        } else {
+            searchBarTobacco(searchQuery, user);
+        }
+
         return createListOfMakersForTobaccosList(userTobaccos);
     }
 
@@ -82,10 +94,10 @@ class TobaccoService @Autowired constructor(
     }
 
     /** Возвращает список всех пользовательских табаков с статусом "В корзине" (покупках) */
-    fun getAllUserTobaccoInPurchases(user: User): MutableList<Tobacco> {
+    fun getAllUserTobaccoInCheckout(user: User): MutableList<Tobacco> {
         val userTobaccoList: MutableList<Tobacco> = mutableListOf()
         for (userTobaccoRelation in user.userTobaccos
-                .filter { userTobacco -> userTobacco.status == TobaccoStatus.IN_PURCHASES }) {
+                .filter { userTobacco -> userTobacco.status == TobaccoStatus.IN_CHECKOUT }) {
             userTobaccoRelation.tobacco?.status = userTobaccoRelation.status;
             userTobaccoList.add(userTobaccoRelation.tobacco!!);
         }
@@ -94,8 +106,8 @@ class TobaccoService @Autowired constructor(
 
     /** Возвращает список всех купленных (заказанных) табаков Пользователем */
     fun getAllFromLatestPurchases(user: User): MutableSet<Tobacco> {
-        var purchasesTobaccos = tobaccoRepository.findLatestPurchases(user.id);
-        return purchasesTobaccos.sortedBy { tobacco ->  tobacco.title}.toMutableSet();
+        val purchasedTobaccos = tobaccoRepository.findLatestPurchases(user.id);
+        return purchasedTobaccos.sortedBy { tobacco -> tobacco.title }.toMutableSet();
     }
     //</editor-fold>
 
@@ -116,7 +128,7 @@ class TobaccoService @Autowired constructor(
             //Поиск существующих записей в UserTobacco.
             userTobaccoInBar = userTobaccosRepository.findAllByUserAndTobacco(user, tobacco).firstOrNull();
             if (userTobaccoInBar != null) {
-                if (userTobaccoInBar.status == TobaccoStatus.IN_PURCHASES) {
+                if (userTobaccoInBar.status == TobaccoStatus.IN_CHECKOUT) {
                     //Если табак был в покупках и переходит в бар, значит его купили -> добавить в заказы и перезатереть статус
                     addOneInLatestPurchases(tobaccoId, user);
                 }
@@ -144,7 +156,7 @@ class TobaccoService @Autowired constructor(
             } else {
                 userTobaccoInBar = UserTobacco(user, tobacco);
             }
-            userTobaccoInBar.status = TobaccoStatus.IN_PURCHASES;
+            userTobaccoInBar.status = TobaccoStatus.IN_CHECKOUT;
             userTobaccoInBar = userTobaccosRepository.save(userTobaccoInBar);
         }
         return if (userTobaccoInBar != null) tobacco else null
@@ -189,6 +201,22 @@ class TobaccoService @Autowired constructor(
         return false
     }
     //</editor-fold>
+
+    //<editor-fold desc="Поиск по записям">
+
+    fun searchCatalogTobacco(text: String): MutableList<Maker> {
+        return tobaccoSearch.searchCatalogTobacco(text);
+    }
+
+    fun searchBarTobacco(text: String, user: User): MutableList<Tobacco> {
+        return searchBarTobaccoUser(text, getAllUserTobaccoInBar(user));
+    }
+
+    fun searchBarTobaccoUser(text: String, tobaccoList: MutableList<Tobacco>): MutableList<Tobacco> {
+        return tobaccoSearch.searchBarTobacco(text, tobaccoList);
+    }
+
+    //</editor-fold>
 //</editor-fold>
 
 //<editor-fold desc="ВНУТРЕННИЕ МЕТОДЫ">
@@ -208,7 +236,7 @@ class TobaccoService @Autowired constructor(
             currentMaker.tobaccos.add(tobacco);
         }
         makerList = makerList.sortedBy(Maker::title).toMutableSet();
-        for (maker in makerList){
+        for (maker in makerList) {
             maker.tobaccos = maker.tobaccos.sortedBy { tobacco -> tobacco.title }.toMutableSet();
         }
         return makerList;
@@ -224,7 +252,7 @@ class TobaccoService @Autowired constructor(
                     ?.firstOrNull { value: Tobacco -> value.id == tobacco.id }
                     ?.status = tobacco.status;
         }
-        for (maker in makerList){
+        for (maker in makerList) {
             maker.tobaccos = maker.tobaccos.sortedBy { tobacco -> tobacco.title }.toMutableSet();
         }
     }

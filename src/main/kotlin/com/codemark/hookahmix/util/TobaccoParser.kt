@@ -98,7 +98,7 @@ class TobaccoParser @Autowired constructor(private var imageService: ImageServic
         tobaccoParserInfo.sourceEntriesCount = 0;
 
         val makerListElement: Elements = document!!.select(makersElements);
-        var makerUrl: String = "";
+        var makerUrl: String;
 
         for (makerElement in makerListElement) {
             if (tobaccoParserInfo.dataList.size >= tobaccoCountNeeded) break;
@@ -155,7 +155,7 @@ class TobaccoParser @Autowired constructor(private var imageService: ImageServic
             println("Maker $savedMaker already exists in DB!, next its tobacco");
         } else {
             /** Заполняем данные о производителе со страницы */
-            var makerImageUrl: String = "";
+            var makerImageUrl: String;
             var makerFoundingYear: String = "";
             var makerDescription: String = "";
 

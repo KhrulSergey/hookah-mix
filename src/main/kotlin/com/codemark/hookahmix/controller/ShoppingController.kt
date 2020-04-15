@@ -13,8 +13,8 @@ import javax.servlet.http.HttpServletResponse
 import javax.servlet.http.HttpSession
 
 @RestController
-@RequestMapping("/api/purchases")
-class ShoppingListController @Autowired constructor(
+@RequestMapping("/api/shopping")
+class ShoppingController @Autowired constructor(
         private var tobaccoService: TobaccoService,
         private var userService: UserService,
         var cookieAuthorizationUtil: CookieAuthorizationUtil) {
@@ -24,10 +24,10 @@ class ShoppingListController @Autowired constructor(
                         response: HttpServletResponse,
                         session: HttpSession): List<Tobacco> {
 
-        val user = userService.findUserByInstallationCookie(cookieAuthorizationUtil
+        val user = userService.getOneByInstallationCookie(cookieAuthorizationUtil
                 .getInstallationCookie(request, session));
         println("User: $user");
-        return tobaccoService.getAllUserTobaccoInPurchases(user);
+        return tobaccoService.getAllUserTobaccoInCheckout(user);
     }
 
     @PostMapping("/my/{id}")
@@ -36,7 +36,7 @@ class ShoppingListController @Autowired constructor(
                               response: HttpServletResponse,
                               session: HttpSession): ResponseEntity<String> {
 
-        val user = userService.findUserByInstallationCookie(cookieAuthorizationUtil
+        val user = userService.getOneByInstallationCookie(cookieAuthorizationUtil
                 .getInstallationCookie(request, session));
         val tobacco: Tobacco? = tobaccoService.addOneInPurchases(id, user);
         val status = if (tobacco != null) HttpStatus.OK else HttpStatus.NOT_FOUND;
@@ -48,7 +48,7 @@ class ShoppingListController @Autowired constructor(
                            response: HttpServletResponse,
                            session: HttpSession): MutableSet<Tobacco> {
 
-        val user = userService.findUserByInstallationCookie(cookieAuthorizationUtil
+        val user = userService.getOneByInstallationCookie(cookieAuthorizationUtil
                 .getInstallationCookie(request, session));
         return tobaccoService.getAllFromLatestPurchases(user);
     }
@@ -59,7 +59,7 @@ class ShoppingListController @Autowired constructor(
                                    response: HttpServletResponse,
                                    session: HttpSession): ResponseEntity<String> {
 
-        val user = userService.findUserByInstallationCookie(cookieAuthorizationUtil
+        val user = userService.getOneByInstallationCookie(cookieAuthorizationUtil
                 .getInstallationCookie(request, session));
         val tobacco = tobaccoService.getOne(id);
         tobaccoService.deleteOneFromLatestPurchases(user, tobacco.id);

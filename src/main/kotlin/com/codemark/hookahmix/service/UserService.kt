@@ -11,16 +11,21 @@ import javax.servlet.http.HttpServletResponse
 class UserService @Autowired constructor(
         private val userRepository: UserRepository) {
 
-    //TODO Удалить неиспользуемые методы
-    // Отсортировать методы
+    fun getOneByInstallationCookie(installationCookie: String): User {
+        return userRepository.findUserByInstallationCookie(installationCookie)
+    }
+
+    fun getOne(id: Long): User {
+        return userRepository.getOne(id)
+    }
 
     fun register(response: HttpServletResponse) {
 
-        var key = "UserId"
-        var installationCookie = UUID.randomUUID().toString();
+        val key = "UserId"
+        val installationCookie = UUID.randomUUID().toString();
 
         response.setHeader(key, installationCookie)
-        var user = User(installationCookie)
+        val user = User(installationCookie)
 
         if (userRepository.existsByInstallationCookie(installationCookie)) {
             println("User with ID $installationCookie already exists")
@@ -31,14 +36,6 @@ class UserService @Autowired constructor(
 
     fun save(user: User): Unit {
         userRepository.save(user)
-    }
-
-    fun isUserExists(installationCookie: String): Boolean {
-        return userRepository.existsByInstallationCookie(installationCookie)
-    }
-
-    fun findUserByInstallationCookie(installationCookie: String): User {
-        return userRepository.findUserByInstallationCookie(installationCookie)
     }
 
 }

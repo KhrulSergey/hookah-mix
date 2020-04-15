@@ -27,7 +27,7 @@ enum class TobaccoStatus(
         @JsonIgnore val code: String) {
     NULL_VALUE("Неизвестен", "null"),
     CONTAIN_BAR("В баре", "contain_bar"),
-    IN_PURCHASES("В корзине", "in_purchases"),
+    IN_CHECKOUT("В корзине", "in_checkout"),
     PURCHASED("Куплен", "purchased");
 
     @JsonValue
@@ -42,8 +42,8 @@ enum class TobaccoStatus(
                 CONTAIN_BAR.code -> {
                     CONTAIN_BAR
                 }
-                IN_PURCHASES.code -> {
-                    IN_PURCHASES
+                IN_CHECKOUT.code -> {
+                    IN_CHECKOUT
                 }
                 PURCHASED.code -> {
                     PURCHASED

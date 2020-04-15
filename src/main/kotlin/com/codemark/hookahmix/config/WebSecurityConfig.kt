@@ -21,7 +21,7 @@ class WebSecurityConfig : WebSecurityConfigurerAdapter() {
                     .antMatchers("/api/admin", "/main",
                             "/catalog_tobaccos", "/catalog_mixes")
                     .authenticated()
-                    .antMatchers("/api/bar/**").permitAll()
+                    .antMatchers("/api/tobacco/**").permitAll()
                 .and()
                     .formLogin()
                 .and()

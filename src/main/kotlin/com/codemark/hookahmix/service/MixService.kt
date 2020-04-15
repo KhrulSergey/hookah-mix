@@ -34,7 +34,7 @@ class MixService @Autowired constructor(
         val barTobaccos = tobaccoService.getAllUserTobaccoInBar(user);
 
         var currentTobaccoList: MutableList<Tobacco>;
-        var currentTobacco: Tobacco? = null;
+        var currentTobacco: Tobacco?;
         for (mix in mixesList) {
             currentTobaccoList = mutableListOf();
             //Если все табаки есть в баре у пользователя, то микс со статусом MixSet.MATCH_BAR
@@ -84,10 +84,10 @@ class MixService @Autowired constructor(
 
     fun generateMixCount(user: User, status: String?, strength: String?, taste: String?): Int {
 
-        var mixes: MutableList<Mix> = mutableListOf()
+        val mixes: MutableList<Mix>;
 
-        var count: Int = 0
-        var result: MutableList<Mix> = mutableListOf()
+        val count: Int;
+        var result: MutableList<Mix> = mutableListOf();
 
         if (status != null && status.isNotEmpty()) {
 
@@ -95,14 +95,14 @@ class MixService @Autowired constructor(
 
                 if (taste != null && taste.isNotEmpty()) {
 
-                    mixes = getAllForUserWithSearch(user)
+                    mixes = getAllForUserWithSearch(user);
                     result = mixes.stream()
                             .filter { i ->
                                 i.status.title.equals(status)
                                         && i.strength == Integer.parseInt(strength)
                                         && i.tags.contains(taste)
                             }
-                            .toList().toMutableList()
+                            .toList().toMutableList();
 
                 } else {
 
