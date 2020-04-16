@@ -71,14 +71,14 @@
                 <div style="align-items: flex-start; flex-direction: column; flex: 1">
                     <p><strong>Статус обработки:</strong> ${resultTobacco.status.title}.</p>
                     <p><strong>Список ошибок:</strong></p>
-                    <div style="height: 200px; margin: 15px; overflow: scroll; border: dodgerblue inset 5px; font-size: 14px;">
+                    <div style="height: 150px; margin: 15px; overflow: scroll; border: dodgerblue inset 5px; font-size: 14px;">
                         <#list resultTobacco.errorLog as errorMsg>
                             <pre>${errorMsg}</pre>
                         <#else>No errors
                         </#list>
                     </div>
                     <p><strong>Список предупреждений:</strong></p>
-                    <div style="height: 50px; margin: 15px; overflow-y: scroll; border: dodgerblue inset 5px; font-size: 14px;">
+                    <div style="height: 150px; margin: 15px; overflow-y: scroll; border: dodgerblue inset 5px; font-size: 14px;">
                         <#list resultTobacco.warningLog as warningMsg>
                             <pre>${warningMsg}</pre>
                         <#else>
@@ -111,14 +111,14 @@
                 <div style="align-items: flex-start; flex-direction: column; flex: 1">
                     <p><strong>Статус обработки:</strong> ${resultMix.status.title}.</p>
                     <p><strong>Список ошибок:</strong></p>
-                    <div style="height: 200px; margin: 15px; overflow: scroll; border: lightskyblue inset 5px; font-size: 14px;">
+                    <div style="height: 150px; margin: 15px; overflow: scroll; border: lightskyblue inset 5px; font-size: 14px;">
                         <#list resultMix.errorLog as errorMsg>
                             <pre>${errorMsg}</pre>
                         <#else>No errors
                         </#list>
                     </div>
                     <p><strong>Список предупреждений:</strong></p>
-                    <div style="height: 50px; margin: 15px; overflow-y: scroll; border: lightskyblue inset 5px; font-size: 14px;">
+                    <div style="height: 150px; margin: 15px; overflow-y: scroll; border: lightskyblue inset 5px; font-size: 14px;">
                         <#list resultMix.warningLog as warningMsg>
                             <pre>${warningMsg}</pre>
                         <#else>

@@ -69,7 +69,7 @@ class AdminPanelController @Autowired constructor(private val tobaccoService: To
     fun main(model: Model): String {
 
         val makers: List<Maker> = makerService.getAll();
-        val tastes: List<Taste> = tasteService.getAll();
+        val tastes: List<Taste> = tasteService.getAllTastes();
 //        var tobaccos: List<Tobacco> = tobaccoRepository.findAll();
 
         model.addAttribute("makers", makers);

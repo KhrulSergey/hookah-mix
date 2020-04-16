@@ -40,6 +40,14 @@ class Tobacco(title: String = "",
     @JoinColumn(name = "taste_id")
     var taste: Taste? = null;
 
+    @OneToMany (cascade = [CascadeType.ALL])
+    @JoinTable(
+            name = "tobacco_tastes",
+            joinColumns = [JoinColumn(name = "tobaccos_id")],
+            inverseJoinColumns = [JoinColumn(name = "tastes_id")]
+    )
+    var tasteList: MutableList<Taste> = mutableListOf();
+
     @IndexedEmbedded(depth=3)
     @ManyToOne(cascade = [CascadeType.PERSIST, CascadeType.MERGE], fetch = FetchType.LAZY)
     @JoinColumn(name = "maker_id")

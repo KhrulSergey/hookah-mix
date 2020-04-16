@@ -14,8 +14,9 @@ class TobaccoService @Autowired constructor(
         private val tobaccoRepository: TobaccoRepository,
         private val purchaseRepository: PurchaseRepository,
         private val userTobaccosRepository: UserTobaccosRepository,
+        private val tobaccoSearch: TobaccoSearch,
         private val makerService: MakerService,
-        private val tobaccoSearch: TobaccoSearch) {
+        private val tasteService: TasteService) {
 
 //<editor-fold desc="ПУБЛИЧНЫЕ МЕТОДЫ">
 
@@ -115,8 +116,19 @@ class TobaccoService @Autowired constructor(
     /** Добавляет Табак в каталог Табаков */
     fun addOne(tobacco: Tobacco): Tobacco? {
         //TODO check Tobacco content or just save what come
-        val newTobacco = tobaccoRepository.save(tobacco);
+        var newTobacco = Tobacco();
+        newTobacco.title = tobacco.title;
+        newTobacco.maker = tobacco.maker;
+        newTobacco.description = tobacco.description;
+        newTobacco.strength = tobacco.strength;
+        newTobacco.image = tobacco.image;
+        newTobacco.taste = tobacco.taste;
+        newTobacco = tobaccoRepository.save(newTobacco);
         if (newTobacco.id == 0L) return null;
+
+        for (tobaccoTaste in tobacco.tasteList) {
+            if (!tasteService.saveTobaccoTaste(tobaccoTaste, newTobacco)) return null;
+        }
         return newTobacco;
     }
 

@@ -22,7 +22,7 @@ class AdminPanelService @Autowired constructor(private val makerService: MakerSe
 
         val findMaker: Maker = makerService.getOne(makerTitle)!!;
 
-        val findTaste: Taste = tasteService.getOne(tasteTitle)!!;
+        val findTaste: Taste = tasteService.getOneTastes(tasteTitle)!!;
 
         val newTobacco = Tobacco(title, description, strength);
         newTobacco.maker = findMaker;

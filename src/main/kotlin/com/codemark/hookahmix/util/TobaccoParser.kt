@@ -28,7 +28,7 @@ import java.io.IOException
 class TobaccoParser @Autowired constructor(private var imageService: ImageService,
                                            private val tasteService: TasteService,
                                            private val makerService: MakerService,
-                                           private val tobaccoService: TobaccoService ) {
+                                           private val tobaccoService: TobaccoService) {
 
 
     @Value("\${url}")
@@ -67,7 +67,12 @@ class TobaccoParser @Autowired constructor(private var imageService: ImageServic
     @Value("\${selectTobaccoDetails}")
     var tobaccoDetailsElements: String = "";
 
-    var tobaccoTasteElementText = "Название вкуса:";
+    @Value("\${selectTobaccoTasteList}")
+    var tobaccoTasteListElements: String = "";
+
+    var tobaccoRussianTasteElementText = "Русское название:";
+
+    var tasteDefaultTitle = "Нет моновкуса";
 
     //Модель для хранения и передачи данных о результатах парсинга
     var tobaccoParserInfo: DataParserInfoDto<Tobacco> = DataParserInfoDto(status = ParseStatus.NOT_STARTED);
@@ -237,25 +242,22 @@ class TobaccoParser @Autowired constructor(private var imageService: ImageServic
     }
 
     @Throws(TobaccoParsingException::class)
-    fun parseOneTobacco(tobaccoUrl: String, maker: Maker, strengthOfTobacco:Double): Tobacco? {
+    fun parseOneTobacco(tobaccoUrl: String, maker: Maker, strengthOfTobacco: Double): Tobacco? {
         var newTobacco: Tobacco?;
-        var savedTobacco: Tobacco?;
+        val savedTobacco: Tobacco?;
         val tobaccoTitle: String;
         var tobaccoDescription: String = "";
         var tobaccoImageUrl: String = "";
-        var tobaccoTaste: Taste?;
-        var tobaccoTasteTitle: String = "";
+        val tobaccoTasteList: MutableList<Taste>;
+
         //Открываем детальную страницу табака
-        val tobaccoPage: Document? = connectPage(tobaccoUrl);
-        if (tobaccoPage == null) {
-            throw TobaccoParsingException("Ошибка открытия детальной страницы табака из источника $tobaccoUrl", null);
-        }
+        val tobaccoPage: Document = connectPage(tobaccoUrl)
+                ?: throw TobaccoParsingException("Ошибка открытия детальной страницы табака из источника $tobaccoUrl", null);
         /** Обработка данных о табаке*/
-        val attributeTobaccoTitle = tobaccoPage.selectFirst(tobaccoTitleElement);
-        if (attributeTobaccoTitle == null) {
-            throw TobaccoParsingException("Ошибка получения наименования табака из источника $tobaccoUrl", null);
-        }
+        val attributeTobaccoTitle = tobaccoPage.selectFirst(tobaccoTitleElement)
+                ?: throw TobaccoParsingException("Ошибка получения наименования табака из источника $tobaccoUrl", null);
         tobaccoTitle = attributeTobaccoTitle.text();
+
         /** Проверяем существование табака в БД */
         newTobacco = tobaccoService.getOne(tobaccoTitle, maker);
         if (newTobacco != null) {
@@ -264,12 +266,16 @@ class TobaccoParser @Autowired constructor(private var imageService: ImageServic
             println("Tobacco  ${newTobacco.title} already exists in DB!")
         } else {
             /** Заполняем данные о табаке со страницы */
+            //Получаем описание
             val attributeTobaccoDescription = tobaccoPage.selectFirst(tobaccoDescriptionElement);
             if (attributeTobaccoDescription != null) {
                 tobaccoDescription = attributeTobaccoDescription.text();
             } else {
                 tobaccoParserInfo.warningLog.add("Не получено описание табака $tobaccoTitle из источника.");
             }
+            //Получаем список вкусов
+            tobaccoTasteList = parseTobaccoTastes(tobaccoPage, tobaccoTitle);
+            //Получаем изображение
             val attributeTobaccoImage = tobaccoPage.selectFirst(tobaccoImageElement);
             if (attributeTobaccoImage != null) {
                 tobaccoImageUrl = attributeTobaccoImage.attr("style").substring(
@@ -278,31 +284,7 @@ class TobaccoParser @Autowired constructor(private var imageService: ImageServic
             } else {
                 tobaccoParserInfo.warningLog.add("Не получено изображение табака $tobaccoTitle из источника.");
             }
-
-            val attributeTobaccoDetails: Elements = tobaccoPage.select(tobaccoDetailsElements);
-            if (attributeTobaccoDetails.isNotEmpty()) {
-                for (element: Element in attributeTobaccoDetails) {
-                    if (element.select("span").text().indexOf(tobaccoTasteElementText) != -1) {
-                        //Формируем наименование вкуса
-                        tobaccoTasteTitle = element.text().substring(tobaccoTasteElementText.length);
-                        tobaccoTasteTitle = tobaccoTasteTitle.trim();
-                        break;
-                    }
-                }
-            } else {
-                tobaccoParserInfo.warningLog.add("Не получен вкус табака $tobaccoTitle из источника.");
-                tobaccoTasteTitle = "Нет моновкуса";
-            }
-            //Получаем вкус для табака из БД (существующий или новый)
-            tobaccoTaste = tasteService.getOne(tobaccoTasteTitle);
-            if (tobaccoTaste == null) {
-                tobaccoTaste = tasteService.add(Taste(tobaccoTasteTitle));
-                if (tobaccoTaste == null) {
-                    throw TobaccoParsingException("Ошибка сохранения вкуса $tobaccoTasteTitle для табака $tobaccoTitle в БД.", null);
-                }
-            }
-
-            /** Сохраняем изображение табака */
+            // Сохраняем изображение табака
             val tobaccoImageName = imageService.uploadImage(tobaccoImageUrl, maker.title + "_" + tobaccoTitle);
             if (tobaccoImageName.isNullOrBlank()) {
                 throw TobaccoParsingException("Не удалось сохранить изображение для табака $tobaccoTitle на диск.", null);
@@ -313,10 +295,12 @@ class TobaccoParser @Autowired constructor(private var imageService: ImageServic
                 throw TobaccoParsingException("Не удалось сохранить изображение для табака в БД. Файл удален с диска: $deleteResult.", null);
             }
 
+            /** Сохраняем табак */
             newTobacco = Tobacco();
             newTobacco.title = tobaccoTitle;
             newTobacco.description = tobaccoDescription;
-            newTobacco.taste = tobaccoTaste;
+            newTobacco.tasteList = tobaccoTasteList;
+            newTobacco.taste = tobaccoTasteList.first();
             newTobacco.strength = strengthOfTobacco;
             newTobacco.image = tobaccoImage;
             newTobacco.maker = maker;
@@ -329,5 +313,70 @@ class TobaccoParser @Autowired constructor(private var imageService: ImageServic
             println("Tobacco ${newTobacco.title} was saved in DB");
         }
         return savedTobacco;
+    }
+
+    /** Формируем вкусы со страницы описания табака */
+    fun parseTobaccoTastes (tobaccoPage: Document, tobaccoTitle:String): MutableList<Taste>{
+        val tobaccoTasteList: MutableList<Taste> = mutableListOf();
+
+        var currentTasteTitle: String = "";
+        val tobaccoTasteTitleList: MutableList<String> = mutableListOf();
+        var tasteNameIsTobaccoTitle = false;
+        //Ищем список с описанием вкусов табака
+        var attributeTobaccoTastes: Elements = tobaccoPage.select(tobaccoTasteListElements);
+        if (attributeTobaccoTastes.isNotEmpty()) {
+            for (element: Element in attributeTobaccoTastes) {
+                if (element.text().isNotBlank()) {
+                    //Формируем наименование вкуса
+                    currentTasteTitle = element.text().trim();
+                    tobaccoTasteTitleList.add(currentTasteTitle);
+                }
+            }
+        } else {
+            //Ищем поле с русским названием табака
+            attributeTobaccoTastes = tobaccoPage.select(tobaccoTasteListElements);
+            if (attributeTobaccoTastes.isNotEmpty()) {
+                for (element: Element in attributeTobaccoTastes) {
+                    if (element.select("span").text().indexOf(tobaccoRussianTasteElementText) != -1) {
+                        //Формируем наименование вкуса из названия табака
+                        currentTasteTitle = element.text().substring(tobaccoRussianTasteElementText.length);
+                        tasteNameIsTobaccoTitle = true;
+                        break;
+                    }
+                }
+            }
+            if (currentTasteTitle.isNullOrBlank()) {
+                //Если ничего не нашли, присваеваем дефолтное имя вкуса
+                currentTasteTitle = tasteDefaultTitle;
+                tobaccoParserInfo.warningLog.add("Не получен вкус табака $tobaccoTitle из источника.");
+            }
+            tobaccoTasteTitleList.add(currentTasteTitle.trim());
+        }
+
+        /** Формируем список вкусов из БД */
+        var tobaccoTaste: Taste?;
+        for ( i in 0 until tobaccoTasteTitleList.size){
+            //Если присвоили вкусу имя как в названии табака
+            if (tasteNameIsTobaccoTitle){
+                //Фильтруем вкусы и пытаемся найти совпадение по имени вкуса и наименованию табака
+                tobaccoTaste = tasteService.getAllTastes().firstOrNull { taste -> taste.title.contains(tobaccoTasteTitleList[i]) };
+                if (tobaccoTaste != null) {
+                    tobaccoTasteList.add(tobaccoTaste);
+                    break;
+                }
+                else tobaccoTasteTitleList[i] = tasteDefaultTitle;
+            }
+            //Получаем вкус для табака из БД (существующий или новый)
+            tobaccoTaste = tasteService.getOneTastes(tobaccoTasteTitleList[i]);
+            if (tobaccoTaste == null) {
+                //Если вкус не найден -> добавляем
+                tobaccoTaste = tasteService.addTaste(Taste(tobaccoTasteTitleList[i]));
+                if (tobaccoTaste == null) {
+                    throw TobaccoParsingException("Ошибка сохранения вкуса $currentTasteTitle для табака $tobaccoTitle в БД.", null);
+                }
+            }
+            tobaccoTasteList.add(tobaccoTaste);
+        }
+        return tobaccoTasteList;
     }
 }

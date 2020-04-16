@@ -4,8 +4,7 @@ node-modules/
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**
 !**/src/test/**
-lucene
-/lucene/
+/src/main/webapp/
 
 ### STS ###
 .apt_generated
@@ -35,4 +34,5 @@ build/
 
 ### VS Code ###
 .vscode/
+
 
