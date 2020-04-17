@@ -2,6 +2,7 @@ package com.codemark.hookahmix.util
 
 import com.codemark.hookahmix.domain.Maker
 import com.codemark.hookahmix.domain.Mix
+import com.codemark.hookahmix.domain.Taste
 import com.codemark.hookahmix.domain.Tobacco
 import com.codemark.hookahmix.domain.dto.DataParserInfoDto
 import com.codemark.hookahmix.domain.dto.ParseStatus
@@ -80,12 +81,8 @@ class MixParser @Autowired constructor(private var tobaccoService: TobaccoServic
         /**Проверяем режим остановки парсера */
         while (nextPageUrl.isNotBlank() && mixParserInfo.dataList.size < mixCountNeeded) {
             val mixUrlElements: Elements = mixListPage.select(mixUriElement);
-            mixParserInfo.sourceEntriesCount += mixUrlElements.size;
             //Запуск обработки одной страницы с миксами
-            val newMixList = parseOnePage(mixUrlElements, pageNumber);
-            if (newMixList.isNotEmpty()) {
-                mixParserInfo.dataList.addAll(newMixList);
-            }
+            parseOnePage(mixUrlElements, pageNumber, mixCountNeeded);
             mixListPage = connectPage(nextPageUrl)!!;
             nextPageUrl = mixListPage.select(nextPageElement).attr("href");
             pageNumber++;
@@ -94,54 +91,35 @@ class MixParser @Autowired constructor(private var tobaccoService: TobaccoServic
         return mixParserInfo;
     }
 
-    fun parseOnePage(mixUrlElements: Elements, pageNumber: Int): MutableList<Mix> {
-        var newMaker: Maker?;
-        var newTobacco: Tobacco?;
-        val tobaccoList: MutableList<Tobacco> = mutableListOf();
+    fun parseOnePage(mixUrlElements: Elements, pageNumber: Int, mixCountNeeded: Int): MutableList<Mix> {
+        var tobaccoList: MutableList<Tobacco> = mutableListOf();
         var newMix: Mix? = null;
         val mixList: MutableList<Mix> = mutableListOf();
         //Поля для хранения распознанных данных
         var mixFullTitle: String;
-        var makerTitle: String;
         var mixDescription: String;
+        var mixTags: String;
         var mixFullCompositionText: String;
         for (item in mixUrlElements) {
+            if (mixParserInfo.dataList.size >= mixCountNeeded) break;
+            mixParserInfo.sourceEntriesCount++;
             try {
                 newMix = Mix();
-                tobaccoList.clear();
+                tobaccoList = mutableListOf();
                 //Получаем ссылку на описание микса
                 newMix.sourceUrl = item.attr("href");
-                mixFullTitle = item.select("h3").text();
-                for (string in mixFullTitle.split('.')) {
-                    //Получаем имя первого производителя
-                    val makerCharCount = string.indexOf(":");
-                    makerTitle = string.substring(0, makerCharCount).trim();
-                    if (makerTitle.isBlank()) {
-                        //Ошибка получения наименования производителя
-                        throw MixParsingException(generateErrorMessage(tobaccoList, newMix, pageNumber,
-                                "Ошибка получения наименования производителя из источника"), null);
-                    }
-                    //Проверяем существование производителя в БД
-                    newMaker = makerService.getOne(makerTitle);
-                    if (newMaker == null) {
-                        throw MixParsingException(generateErrorMessage(tobaccoList, newMix, pageNumber,
-                                "Производитель $makerTitle не существует в БД"), null);
-                    }
-
-                    //Получаем названия табаков этого производителя (за минусом двоеточия)
-                    val tobaccoTitles = string.substring(makerCharCount + 1).split(',');
-                    for (title in tobaccoTitles) {
-                        //Проверить существование табака в БД
-                        newTobacco = tobaccoService.getOne(title.trim(), newMaker);
-                        if (newTobacco == null) {
-                            throw MixParsingException(generateErrorMessage(tobaccoList, newMix, pageNumber,
-                                    "Табак ${title.trim()} не существует в БД"), null);
-                        }
-                        tobaccoList.add(newTobacco);
-                    }
+                if (newMix.sourceUrl.isNullOrBlank()) {
+                    throw MixParsingException(generateErrorMessage(tobaccoList, newMix, pageNumber,
+                            "Ошибка получения ссылки на детальный микс из источника"), null);
                 }
-                //Формируем наименование микса
+                mixFullTitle = item.select("h3").text();
+
+                //Распознаем каждое сочетание "Maker1: Tobacco1, Tobacco2. Maker2: Tobacco3, Tobacco4."
+                tobaccoList.addAll(parseMakerAndTobaccoFullText(mixFullTitle.split('.'), newMix, pageNumber));
+
+                //Формируем наименование микса из списка табаков
                 newMix.title = generateMixTitle(tobaccoList);
+
                 /** Проверяем наименование микса в БД */
                 if (mixService.isExist(newMix.title)) {
                     throw MixParsingException(generateErrorMessage(tobaccoList, newMix, pageNumber,
@@ -151,7 +129,7 @@ class MixParser @Autowired constructor(private var tobaccoService: TobaccoServic
                 /**
                  * start parsing mix's page
                  */
-                val mixPage: Document = connectPage(newMix.sourceUrl)!!;
+                val mixPage: Document = connectPage(newMix.sourceUrl!!)!!;
                 val mixContent: Elements = mixPage.select(mixContentElement);
 
                 /** Формируем описание микса*/
@@ -165,9 +143,12 @@ class MixParser @Autowired constructor(private var tobaccoService: TobaccoServic
                             "Ошибка получения описания микса из источника"), null);
                 }
 
+                /** Формируем теги для микса */
+                mixTags = generateMixTags(tobaccoList);
 
                 /** Формируем композиию табаков в миксе*/
                 mixFullCompositionText = "";
+                //Поиск описания композиции в источнике
                 for (i in 1 until mixContent.size) {
                     if (mixContent[i].select("strong").text().indexOf(mixCompositionLabelText) != -1) {
                         mixFullCompositionText = mixContent[i].text();
@@ -178,16 +159,21 @@ class MixParser @Autowired constructor(private var tobaccoService: TobaccoServic
                     throw MixParsingException(generateErrorMessage(tobaccoList, newMix, pageNumber,
                             "Ошибка получения композиции табаков в миксе из источника"), null);
                 }
-
+                //Распознаем композицию табаков
                 if (parseMixCompositionText(mixFullCompositionText, tobaccoList, newMix, pageNumber) != 100) {
                     throw MixParsingException(generateErrorMessage(tobaccoList, newMix, pageNumber,
                             "Ошибка в композиции табаков в миксе"), null);
                 }
 
+                /** Заполняем данные микса (наименование выше) */
                 newMix.description = mixDescription;
+                newMix.tags = mixTags;
                 newMix.tobaccoMixList = tobaccoList;
+
+                /** Сохраняем микс в список*/
                 val savedMix = mixService.add(newMix);
                 if (savedMix != null) {
+                    mixParserInfo.dataList.add(savedMix);
                     mixList.add(savedMix);
                 } else {
                     throw MixParsingException(generateErrorMessage(tobaccoList, newMix, pageNumber,
@@ -206,8 +192,75 @@ class MixParser @Autowired constructor(private var tobaccoService: TobaccoServic
         return mixList;
     }
 
-    /** Извлекаем числовые соотношения табаков из строки описания mixFullCompositionText*/
-    fun parseMixCompositionText(mixFullCompositionText: String, tobaccoList: MutableList<Tobacco>,
+    /** Распознавание производителя и списка названий табаков, поиск соответствия в БД
+     * Заполняем список табаков с оригинальным названием источника в состав микса
+     * Возвращает список найденных в БД табаков */
+    @Throws(MixParsingException::class)
+    fun parseMakerAndTobaccoFullText(makerAndTobaccoFullTitle: List<String>, newMix: Mix, pageNumber: Int): MutableList<Tobacco> {
+        var makerTitle: String;
+        var makerList: MutableList<Maker>;
+        var newTobacco: Tobacco? = null;
+        val existedTobaccoList: MutableList<Tobacco> = mutableListOf();
+        val originalTobaccoList: MutableList<Tobacco> = mutableListOf();
+
+        for (string in makerAndTobaccoFullTitle) {
+            //Получаем имя первого производителя
+            val makerCharCount = string.indexOf(":");
+            makerTitle = string.substring(0, makerCharCount).trim();
+            if (makerTitle.isBlank()) {
+                //Ошибка получения наименования производителя
+                throw MixParsingException(generateErrorMessage(existedTobaccoList, newMix, pageNumber,
+                        "Ошибка получения наименования производителя из источника"), null);
+            }
+
+            /** СПРАВОЧНИК ЗАМЕН НАЗВАНИЙ ПРОИЗВОДИТЕЛЕЙ ТАБАКА */
+            when (makerTitle) {
+                 "Darkside" -> makerTitle = "Dark Side";
+            }
+
+            //Проверяем существование производителя в БД
+            makerList = makerService.findAllByTitle(makerTitle);
+            if (makerList.isEmpty()) {
+                throw MixParsingException(generateErrorMessage(existedTobaccoList, newMix, pageNumber,
+                        "Производитель $makerTitle не существует в БД"), null);
+            }
+            //Получаем названия табаков этого производителя (за минусом разделителя - двоеточия)
+            val tobaccoTitles = string.substring(makerCharCount + 1).split(',');
+            for (title in tobaccoTitles) {
+                //Сохраняем оригинальное название табака в список
+                originalTobaccoList.add(Tobacco(title = title.trim()));
+                /** Проверяем существование табака в БД */
+                //Поиск точного совпадения названия табака по всем найденным производителям
+                for (maker in makerList) {
+                    newTobacco = tobaccoService.getOne(title.trim(), maker);
+                    if (newTobacco != null) break;
+                }
+                //Если точное совпадение не нашли
+                if (newTobacco == null) {
+                    //Поиск частичного совпадения названия табака по всем найденным производителям
+                    for (maker in makerList) {
+                        newTobacco = tobaccoService.searchAllByTitle(title.trim(), maker).firstOrNull();
+                        //Если нашли частичное совпадение, то считаем микс неоригинальным
+                        if (newTobacco != null) {
+                            newMix.isOriginal = false;
+                            break;
+                        }
+                    }
+                }
+                if (newTobacco == null) {
+                    throw MixParsingException(generateErrorMessage(existedTobaccoList, newMix, pageNumber,
+                            "Табак ${title.trim()} не существует в БД"), null);
+                }
+                existedTobaccoList.add(newTobacco);
+            }
+        }
+        newMix.tobaccoMixList = originalTobaccoList;
+        return existedTobaccoList;
+    }
+
+    /** Извлекаем числовые соотношения табаков из строки описания mixFullCompositionText
+     * Дополнительно формируем крепость микса на основе соотношений табаков в миксе */
+    fun parseMixCompositionText(mixFullCompositionText: String, existedTobaccoList: MutableList<Tobacco>,
                                 newMix: Mix, pageNumber: Int): Int {
         /** Извлекаем числовые соотношения табаков из строки */
         var startTobaccoComposition: Number;
@@ -215,44 +268,48 @@ class MixParser @Autowired constructor(private var tobaccoService: TobaccoServic
         var mixComposition: String;
         var mixSumComposition = 0;
         var mixStrength = 0.0;
+        var currentTobacco: Tobacco?;
+        val originalNamedTobaccoList: MutableList<Tobacco> = newMix.tobaccoMixList;
         //Настраиваем регулярку для получения чисел из строки
         val pat: Pattern = Pattern.compile("[-]?[0-9]+(.[0-9]+)?")
         var matcher: Matcher;
-        //Ищем название табака в описании композиции микса
-        for (tobacco in tobaccoList) {
-            startTobaccoComposition = mixFullCompositionText.indexOf(tobacco.title.toLowerCase());
+        //Ищем оригинальное название табака из источника в описании композиции микса
+        for (i in 0 until originalNamedTobaccoList.size) {
+            existedTobaccoList[i].composition = 0;
+            currentTobacco = originalNamedTobaccoList[i];
+            startTobaccoComposition = mixFullCompositionText.indexOf(currentTobacco.title.toLowerCase());
             //Проверяем найден ли Табак в описании композиции
             if (startTobaccoComposition == -1) {
                 //Новый warning
                 mixParserInfo.warningLog.add(generateWarningMessage(newMix, pageNumber,
-                        "В композиции микса не найден компонент ${tobacco.title}"));
+                        "В композиции микса не найден компонент ${currentTobacco.title}"));
             } else {
                 endTobaccoComposition = mixFullCompositionText.indexOfAny(charArrayOf('.', ',', '\n'), startTobaccoComposition);
                 mixComposition = mixFullCompositionText.substring(
-                        startTobaccoComposition + tobacco.title.length, endTobaccoComposition);
+                        startTobaccoComposition + currentTobacco.title.length, endTobaccoComposition);
                 //Получаем соотношение текущего табака через регулярку
                 matcher = pat.matcher(mixComposition);
                 if (matcher.find()) {
-                    tobacco.composition = matcher.group().toInt();
-                    mixSumComposition += tobacco.composition;
-                    mixStrength += tobacco.strength * tobacco.composition / 100;
+                    existedTobaccoList[i].composition = matcher.group().toInt();
+                    mixSumComposition += existedTobaccoList[i].composition;
+                    // Дополнительно формируем крепость микса
+                    mixStrength += existedTobaccoList[i].strength * existedTobaccoList[i].composition / 100;
                 }
             }
         }
-
         //Для случая незаполнения композиции для табаков - заполняем его сами равноценно
         if (mixSumComposition in 1..99) {
             val listOfNullCompositionTobacco: MutableList<Int> = mutableListOf();
-            for (i in 0 until tobaccoList.size) {
-                if (tobaccoList[i].composition == 0) {
+            for (i in 0 until existedTobaccoList.size) {
+                if (existedTobaccoList[i].composition == 0) {
                     listOfNullCompositionTobacco.add(i);
                 }
             }
             if (listOfNullCompositionTobacco.isNotEmpty()) {
                 val deltaComposition = (100 - mixSumComposition) / listOfNullCompositionTobacco.size;
                 for (tobaccoIndex in listOfNullCompositionTobacco) {
-                    tobaccoList[tobaccoIndex].composition = deltaComposition;
-                    mixStrength +=  tobaccoList[tobaccoIndex].strength * deltaComposition / 100;
+                    existedTobaccoList[tobaccoIndex].composition = deltaComposition;
+                    mixStrength += existedTobaccoList[tobaccoIndex].strength * deltaComposition / 100;
                     mixSumComposition += deltaComposition;
                 }
             }
@@ -267,19 +324,26 @@ class MixParser @Autowired constructor(private var tobaccoService: TobaccoServic
         return mixSumComposition;
     }
 
-    fun parseMixDetailPage(mixUrlElements: Elements, pageNumber: Int): MutableList<Mix> {
-        return mutableListOf();
+    /** Возвращает список тегов черезя запятую для микса путем извлечения вкусов табаков в миксе*/
+    fun generateMixTags(tobaccoList: MutableList<Tobacco>): String {
+        val mixTasteSet: MutableSet<Taste> = mutableSetOf();
+        for (tobacco in tobaccoList) {
+            mixTasteSet.addAll(tobacco.tasteList);
+        }
+        return mixTasteSet.joinToString { taste -> taste.title };
     }
 
+    /** Формирует наименование микса из названий табаков */
     fun generateMixTitle(tobaccoList: MutableList<Tobacco>): String {
         var mixTitle = "";
-        val delimiter = "- ";
+        val delimiter = " - ";
         for (tobacco in tobaccoList) {
             mixTitle += tobacco.title + delimiter;
         }
         return mixTitle.substring(0, mixTitle.length - delimiter.length);
     }
 
+    /** Формируем текст ошибки распознавания микса */
     private fun generateErrorMessage(tobaccoList: MutableList<Tobacco>?, mix: Mix?, pageNumber: Int, message: String?): String {
         var errorMessage = "!-------------New Error-----------!" + System.lineSeparator();
         errorMessage += "Error parsing on $pageNumber page: mix '${mix?.title}' in URL:" +
@@ -293,6 +357,7 @@ class MixParser @Autowired constructor(private var tobaccoService: TobaccoServic
         return errorMessage;
     }
 
+    /** Формируем текст предупреждения распознавания микса */
     private fun generateWarningMessage(mix: Mix?, pageNumber: Int, message: String?): String {
         var warningMessage = "!-------------New Warning-----------!" + System.lineSeparator();
         if (mix != null) {

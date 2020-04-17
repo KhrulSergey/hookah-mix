@@ -13,8 +13,9 @@ interface MakerRepository : JpaRepository<Maker, Long> {
 
     fun existsByTitle(title : String) : Boolean
 
-
     fun findAllByOrderByTitleAsc(): MutableList<Maker>;
+
+    fun findAllByTitleContainingIgnoreCase(title:String): MutableList<Maker>;
 
     @Query(nativeQuery = true,
             value = "select * from makers m inner join tobaccos t on m.makers_id = t.maker_id " +

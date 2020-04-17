@@ -148,6 +148,8 @@ class MixService @Autowired constructor(
         newMix.rating = mix.rating;
         newMix.description = mix.description;
         newMix.strength = mix.strength;
+        newMix.sourceUrl = mix.sourceUrl;
+        newMix.isOriginal = mix.isOriginal;
         newMix = mixRepository.save(newMix);
 
         //check mix creation
@@ -157,8 +159,8 @@ class MixService @Autowired constructor(
         for (tobacco in mix.tobaccoMixList) {
             component = Component()
             component.mix = newMix;
-            component.tobacco = tobacco;
             component.composition = tobacco.composition;
+            component.tobacco = tobacco;
             newMix.components.add(component)
 //            tobacco.components.add(component)
             if (!saveMixComponent(component)) {

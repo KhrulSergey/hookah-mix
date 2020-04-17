@@ -32,6 +32,12 @@ class Mix {
     @Column(name = "strength")
     var strength: Int = 0
 
+    @Column(name = "source_url")
+    var sourceUrl: String? = "";
+
+    @Column(name = "is_original")
+    var isOriginal: Boolean? = true;
+
     @JsonIgnore
     @OneToMany(mappedBy = "mix")
     var components: MutableSet<Component> = mutableSetOf()
@@ -45,8 +51,6 @@ class Mix {
     )
     var tobaccoMixList: MutableList<Tobacco> = mutableListOf();
 
-    @Transient
-    var sourceUrl: String = "";
 
     @Transient
     var status: MixSet = MixSet.NULL_VALUE

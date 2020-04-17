@@ -104,7 +104,7 @@
             </form>
         </div>
     </div>
-    <div class="spoiler-wrap <#if (resultMix.sourceEntriesCount > 0) > active <#else> active </#if> ">
+    <div class="spoiler-wrap <#if (resultMix.sourceEntriesCount > 0) > active <#else> disabled </#if> ">
         <div class="spoiler-head">Получить данные по миксам</div>
         <div class="spoiler-body">
             <form action="<@spring.url '/parse-mix'/>" method="get">

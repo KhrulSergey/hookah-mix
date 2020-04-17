@@ -134,7 +134,6 @@ class TobaccoParser @Autowired constructor(private var imageService: ImageServic
         val savedMaker: Maker?;
         val tobaccoList: MutableList<Tobacco> = mutableListOf();
 
-
         //Открываем детальную страницу производителя
         val makerPage: Document? = connectPage(makerUrl);
         if (makerPage == null) {

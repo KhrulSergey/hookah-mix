@@ -33,6 +33,10 @@ class MakerService @Autowired constructor(
         return makerRepository.findAllSortedByTitleAndUser(user.id);
     }
 
+    fun findAllByTitle(title: String): MutableList<Maker> {
+        return makerRepository.findAllByTitleContainingIgnoreCase(title);
+    }
+
     fun add(maker: Maker): Maker? {
         //TODO check Maker content or just save what come
         var newMaker = makerRepository.save(maker);

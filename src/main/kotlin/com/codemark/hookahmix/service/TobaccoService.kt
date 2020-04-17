@@ -25,6 +25,7 @@ class TobaccoService @Autowired constructor(
         return tobaccoRepository.getOne(id);
     }
 
+    /** Возвращает табак совпадающий точно по наименованию и производителю */
     fun getOne(title: String, maker: Maker): Tobacco? {
         return tobaccoRepository.findByTitleAndMaker(title, maker);
     }
@@ -36,6 +37,15 @@ class TobaccoService @Autowired constructor(
     //TODO преобразовать метод и искать по ID maker
     fun getAllByMaker(makerTitle: String): List<Tobacco> {
         return tobaccoRepository.findAllByMaker(makerTitle);
+    }
+
+    /** Поиск табака с частично совпадающим наименованием и заданным производителем */
+    fun searchAllByTitle(title: String, maker: Maker): MutableList<Tobacco> {
+        var tobaccoList: MutableList<Tobacco> = mutableListOf();
+        for (str in title.split(" ", "-", "_", ".", ",")){
+            tobaccoList.addAll(tobaccoRepository.findAllByTitleContainingAndMaker(str, maker));
+        }
+        return tobaccoList;
     }
 
     /** Возвращает список ВСЕХ производителей с вложенным списком их табаков.
