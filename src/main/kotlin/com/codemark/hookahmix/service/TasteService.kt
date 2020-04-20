@@ -22,6 +22,15 @@ class TasteService @Autowired constructor(
         return tasteRepository.findByTitle(title);
     }
 
+    /** Поиск вкуса с частично совпадающим наименованием*/
+    fun searchAllByTitle(title: String): MutableList<Taste> {
+        val tasteList: MutableList<Taste> = mutableListOf();
+        for (str in title.split(" ", "-", "_", ".", ",")){
+            tasteList.addAll(tasteRepository.findAllByTitleContaining(str));
+        }
+        return tasteList;
+    }
+
     fun getTobaccoTastes(tobacco: Tobacco): MutableList<Taste> {
         return tobaccosTastesRepository.findAllByTobacco(tobacco).map { it.taste!! }.toMutableList();
     }
