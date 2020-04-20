@@ -47,30 +47,34 @@ class MixService @Autowired constructor(
                     currentTobaccoList.add(currentTobacco);
                 }
             } else {
+                var countTobaccoInBarOrWithReplace = 0;
                 //Проверяем каждый табак из Микса на наличие в баре и замен
                 for (mixComponent in mix.components) {
                     currentTobacco = mixComponent.tobacco!!;
                     if (barTobaccos.contains(currentTobacco)) {
                         currentTobacco.status = TobaccoStatus.CONTAIN_BAR;
+                        countTobaccoInBarOrWithReplace++;
                     } else {
-                        //Ищем статус табака для указанного юзера
+                        //Ищем статус табака для указанного юзера (т.е. "в покупках" или "куплен")
                         currentTobacco.status = userTobaccosList
                                 .firstOrNull() { tobacco -> tobacco.id == mixComponent.tobacco?.id }?.status
                                 ?: TobaccoStatus.NULL_VALUE;
                         //Ищем замены из бара
                         val replacementList = barTobaccos
-                                .filter { tobacco -> tobacco.taste?.id == mixComponent.tobacco?.taste?.id };
+                                .filter { tobacco -> tobacco.mainTaste?.id == mixComponent.tobacco?.mainTaste?.id };
                         //Если для каждого табака будет замена из бара, то статус микса меняем на "Есть с заменой"
                         if (replacementList.isNotEmpty()) {
                             currentTobacco.replacements = replacementList.toMutableList();
-                            mix.status = MixSet.REPLACEMENT_BAR;
-                        } else {
-                            //Иначе статус - "Нужно докупить" для микса
-                            mix.status = MixSet.PARTIAL_BAR;
+                            countTobaccoInBarOrWithReplace++;
                         }
                     }
                     currentTobaccoList.add(currentTobacco);
                 }
+                //Если для всех табаков есть замены и/или частично есть в баре,
+                // то статус микса "с заменой" иначе "докупить"
+                mix.status = if (countTobaccoInBarOrWithReplace == currentTobaccoList.size)
+                    MixSet.REPLACEMENT_BAR
+                else MixSet.PARTIAL_BAR;
                 //Формируем список табаков-компонентов в миксе с заполненными данными
                 mix.tobaccoMixList = currentTobaccoList;
             }
@@ -132,46 +136,44 @@ class MixService @Autowired constructor(
 
     }
 
-    fun getOne(title: String): Mix {
-        return mixRepository.findByTitle(title);
-    }
-
     fun isExist(title: String): Boolean {
         return mixRepository.existsByTitle(title);
     }
 
-    fun add(mix: Mix): Mix? {
-        var newMix = Mix()
-        //TODO check mix content or just save what come
-        newMix.title = mix.title;
-        newMix.tags = mix.tags;
-        newMix.rating = mix.rating;
-        newMix.description = mix.description;
-        newMix.strength = mix.strength;
-        newMix.sourceUrl = mix.sourceUrl;
-        newMix.isOriginal = mix.isOriginal;
-        newMix = mixRepository.save(newMix);
+    fun isExistBySourceUrl(sourceUrl: String): Boolean {
+        return mixRepository.existsBySourceUrl(sourceUrl);
+    }
 
+    fun getOne(title: String): Mix? {
+        return mixRepository.findByTitle(title);
+    }
+
+    fun add(mix: Mix): Mix? {
+        //TODO Решить вопрос с сохранением связных сущностей
+        val tobaccoMixList = mix.tobaccoMixList;
+        mix.tobaccoMixList = mutableListOf();
+
+        val newMix = mixRepository.save(mix);
         //check mix creation
-        if (newMix.mixesId == 0L) return null;
-        //fill components of mix
-        var component: Component;
-        for (tobacco in mix.tobaccoMixList) {
-            component = Component()
-            component.mix = newMix;
-            component.composition = tobacco.composition;
-            component.tobacco = tobacco;
-            newMix.components.add(component)
-//            tobacco.components.add(component)
-            if (!saveMixComponent(component)) {
-                //TODO rollback addMix operation
-                return null
-            };
+        if (newMix != null) {
+            //fill components of mix
+            var component: Component;
+            for (tobacco in tobaccoMixList) {
+                component = Component()
+                component.mix = newMix;
+                component.composition = tobacco.composition;
+                component.tobacco = tobacco;
+                newMix.components.add(component)
+                if (saveMixComponent(component) == null) {
+                    //TODO rollback addMix operation
+                    return null
+                };
+            }
         }
         return newMix;
     }
 
-    fun saveMixComponent(component: Component): Boolean {
-        return (componentRepository.save(component).componentsId != 0L);
+    fun saveMixComponent(component: Component): Component? {
+        return componentRepository.save(component);
     }
 }
