@@ -15,7 +15,7 @@ interface TasteRepository : JpaRepository<Taste, Long> {
      * Ищет в БД нечеткое совпадение наименования табака и заданного производителя
      * Возвращает null или табак с заданным ID.
      */
-    fun findAllByTitleContaining(title: String): MutableList<Taste>;
+    fun findAllByTitleContainingIgnoreCase(title: String): MutableList<Taste>;
 
     fun existsByTitle(title: String): Boolean
 }

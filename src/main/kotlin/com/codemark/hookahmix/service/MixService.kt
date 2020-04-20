@@ -71,10 +71,12 @@ class MixService @Autowired constructor(
                     currentTobaccoList.add(currentTobacco);
                 }
                 //Если для всех табаков есть замены и/или частично есть в баре,
-                // то статус микса "с заменой" иначе "докупить"
-                mix.status = if (countTobaccoInBarOrWithReplace == currentTobaccoList.size)
-                    MixSet.REPLACEMENT_BAR
-                else MixSet.PARTIAL_BAR;
+                // то статус микса - "с заменой" иначе статус микса - "докупить"
+                mix.status =
+                        if (countTobaccoInBarOrWithReplace == currentTobaccoList.size)
+                            MixSet.REPLACEMENT_BAR
+                        else
+                            MixSet.PARTIAL_BAR;
                 //Формируем список табаков-компонентов в миксе с заполненными данными
                 mix.tobaccoMixList = currentTobaccoList;
             }

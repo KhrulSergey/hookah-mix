@@ -16,4 +16,7 @@ interface ComponentRepository : JpaRepository<Component, Long> {
                     "and c.tobacco_id = :tobaccoId")
     fun getCompositionInComponent(@Param("mixId") mixId: Long,
                                   @Param("tobaccoId") tobaccoId: Long): Int;
+
+    /** Возвращает сохраненную запись или null в случае неудачи */
+    fun save (component: Component): Component?;
 }

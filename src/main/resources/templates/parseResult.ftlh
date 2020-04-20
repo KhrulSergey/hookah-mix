@@ -85,7 +85,7 @@
                             No warnings
                         </#list>
                     </div>
-                    <p><strong>Добавленные миксы:</strong></p>
+                    <p><strong>Добавленные табаки:</strong></p>
                     <div style="height: 50px; margin: 15px; overflow-y: scroll; border: dodgerblue inset 5px; font-size: 14px;">
                         <#list resultTobacco.dataList as item>
                             <pre>${item}</pre>

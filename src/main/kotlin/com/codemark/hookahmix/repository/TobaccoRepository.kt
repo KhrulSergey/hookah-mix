@@ -1,6 +1,7 @@
 package com.codemark.hookahmix.repository
 
 import com.codemark.hookahmix.domain.Maker
+import com.codemark.hookahmix.domain.Taste
 import com.codemark.hookahmix.domain.Tobacco
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
@@ -27,20 +28,28 @@ interface TobaccoRepository : JpaRepository<Tobacco, Long> {
      * Ищет в БД точное совпадение наименования табака и производителя
      * Возвращает null или табак с заданным ID и производителем.
      */
-    fun findByTitleAndMaker(title: String, maker: Maker): Tobacco?;
+    fun findByTitleIgnoreCaseAndMaker(title: String, maker: Maker): Tobacco?;
 
     /**
      * Ищет в БД нечеткое совпадение наименования табака и заданного производителя
      * Возвращает null или табак с заданным ID.
      */
-    fun findAllByTitleContainingAndMaker(title: String, maker: Maker): MutableList<Tobacco>;
+    fun findAllByTitleContainingIgnoreCaseAndMaker(title: String, maker: Maker): MutableList<Tobacco>;
 
     //TODO разобраться с 2мя методами ниже
-    override fun findAll(pageable: Pageable) : Page<Tobacco>;
+    override fun findAll(pageable: Pageable): Page<Tobacco>;
 
     @Query(nativeQuery = true,
             value = "select * from Tobaccos t " +
                     "inner join Makers m on t.maker_id = m.makers_id " +
                     "where m.title = :filter")
-    fun findAllByMaker(@Param("filter") filter : String): List<Tobacco>;
+    fun findAllByMaker(@Param("filter") filter: String): List<Tobacco>;
+
+    /** Возращает список табаков соответствующих заданному вкусу и производителю */
+    @Query(nativeQuery = true,
+            value = "select * from tobaccos t inner join tobacco_tastes ta on t.tobaccos_id = ta.tobaccos_id where t.maker_id = :maker_id and ta.tastes_id = :taste_id")
+    fun findAllByTasteAndMaker(taste_id: Long, maker_id: Long): MutableList<Tobacco>;
+
+    /** Возвращает сохраненную запись или null в случае неудачи */
+    fun save (tobacco: Tobacco): Tobacco?;
 }

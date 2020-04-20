@@ -22,24 +22,31 @@ class Tobacco(title: String = "",
     @Column(name = "tobaccos_id")
     var id: Long = 0;
 
+    /** Название табака */
     @Field
     @Column(name = "title")
     var title: String = title;
 
+    /** Описание табака */
     @Column(name = "description")
     var description: String = description;
 
+    /** Крепость табака */
     @Column(name = "strength")
     var strength: Double = strength;
 
+    /** Изображение табака */
     @OneToOne
     @JoinColumn(name = "file_id")
     var image: Image? = null;
 
+    /** Главный вкус табака */
     @OneToOne
+    @JsonProperty("taste")
     @JoinColumn(name = "taste_id")
-    var taste: Taste? = null;
+    var mainTaste: Taste? = null;
 
+    /** Список вкусов для табака */
     @OneToMany (cascade = [CascadeType.ALL])
     @JoinTable(
             name = "tobacco_tastes",
@@ -48,6 +55,7 @@ class Tobacco(title: String = "",
     )
     var tasteList: MutableList<Taste> = mutableListOf();
 
+    /** Производитель */
     @IndexedEmbedded(depth=3)
     @ManyToOne(cascade = [CascadeType.PERSIST, CascadeType.MERGE], fetch = FetchType.LAZY)
     @JoinColumn(name = "maker_id")
@@ -55,24 +63,14 @@ class Tobacco(title: String = "",
     @JsonIgnoreProperties("foundingYear", "description", "tobaccos")
     var maker: Maker? = null;
 
+    /** Ссылка на список табаков для пользователей */
     @JsonIgnore
     @OneToMany(mappedBy = "tobacco", fetch = FetchType.LAZY)
     var userTobaccos: MutableList<UserTobacco> = mutableListOf();
 
-//    @IndexedEmbedded
-//    @JsonIgnore
-//    @ManyToMany
-//    @JoinTable(
-//            name = "components",
-//            joinColumns = [JoinColumn(name = "tobacco_id")],
-//            inverseJoinColumns = [JoinColumn(name = "mix_id")]
-//    )
-//    var mixList: MutableList<Mix> = mutableListOf();
-//
-//    @ContainedIn
-//    @JsonIgnore
-//    @OneToMany(mappedBy = "tobacco")
-//    var components: MutableSet<Component> = mutableSetOf()
+    /** Источник получения табака */
+    @Column(name = "source_url")
+    var sourceUrl: String? = "";
 
     /** Дополнительные поля */
     //Статус табака для пользователя
@@ -87,11 +85,6 @@ class Tobacco(title: String = "",
     //Соотношение табака в миксе
     @Transient
     var composition: Int = 0
-
-    //Источник получения табака
-    @JsonIgnore
-    @Transient
-    var sourceUrl: String = "";
 
     override fun toString(): String {
         val compositionStr: String = if (composition != 0) " - $composition%" else "";

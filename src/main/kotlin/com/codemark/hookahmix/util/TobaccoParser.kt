@@ -58,6 +58,9 @@ class TobaccoParser @Autowired constructor(private var imageService: ImageServic
     @Value("\${selectTobaccoDescription}")
     var tobaccoDescriptionElement: String = ""
 
+    @Value("\${selectTobaccoFullDescription}")
+    var tobaccoFullDescriptionElement: String = ""
+
     @Value("\${selectTobaccoTitle}")
     var tobaccoTitleElement: String = "";
 
@@ -225,8 +228,6 @@ class TobaccoParser @Autowired constructor(private var imageService: ImageServic
             try {
                 /** Запуск обработки одного табака */
                 tobaccoUrl = element.attr("href");
-                val testUrl = "https://htreviews.org/tobaccos/al-fakher/golden-fresh-mint/";
-                if (tobaccoUrl != testUrl) continue;
                 if (tobaccoUrl.isBlank()) {
                     tobaccoParserInfo.warningLog.add(
                             "Не определена ссылка на страницу табака ${element.text()} у производителя ${savedMaker.title} из источника.");
@@ -301,10 +302,11 @@ class TobaccoParser @Autowired constructor(private var imageService: ImageServic
             newTobacco.title = tobaccoTitle;
             newTobacco.description = tobaccoDescription;
             newTobacco.tasteList = tobaccoTasteList;
-            newTobacco.taste = tobaccoTasteList.first();
+            newTobacco.mainTaste = tobaccoTasteList.firstOrNull();
             newTobacco.strength = strengthOfTobacco;
             newTobacco.image = tobaccoImage;
             newTobacco.maker = maker;
+            newTobacco.sourceUrl = tobaccoUrl;
 
             //Сохраняем табак в БД
             savedTobacco = tobaccoService.addOne(newTobacco);
@@ -334,24 +336,21 @@ class TobaccoParser @Autowired constructor(private var imageService: ImageServic
             }
         } else {
             //Ищем поле с русским названием табака
-            attributeTobaccoTastes = tobaccoPage.select(tobaccoDescriptionElement);
+            attributeTobaccoTastes = tobaccoPage.select(tobaccoFullDescriptionElement);
             if (attributeTobaccoTastes.isNotEmpty()) {
                 for (element: Element in attributeTobaccoTastes) {
                     if (element.select("span").text().indexOf(tobaccoRussianTasteElementText) != -1) {
                         //Формируем наименование вкуса из названия табака
-                        currentTasteTitle = element.text().substring(tobaccoRussianTasteElementText.length);
+                        currentTasteTitle = element.text().substring(tobaccoRussianTasteElementText.length).trim();
                         tasteNameIsTobaccoTitle = true;
                         break;
                     }
                 }
             }
-            //TODO - удалить присвоение
             if (currentTasteTitle.isBlank()) {
-                //Если ничего не нашли, присваеваем дефолтное имя вкуса
-                currentTasteTitle = tasteDefaultTitle;
                 tobaccoParserInfo.warningLog.add("Не получен вкус табака $tobaccoTitle из источника.");
             }
-            tobaccoTasteTitleList.add(currentTasteTitle.trim());
+            tobaccoTasteTitleList.add(currentTasteTitle);
         }
 
         /** Формируем список вкусов из БД */
@@ -364,8 +363,7 @@ class TobaccoParser @Autowired constructor(private var imageService: ImageServic
                 if (tobaccoTaste != null) {
                     tobaccoTasteList.add(tobaccoTaste);
                     break;
-                    //TODO - удалить присвоение
-                } else tobaccoTasteTitleList[i] = tasteDefaultTitle;
+                }
             }
             //Получаем вкус для табака из БД (существующий или новый)
             tobaccoTaste = tasteService.getOneTastes(tobaccoTasteTitleList[i]);

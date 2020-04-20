@@ -27,7 +27,7 @@ class TobaccoService @Autowired constructor(
 
     /** Возвращает табак совпадающий точно по наименованию и производителю */
     fun getOne(title: String, maker: Maker): Tobacco? {
-        return tobaccoRepository.findByTitleAndMaker(title, maker);
+        return tobaccoRepository.findByTitleIgnoreCaseAndMaker(title, maker);
     }
 
     fun getAll(): List<Tobacco> {
@@ -43,9 +43,14 @@ class TobaccoService @Autowired constructor(
     fun searchAllByTitle(title: String, maker: Maker): MutableList<Tobacco> {
         var tobaccoList: MutableList<Tobacco> = mutableListOf();
         for (str in title.split(" ", "-", "_", ".", ",")){
-            tobaccoList.addAll(tobaccoRepository.findAllByTitleContainingAndMaker(str, maker));
+            tobaccoList.addAll(tobaccoRepository.findAllByTitleContainingIgnoreCaseAndMaker(str, maker));
         }
         return tobaccoList;
+    }
+
+    /** Поиск табака с частично совпадающим наименованием и заданным производителем */
+    fun searchAllByTaste(taste: Taste, maker: Maker): MutableList<Tobacco> {
+        return tobaccoRepository.findAllByTasteAndMaker(taste.id, maker.id);
     }
 
     /** Возвращает список ВСЕХ производителей с вложенным списком их табаков.
@@ -125,19 +130,15 @@ class TobaccoService @Autowired constructor(
     //<editor-fold desc="Добавление записей">
     /** Добавляет Табак в каталог Табаков */
     fun addOne(tobacco: Tobacco): Tobacco? {
+        //TODO Решить вопрос с сохранением связных сущностей
+        val tasteListForTobacco = tobacco.tasteList;
+        tobacco.tasteList = mutableListOf();
         //TODO check Tobacco content or just save what come
-        var newTobacco = Tobacco();
-        newTobacco.title = tobacco.title;
-        newTobacco.maker = tobacco.maker;
-        newTobacco.description = tobacco.description;
-        newTobacco.strength = tobacco.strength;
-        newTobacco.image = tobacco.image;
-        newTobacco.taste = tobacco.taste;
-        newTobacco = tobaccoRepository.save(newTobacco);
-        if (newTobacco.id == 0L) return null;
-
-        for (tobaccoTaste in tobacco.tasteList) {
-            if (!tasteService.saveTobaccoTaste(tobaccoTaste, newTobacco)) return null;
+        val newTobacco = tobaccoRepository.save(tobacco);
+        if (newTobacco != null ) {
+            for (tobaccoTaste in tasteListForTobacco) {
+                if (!tasteService.saveTobaccoTaste(tobaccoTaste, newTobacco)) return null;
+            }
         }
         return newTobacco;
     }

@@ -26,7 +26,7 @@ class AdminPanelService @Autowired constructor(private val makerService: MakerSe
 
         val newTobacco = Tobacco(title, description, strength);
         newTobacco.maker = findMaker;
-        newTobacco.taste = findTaste;
+        newTobacco.mainTaste = findTaste;
 
         val tobaccoImage = Image();
         tobaccoImage.name = imageService.uploadImage(image, makerTitle);
@@ -61,7 +61,7 @@ class AdminPanelService @Autowired constructor(private val makerService: MakerSe
         component.tobacco = tobacco;
         component.composition = composition;
 
-        mix.components.add(component);
+        mix?.components?.add(component);
 //        tobacco!!.components.add(component);
 
         componentRepository.save(component);

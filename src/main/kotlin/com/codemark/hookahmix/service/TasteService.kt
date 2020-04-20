@@ -23,10 +23,10 @@ class TasteService @Autowired constructor(
     }
 
     /** Поиск вкуса с частично совпадающим наименованием*/
-    fun searchAllByTitle(title: String): MutableList<Taste> {
-        val tasteList: MutableList<Taste> = mutableListOf();
+    fun searchAllByTitle(title: String): MutableSet<Taste> {
+        val tasteList: MutableSet<Taste> = mutableSetOf();
         for (str in title.split(" ", "-", "_", ".", ",")){
-            tasteList.addAll(tasteRepository.findAllByTitleContaining(str));
+            tasteList.addAll(tasteRepository.findAllByTitleContainingIgnoreCase(str));
         }
         return tasteList;
     }

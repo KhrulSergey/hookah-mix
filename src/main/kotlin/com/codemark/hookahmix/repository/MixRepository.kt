@@ -17,8 +17,13 @@ interface MixRepository : JpaRepository<Mix, Long> {
     fun getCompositionInMix(@Param("tobaccoId") tobaccoId: Long,
                             @Param("mixId") mixId: Long): Int;
 
-    fun findByTitle(title: String): Mix;
+    fun findByTitle(title: String): Mix?;
+
+    fun existsBySourceUrl(sourceUrl: String): Boolean;
 
     fun existsByTitle(title: String): Boolean;
+
+    /** Возвращает сохраненную запись или null в случае неудачи */
+    fun save (mix:Mix): Mix?;
 
 }

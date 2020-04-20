@@ -9,6 +9,7 @@ import com.codemark.hookahmix.domain.dto.ParseStatus
 import com.codemark.hookahmix.exception.MixParsingException
 import com.codemark.hookahmix.service.MakerService
 import com.codemark.hookahmix.service.MixService
+import com.codemark.hookahmix.service.TasteService
 import com.codemark.hookahmix.service.TobaccoService
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
@@ -27,7 +28,8 @@ import kotlin.math.roundToInt
 @PropertySource("classpath:parser-mixes.properties")
 class MixParser @Autowired constructor(private var tobaccoService: TobaccoService,
                                        private var makerService: MakerService,
-                                       private var mixService: MixService) {
+                                       private var mixService: MixService,
+                                       private var tasteService: TasteService) {
 
 
     @Value("\${sourceMixesUrl}")
@@ -106,21 +108,26 @@ class MixParser @Autowired constructor(private var tobaccoService: TobaccoServic
             try {
                 newMix = Mix();
                 tobaccoList = mutableListOf();
+                /** Обрабатываем ссылку на источник микса в БД */
                 //Получаем ссылку на описание микса
                 newMix.sourceUrl = item.attr("href");
                 if (newMix.sourceUrl.isNullOrBlank()) {
                     throw MixParsingException(generateErrorMessage(tobaccoList, newMix, pageNumber,
                             "Ошибка получения ссылки на детальный микс из источника"), null);
                 }
+                //Получаем ссылку на источник микса в БД
+                if (mixService.isExistBySourceUrl(newMix.sourceUrl!!)) {
+                    throw MixParsingException(generateErrorMessage(tobaccoList, newMix, pageNumber,
+                            "Микс со ссылкой ${newMix.sourceUrl} уже существует в БД"), null);
+                }
+                /** Получаем список табаков в миксе */
                 mixFullTitle = item.select("h3").text();
-
                 //Распознаем каждое сочетание "Maker1: Tobacco1, Tobacco2. Maker2: Tobacco3, Tobacco4."
                 tobaccoList.addAll(parseMakerAndTobaccoFullText(mixFullTitle.split('.'), newMix, pageNumber));
 
-                //Формируем наименование микса из списка табаков
+                /** Формируем наименование микса */
                 newMix.title = generateMixTitle(tobaccoList);
-
-                /** Проверяем наименование микса в БД */
+                // Проверяем наименование микса в БД
                 if (mixService.isExist(newMix.title)) {
                     throw MixParsingException(generateErrorMessage(tobaccoList, newMix, pageNumber,
                             "Микс ${newMix.title} уже существует в БД"), null);
@@ -137,7 +144,7 @@ class MixParser @Autowired constructor(private var tobaccoService: TobaccoServic
                     throw MixParsingException(generateErrorMessage(tobaccoList, newMix, pageNumber,
                             "Ошибка получения описания микса из источника"), null);
                 }
-                mixDescription = mixContent.first().text();
+                mixDescription = mixContent.text();
                 if (mixDescription.isBlank()) {
                     throw MixParsingException(generateErrorMessage(tobaccoList, newMix, pageNumber,
                             "Ошибка получения описания микса из источника"), null);
@@ -215,7 +222,14 @@ class MixParser @Autowired constructor(private var tobaccoService: TobaccoServic
 
             /** СПРАВОЧНИК ЗАМЕН НАЗВАНИЙ ПРОИЗВОДИТЕЛЕЙ ТАБАКА */
             when (makerTitle) {
-                 "Darkside" -> makerTitle = "Dark Side";
+                "Darkside" -> makerTitle = "Dark Side";
+                "Al Waha" -> makerTitle = "Al-Waha";
+                "Al mawardi" -> makerTitle = "Al-Mawardi";
+                "Nakhla JTI (Japan Tobacco International)"-> makerTitle = "Nakhla";
+                "Nakhla JTI"-> makerTitle = "Nakhla";
+                "Sebetli"-> makerTitle = "Serbetli";
+                "Serberli"-> makerTitle = "Serbetli";
+                "Tabgiers"-> makerTitle = "Tangiers";
             }
 
             //Проверяем существование производителя в БД
@@ -231,21 +245,16 @@ class MixParser @Autowired constructor(private var tobaccoService: TobaccoServic
                 originalTobaccoList.add(Tobacco(title = title.trim()));
                 /** Проверяем существование табака в БД */
                 //Поиск точного совпадения названия табака по всем найденным производителям
-                for (maker in makerList) {
-                    newTobacco = tobaccoService.getOne(title.trim(), maker);
-                    if (newTobacco != null) break;
-                }
-                //Если точное совпадение не нашли
+                newTobacco = findExactTobaccoInMakerListFromTitle(title.trim(), makerList);
                 if (newTobacco == null) {
                     //Поиск частичного совпадения названия табака по всем найденным производителям
-                    for (maker in makerList) {
-                        newTobacco = tobaccoService.searchAllByTitle(title.trim(), maker).firstOrNull();
-                        //Если нашли частичное совпадение, то считаем микс неоригинальным
-                        if (newTobacco != null) {
-                            newMix.isOriginal = false;
-                            break;
-                        }
+                    newTobacco = findSimilarTobaccoInMakerListFromTitle(title.trim(), makerList);
+                    if (newTobacco == null) {
+                        //Поиск совпадения названия табака из Микса по названиям вкусов
+                        newTobacco = findTobaccoInMakerListFromTasteTitle(title.trim(), makerList);
                     }
+                    //Если нашли табак по нечеткому совпадению, то считаем микс неоригинальным
+                    if (newTobacco != null) newMix.isOriginal = false;
                 }
                 if (newTobacco == null) {
                     throw MixParsingException(generateErrorMessage(existedTobaccoList, newMix, pageNumber,
@@ -257,6 +266,41 @@ class MixParser @Autowired constructor(private var tobaccoService: TobaccoServic
         newMix.tobaccoMixList = originalTobaccoList;
         return existedTobaccoList;
     }
+
+    /** Поиск табака в БД по точному совпадения названия по всем найденным производителям */
+    private fun findExactTobaccoInMakerListFromTitle(tobaccoTitle: String, makerList: MutableList<Maker>): Tobacco? {
+        var newTobacco: Tobacco? = null;
+        for (maker in makerList) {
+            newTobacco = tobaccoService.getOne(tobaccoTitle, maker);
+            if (newTobacco != null) break;
+        }
+        return newTobacco;
+    }
+
+    /** Поиск табака в БД по частичному совпадению названия табака по всем найденным производителям */
+    private fun findSimilarTobaccoInMakerListFromTitle(tobaccoTitle: String, makerList: MutableList<Maker>): Tobacco? {
+        var newTobacco: Tobacco? = null;
+        for (maker in makerList) {
+            newTobacco = tobaccoService.searchAllByTitle(tobaccoTitle, maker).firstOrNull();
+            if (newTobacco != null) break;
+        }
+        return newTobacco;
+    }
+
+    /** Поиск табака в БД по его вкусу по всем найденным производителям */
+    private fun findTobaccoInMakerListFromTasteTitle(tasteTitle: String, makerList: MutableList<Maker>): Tobacco? {
+        var newTobacco: Tobacco? = null;
+        val tobaccoTasteList = tasteService.searchAllByTitle(tasteTitle);
+        for (tobaccoTaste in tobaccoTasteList) {
+            for (maker in makerList) {
+                newTobacco = tobaccoService.searchAllByTaste(tobaccoTaste, maker).firstOrNull();
+                if (newTobacco != null) break;
+            }
+            if (newTobacco != null) break;
+        }
+        return newTobacco;
+    }
+
 
     /** Извлекаем числовые соотношения табаков из строки описания mixFullCompositionText
      * Дополнительно формируем крепость микса на основе соотношений табаков в миксе */
