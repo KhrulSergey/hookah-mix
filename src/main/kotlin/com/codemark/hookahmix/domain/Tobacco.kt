@@ -47,7 +47,7 @@ class Tobacco(title: String = "",
     var mainTaste: Taste? = null;
 
     /** Список вкусов для табака */
-    @OneToMany (cascade = [CascadeType.ALL])
+    @OneToMany(cascade = [CascadeType.ALL])
     @JoinTable(
             name = "tobacco_tastes",
             joinColumns = [JoinColumn(name = "tobaccos_id")],
@@ -56,7 +56,7 @@ class Tobacco(title: String = "",
     var tasteList: MutableList<Taste> = mutableListOf();
 
     /** Производитель */
-    @IndexedEmbedded(depth=3)
+    @IndexedEmbedded(depth = 3)
     @ManyToOne(cascade = [CascadeType.PERSIST, CascadeType.MERGE], fetch = FetchType.LAZY)
     @JoinColumn(name = "maker_id")
     @JsonProperty("maker")
@@ -78,18 +78,8 @@ class Tobacco(title: String = "",
     @Convert(converter = TobaccoStatusConverter::class)
     var status: TobaccoStatus = TobaccoStatus.NULL_VALUE
 
-    //Список табаков-замен из тех табаков что есть у пользователя в баре
-    @Transient
-    var replacements: MutableList<Tobacco> = mutableListOf()
-
-    //Соотношение табака в миксе
-    @Transient
-    var composition: Int = 0
-
     override fun toString(): String {
-        val compositionStr: String = if (composition != 0) " - $composition%" else "";
         val makerStr: String = if (maker != null) "${maker?.title}: " else "";
-        return makerStr + title + compositionStr;
+        return makerStr + title;
     }
-
 }

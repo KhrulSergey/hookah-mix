@@ -1,13 +1,13 @@
 package com.codemark.hookahmix.repository
 
-import com.codemark.hookahmix.domain.Component
+import com.codemark.hookahmix.domain.MixComponent
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.query.Param
 import org.springframework.stereotype.Repository
 
 @Repository
-interface ComponentRepository : JpaRepository<Component, Long> {
+interface MixComponentRepository : JpaRepository<MixComponent, Long> {
 
     //TODO Удалить неиспользуемый метод?
     @Query(nativeQuery = true,
@@ -18,5 +18,5 @@ interface ComponentRepository : JpaRepository<Component, Long> {
                                   @Param("tobaccoId") tobaccoId: Long): Int;
 
     /** Возвращает сохраненную запись или null в случае неудачи */
-    fun save (component: Component): Component?;
+    fun save (mixComponent: MixComponent): MixComponent?;
 }

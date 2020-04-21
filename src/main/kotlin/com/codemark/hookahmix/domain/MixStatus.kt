@@ -5,13 +5,13 @@ import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.annotation.JsonValue
 
 @JsonFormat(shape = JsonFormat.Shape.OBJECT)
-enum class MixSet(@JsonProperty("title") val title: String) {
-    NULL_VALUE("Неизвестен"),
+enum class MixStatus(@JsonProperty("title") val title: String) {
     MATCH_BAR("Все есть"),
     REPLACEMENT_BAR("С заменой"),
-    PARTIAL_BAR("Нужно докупить");
+    PARTIAL_BAR("Нужно докупить"),
+    NULL_VALUE("Неизвестен");
 
-//    @JsonProperty("id")
+
     @JsonValue
     fun getId(): String {
         return name

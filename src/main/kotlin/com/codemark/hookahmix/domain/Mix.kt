@@ -6,6 +6,7 @@ import org.hibernate.search.annotations.Indexed
 import org.hibernate.search.annotations.IndexedEmbedded
 import javax.persistence.*
 
+/** Модель Микса из табаков */
 @Indexed
 @Entity
 @Table(name = "mixes")
@@ -38,11 +39,20 @@ class Mix {
     @Column(name = "is_original")
     var isOriginal: Boolean? = true;
 
-    @JsonIgnore
-    @OneToMany(mappedBy = "mix")
-    var components: MutableSet<Component> = mutableSetOf()
+    @OneToMany(mappedBy = "mixRef")
+    var components: MutableSet<MixComponent> = mutableSetOf()
 
-    @IndexedEmbedded(depth=3)
+    /** Статус микса для пользователя */
+    @Transient
+    var status: MixStatus = MixStatus.NULL_VALUE
+
+    /** Количество табаков в статусе "докупить" */
+    @Transient
+    var countTobaccoForPurchase: Int = 0;
+
+    /** Служебное поле: Список табаков, входящих в состав микса */
+    @JsonIgnore
+    @IndexedEmbedded(depth = 3)
     @ManyToMany
     @JoinTable(
             name = "components",
@@ -50,12 +60,6 @@ class Mix {
             inverseJoinColumns = [JoinColumn(name = "tobacco_id")]
     )
     var tobaccoMixList: MutableList<Tobacco> = mutableListOf();
-
-
-    @Transient
-    var status: MixSet = MixSet.NULL_VALUE
-
-
 
     override fun toString(): String {
         return "Mix $title";

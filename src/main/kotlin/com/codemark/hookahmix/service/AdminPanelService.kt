@@ -1,7 +1,7 @@
 package com.codemark.hookahmix.service
 
 import com.codemark.hookahmix.domain.*
-import com.codemark.hookahmix.repository.ComponentRepository
+import com.codemark.hookahmix.repository.MixComponentRepository
 import com.codemark.hookahmix.repository.MixRepository
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
@@ -12,7 +12,7 @@ class AdminPanelService @Autowired constructor(private val makerService: MakerSe
                                                private val tobaccoService: TobaccoService,
                                                private val imageService: ImageService,
                                                private val mixRepository: MixRepository,
-                                               private val componentRepository: ComponentRepository) {
+                                               private val mixComponentRepository: MixComponentRepository) {
 
     //TODO Перенести методы в соответ. сервисы
 
@@ -56,14 +56,14 @@ class AdminPanelService @Autowired constructor(private val makerService: MakerSe
         val maker = makerService.getOne(makerTitle);
         val tobacco = tobaccoService.getOne(tobaccoTitle, maker!!);
 
-        val component = Component();
-        component.mix = mix;
-        component.tobacco = tobacco;
+        val component = MixComponent();
+        component.mixRef = mix;
+        component.tobaccoRef = tobacco;
         component.composition = composition;
 
         mix?.components?.add(component);
 //        tobacco!!.components.add(component);
 
-        componentRepository.save(component);
+        mixComponentRepository.save(component);
     }
 }
