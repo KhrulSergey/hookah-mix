@@ -17,11 +17,11 @@ class BuildSearchService @Autowired constructor(
     : ApplicationListener<ApplicationReadyEvent> {
 
     override fun onApplicationEvent(event: ApplicationReadyEvent) {
-        try {
-            val fullTextEntityManager = Search.getFullTextEntityManager(entityManager)
-            fullTextEntityManager.createIndexer().startAndWait()
-        } catch (e: InterruptedException) {
-            println("An error occurred trying to build the search index: " + e.toString())
-        }
+//        try {
+//            val fullTextEntityManager = Search.getFullTextEntityManager(entityManager)
+//            fullTextEntityManager.createIndexer().startAndWait()
+//        } catch (e: InterruptedException) {
+//            println("An error occurred trying to build the search index: " + e.toString())
+//        }
     }
 }

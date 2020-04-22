@@ -1,5 +1,6 @@
 package com.codemark.hookahmix.repository
 
+import com.codemark.hookahmix.domain.Purchase
 import com.codemark.hookahmix.domain.Tobacco
 import com.codemark.hookahmix.domain.User
 import org.springframework.data.jpa.repository.JpaRepository
@@ -7,10 +8,18 @@ import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.query.Param
 import org.springframework.stereotype.Repository
+import java.time.LocalDate
 import javax.transaction.Transactional
 
+/** Репозиторий управления записями "Покупки табаков у пользователя */
 @Repository
-interface PurchaseRepository : JpaRepository<User, Tobacco> {
+interface PurchaseRepository : JpaRepository<Purchase, Long> {
+
+    fun findAllByUserAndCreatedDateAfter(user: User, createdDate: LocalDate): MutableList<Purchase>;
+
+    fun findAllByUserAndTobacco(user: User, tobacco: Tobacco): MutableList<Purchase>;
+
+    fun save(purchase: Purchase): Purchase?;
 
     /**
      * Добавляет табак в список купленных
@@ -18,7 +27,7 @@ interface PurchaseRepository : JpaRepository<User, Tobacco> {
     @Transactional
     @Modifying
     @Query(nativeQuery = true,
-            value = "insert into latest_purchases (user_id, tobacco_id) values (:userId, :tobaccoId);")
+            value = "insert into latest_purchases (user_id, tobacco_id) values (:userId, :tobaccoId)")
     fun addInLatestPurchases(@Param("userId") userId: Long,
                              @Param("tobaccoId") tobaccoId: Long);
 

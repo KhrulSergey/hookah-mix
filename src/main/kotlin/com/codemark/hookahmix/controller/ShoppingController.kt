@@ -1,6 +1,7 @@
 package com.codemark.hookahmix.controller
 
 import com.codemark.hookahmix.domain.Tobacco
+import com.codemark.hookahmix.service.PurchaseService
 import com.codemark.hookahmix.service.TobaccoService
 import com.codemark.hookahmix.service.UserService
 import com.codemark.hookahmix.util.CookieAuthorizationUtil
@@ -8,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
+import java.time.LocalDate
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 import javax.servlet.http.HttpSession
@@ -16,13 +18,14 @@ import javax.servlet.http.HttpSession
 @RequestMapping("/api/shopping")
 class ShoppingController @Autowired constructor(
         private var tobaccoService: TobaccoService,
+        private var purchaseService: PurchaseService,
         private var userService: UserService,
         var cookieAuthorizationUtil: CookieAuthorizationUtil) {
 
     @GetMapping("/my")
-    fun getAllPurchases(request: HttpServletRequest,
-                        response: HttpServletResponse,
-                        session: HttpSession): List<Tobacco> {
+    fun getAllTobaccoInCheckout(request: HttpServletRequest,
+                                response: HttpServletResponse,
+                                session: HttpSession): List<Tobacco> {
 
         val user = userService.getOneByInstallationCookie(cookieAuthorizationUtil
                 .getInstallationCookie(request, session));
@@ -31,26 +34,26 @@ class ShoppingController @Autowired constructor(
     }
 
     @PostMapping("/my/{id}")
-    fun addTobaccoInPurchases(@PathVariable("id") id: Long,
-                              request: HttpServletRequest,
-                              response: HttpServletResponse,
-                              session: HttpSession): ResponseEntity<String> {
+    fun addTobaccoInCheckout(@PathVariable("id") id: Long,
+                             request: HttpServletRequest,
+                             response: HttpServletResponse,
+                             session: HttpSession): ResponseEntity<String> {
 
         val user = userService.getOneByInstallationCookie(cookieAuthorizationUtil
                 .getInstallationCookie(request, session));
-        val tobacco: Tobacco? = tobaccoService.addOneInPurchases(id, user);
+        val tobacco: Tobacco? = tobaccoService.addOneInCheckout(id, user);
         val status = if (tobacco != null) HttpStatus.OK else HttpStatus.NOT_FOUND;
         return ResponseEntity("Tobacco $tobacco was added in purchases: ${tobacco != null}", status);
     }
 
     @GetMapping("/latest")
-    fun getLatestPurchases(request: HttpServletRequest,
-                           response: HttpServletResponse,
-                           session: HttpSession): MutableSet<Tobacco> {
+    fun getPurchases(request: HttpServletRequest,
+                     response: HttpServletResponse,
+                     session: HttpSession): MutableSet<Tobacco> {
 
         val user = userService.getOneByInstallationCookie(cookieAuthorizationUtil
                 .getInstallationCookie(request, session));
-        return tobaccoService.getAllFromLatestPurchases(user);
+        return purchaseService.getAllLatestPurchasedTobaccoForUser(user);
     }
 
     @GetMapping("/delete_latest/{id}")

@@ -6,6 +6,7 @@ import com.codemark.hookahmix.domain.UserTobacco
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.stereotype.Repository
 
+/** Репозиторий управления записями "Табаки в баре и в корзине у пользователя */
 @Repository
 interface UserTobaccosRepository : JpaRepository<UserTobacco, Long> {
 

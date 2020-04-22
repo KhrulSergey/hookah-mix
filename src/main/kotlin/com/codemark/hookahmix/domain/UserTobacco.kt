@@ -9,6 +9,7 @@ import java.io.Serializable
 import java.time.LocalDate
 import javax.persistence.*
 
+/** Модель для хранения списка табаков у пользователя*/
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
@@ -20,7 +21,7 @@ class UserTobacco (
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(name = "user_tobaccos_id")
+    @Column(name = "user_tobacco_id")
     var id: Long = 0;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -30,12 +31,6 @@ class UserTobacco (
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "tobacco_id")
     var tobacco: Tobacco? = tobacco
-
-//    @Column(name = "user_id")
-//    var userId: Long? = null
-//
-//    @Column(name = "tobacco_id")
-//    var tobaccoId: Long? = null
 
     @Column(name = "status")
     @Convert(converter = TobaccoStatusConverter::class)
@@ -51,30 +46,9 @@ class UserTobacco (
 
     override fun toString(): String =
             "Entity of type: ${javaClass.name} ( " +
-//                    "userTobaccosId = $userTobaccosId " +
-//                    "userId = $userId " +
-//                    "tobaccoId = $tobaccoId " +
                     "status = $status " +
                     "createdDate = $createdDate " +
                     "updatedDate = $updatedDate " +
                     ")"
-
-    // constant value returned to avoid entity inequality to itself before and after it's update/merge
-    override fun hashCode(): Int = 42
-
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (javaClass != other?.javaClass) return false
-        other as UserTobacco
-
-//        if (userTobaccosId != other.userTobaccosId) return false
-//        if (userId != other.userId) return false
-//        if (tobaccoId != other.tobaccoId) return false
-        if (status != other.status) return false
-        if (createdDate != other.createdDate) return false
-        if (updatedDate != other.updatedDate) return false
-
-        return true
-    }
 }
 

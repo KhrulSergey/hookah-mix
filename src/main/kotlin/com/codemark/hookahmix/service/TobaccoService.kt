@@ -16,7 +16,8 @@ class TobaccoService @Autowired constructor(
         private val userTobaccosRepository: UserTobaccosRepository,
         private val tobaccoSearch: TobaccoSearch,
         private val makerService: MakerService,
-        private val tasteService: TasteService) {
+        private val tasteService: TasteService,
+        private val purchaseService: PurchaseService) {
 
 //<editor-fold desc="ПУБЛИЧНЫЕ МЕТОДЫ">
 
@@ -41,7 +42,7 @@ class TobaccoService @Autowired constructor(
 
     /** Поиск табака с частично совпадающим наименованием и заданным производителем */
     fun searchAllByTitle(title: String, maker: Maker): MutableList<Tobacco> {
-        var tobaccoList: MutableList<Tobacco> = mutableListOf();
+        val tobaccoList: MutableList<Tobacco> = mutableListOf();
         for (str in title.split(" ", "-", "_", ".", ",")){
             tobaccoList.addAll(tobaccoRepository.findAllByTitleContainingIgnoreCaseAndMaker(str, maker));
         }
@@ -152,8 +153,9 @@ class TobaccoService @Autowired constructor(
             userTobaccoInBar = userTobaccosRepository.findAllByUserAndTobacco(user, tobacco).firstOrNull();
             if (userTobaccoInBar != null) {
                 if (userTobaccoInBar.status == TobaccoStatus.IN_CHECKOUT) {
-                    //Если табак был в покупках и переходит в бар, значит его купили -> добавить в заказы и перезатереть статус
-                    addOneInLatestPurchases(tobaccoId, user);
+                    //Если табак был в покупках и переходит в бар, значит его купили ->
+                    // добавить в заказы и перезатереть статус в UserTobacco
+                    purchaseService.addOne(Purchase(user, tobacco));
                 }
             } else {
                 userTobaccoInBar = UserTobacco(user, tobacco);
@@ -165,7 +167,7 @@ class TobaccoService @Autowired constructor(
     }
 
     /** Добавление табака в корзину (покупки) */
-    fun addOneInPurchases(tobaccoId: Long, user: User): Tobacco? {
+    fun addOneInCheckout(tobaccoId: Long, user: User): Tobacco? {
         val tobacco: Tobacco? = tobaccoRepository.findById(tobaccoId).orElse(null);
         var userTobaccoInBar: UserTobacco? = null;
         if (tobacco != null) {
