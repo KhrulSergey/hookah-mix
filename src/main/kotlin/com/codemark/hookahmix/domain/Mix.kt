@@ -21,7 +21,7 @@ class Mix {
     var title: String = "";
 
     @Column(name = "rating")
-    var rating: Int = 0;
+    var rating: Double? = null;
 
     @Field
     @Column(name = "tags")
@@ -31,7 +31,7 @@ class Mix {
     var description: String = "";
 
     @Column(name = "strength")
-    var strength: Int = 0
+    var strength: Double? = 0.0;
 
     @Column(name = "source_url")
     var sourceUrl: String? = "";
@@ -40,7 +40,7 @@ class Mix {
     var isOriginal: Boolean? = true;
 
     @OneToMany(mappedBy = "mixRef")
-    var components: MutableSet<MixComponent> = mutableSetOf()
+    var components: MutableList<MixComponent> = mutableListOf()
 
     /** Статус микса для пользователя */
     @Transient

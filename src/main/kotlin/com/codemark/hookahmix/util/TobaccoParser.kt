@@ -362,7 +362,7 @@ class TobaccoParser @Autowired constructor(private var imageService: ImageServic
     /** Формируем вкусы со страницы описания табака */
     fun parseTobaccoTastes(tobaccoPage: Document, tobaccoTitle: String): MutableList<Taste> {
         val tobaccoTasteList: MutableList<Taste> = mutableListOf();
-        var currentTasteTitle: String = "";
+        var currentTasteTitle: String? = null;
         val tobaccoTasteTitleList: MutableList<String> = mutableListOf();
         var tasteNameIsTobaccoTitle = false;
         //Ищем список с описанием вкусов табака
@@ -388,10 +388,11 @@ class TobaccoParser @Autowired constructor(private var imageService: ImageServic
                     }
                 }
             }
-            if (currentTasteTitle.isBlank()) {
+            if (currentTasteTitle.isNullOrBlank()) {
                 tobaccoParserInfo.warningLog.add("Не получен вкус табака $tobaccoTitle из источника.");
+            }else{
+                tobaccoTasteTitleList.add(currentTasteTitle);
             }
-            tobaccoTasteTitleList.add(currentTasteTitle);
         }
 
         /** Формируем список вкусов из БД */

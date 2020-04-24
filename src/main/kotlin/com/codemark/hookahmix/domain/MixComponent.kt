@@ -32,7 +32,7 @@ class MixComponent(composition: Int? = 0, tobacco: Tobacco? = null) {
     override fun toString(): String {
         val compositionStr: String = if (composition != 0) " - $composition%" else "";
         val makerStr: String = if (tobaccoRef?.maker != null) "${tobaccoRef?.maker?.title}: " else "";
-        return "Id: $id ->$makerStr: ${tobaccoRef?.title} - $compositionStr";
+        return "Id:$id ->$makerStr ${tobaccoRef?.title} $compositionStr";
     }
 
 }

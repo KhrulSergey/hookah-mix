@@ -42,9 +42,9 @@ class AdminPanelService @Autowired constructor(private val makerService: MakerSe
         val mix = Mix();
         mix.title = title;
         mix.tags = tags;
-        mix.rating = 0;
         mix.description = description;
-        mix.strength = Integer.parseInt(strength);
+        mix.strength = strength.toDouble();
+
 
         mixRepository.save(mix);
     }

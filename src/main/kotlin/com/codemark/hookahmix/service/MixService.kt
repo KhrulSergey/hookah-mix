@@ -103,7 +103,7 @@ class MixService @Autowired constructor(
                     result = mixes.stream()
                             .filter { i ->
                                 i.status.title.equals(status)
-                                        && i.strength == Integer.parseInt(strength)
+                                        && i.strength == strength.toDouble()
                                         && i.tags.contains(taste)
                             }
                             .toList().toMutableList();
@@ -115,7 +115,7 @@ class MixService @Autowired constructor(
                     result = mixes.stream()
                             .filter { i ->
                                 i.status.title.equals(status)
-                                        && i.strength == Integer.parseInt(strength)
+                                        && i.strength == strength.toDouble()
                             }
                             .toList().toMutableList()
 
@@ -163,7 +163,6 @@ class MixService @Autowired constructor(
             //fill components of mix
             for (component in componentMixList) {
                 component.mixRef = newMix;
-                newMix.components.add(component)
                 if (saveMixComponent(component) == null) {
                     //TODO rollback addMix operation
                     return null
