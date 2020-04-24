@@ -46,6 +46,10 @@ class Tobacco(title: String = "",
     @JoinColumn(name = "taste_id")
     var mainTaste: Taste? = null;
 
+    /** Пользовательский рейтинг табака */
+    @Column(name = "rating")
+    var rating: Double? = null;
+
     /** Список вкусов для табака */
     @OneToMany(cascade = [CascadeType.ALL])
     @JoinTable(

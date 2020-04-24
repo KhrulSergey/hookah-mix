@@ -36,6 +36,10 @@ class Maker(title: String = "") {
     @JoinColumn(name = "file_id")
     var image: Image? = null;
 
+    /** Пользовательский рейтинг табака */
+    @Column(name = "rating")
+    var rating: Double? = 0.0;
+
     @IndexedEmbedded(depth=3)
     @JsonIgnoreProperties("maker")
     @OneToMany(mappedBy = "maker")

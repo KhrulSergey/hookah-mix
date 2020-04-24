@@ -29,19 +29,12 @@ class MakerService @Autowired constructor(
         return makerRepository.findAllByOrderByTitleAsc();
     }
 
-    fun getAllSortedByTitleAndUser(user: User): MutableSet<Maker> {
-        return makerRepository.findAllSortedByTitleAndUser(user.id);
-    }
-
     fun findAllByTitle(title: String): MutableList<Maker> {
         return makerRepository.findAllByTitleContainingIgnoreCase(title);
     }
 
     fun add(maker: Maker): Maker? {
         //TODO check Maker content or just save what come
-        var newMaker = makerRepository.save(maker);
-        //check maker creation
-        if (newMaker.id == 0L) return null;
-        return newMaker;
+        return  makerRepository.save(maker);
     }
 }

@@ -21,6 +21,8 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.PropertySource
 import org.springframework.stereotype.Component
 import java.io.IOException
+import java.util.regex.Pattern
+import kotlin.math.roundToInt
 
 
 @Component
@@ -34,11 +36,20 @@ class TobaccoParser @Autowired constructor(private var imageService: ImageServic
     @Value("\${url}")
     var targetUrl: String = "";
 
-    @Value("\${makersElements}")
+    @Value("\${selectMakersElements}")
     var makersElements: String = ""
 
     @Value("\${selectMakerTitle}")
     var makerTitleElement: String = "";
+
+    @Value("\${selectMakerStrength}")
+    var makerStrengthElement: String = "";
+
+    @Value("\${selectMakerRating}")
+    var makerRatingElement: String = "";
+
+    @Value("\${selectMakerRatingCount}")
+    var makerRatingCountElement: String = "";
 
     @Value("\${selectMakerImage}")
     var makerImageElement: String = "";
@@ -48,9 +59,6 @@ class TobaccoParser @Autowired constructor(private var imageService: ImageServic
 
     @Value("\${selectMakerDescription}")
     var makerDescriptionElement: String = "";
-
-    @Value("\${selectMakerStrength}")
-    var makerStrengthOfTobaccoElement: String = "";
 
     @Value("\${tobaccosElements}")
     var tobaccosElements: String = "";
@@ -70,12 +78,16 @@ class TobaccoParser @Autowired constructor(private var imageService: ImageServic
     @Value("\${selectTobaccoDetails}")
     var tobaccoDetailsElements: String = "";
 
+    @Value("\${selectTobaccoRating}")
+    var tobaccoRatingElement: String = "";
+
+    @Value("\${selectTobaccoRatingCount}")
+    var tobaccoRatingCountElement: String = "";
+
     @Value("\${selectTobaccoTasteList}")
     var tobaccoTasteListElements: String = "";
 
     var tobaccoRussianTasteElementText = "Русское название:";
-
-    var tasteDefaultTitle = "Нет моновкуса";
 
     //Модель для хранения и передачи данных о результатах парсинга
     var tobaccoParserInfo: DataParserInfoDto<Tobacco> = DataParserInfoDto(status = ParseStatus.NOT_STARTED);
@@ -136,24 +148,26 @@ class TobaccoParser @Autowired constructor(private var imageService: ImageServic
         var newMaker: Maker?;
         val savedMaker: Maker?;
         val tobaccoList: MutableList<Tobacco> = mutableListOf();
-
+        var makerStrength: Double = 0.0;
         //Открываем детальную страницу производителя
         val makerPage: Document? = connectPage(makerUrl);
         if (makerPage == null) {
             throw MakerParsingException("Ошибка открытия детальной страницы производителя из источника $makerUrl", null);
         }
         /** Обработка данных о производителе */
+        //Получаем наименование производителя
         val makerTitle = makerPage.selectFirst(makerTitleElement).text();
         if (makerTitle.isBlank()) {
             throw MakerParsingException("Ошибка получения наименования производителя из источника $makerUrl", null);
         }
-        var makerStrengthOfTobacco: Double = 0.0;
-        val attributeStrength = makerPage.selectFirst(makerStrengthOfTobaccoElement);
+        //Получаем крепость табаков производителя
+        val attributeStrength = makerPage.selectFirst(makerStrengthElement);
         if (attributeStrength != null) {
-            makerStrengthOfTobacco = attributeStrength.text().toDouble();
+            makerStrength = attributeStrength.text().toDouble();
         } else {
             tobaccoParserInfo.warningLog.add("Не получена крепость табака у производителя $makerTitle из источника.");
         }
+
         /** Проверяем наличие производителя в БД */
         newMaker = makerService.getOne(makerTitle);
         if (newMaker != null) {
@@ -165,8 +179,20 @@ class TobaccoParser @Autowired constructor(private var imageService: ImageServic
             val makerImageUrl: String;
             var makerFoundingYear: String = "";
             var makerDescription: String = "";
-
-
+            var makerRating: Double = 0.0;
+            var makerRatingCount: Int = 0;
+            //Получаем рейтинг производителя
+            val attributeRating = makerPage.selectFirst(makerRatingElement);
+            val attributeRatingCount = makerPage.selectFirst(makerRatingCountElement);
+            if (attributeRating != null && attributeRatingCount != null) {
+                makerRatingCount = searchNumbersInString(attributeRatingCount.text())?.roundToInt()!!;
+                if (makerRatingCount > 0) {
+                    makerRating = attributeRating.text().toDouble();
+                }
+            } else {
+                tobaccoParserInfo.warningLog.add("Не получен рейтинг производителя $makerTitle из источника.");
+            }
+            //Получаем описание производителя
             val attributeMakerDescription = makerPage.selectFirst(makerDescriptionElement);
             if (attributeMakerDescription == null) {
                 tobaccoParserInfo.warningLog.add(
@@ -174,7 +200,7 @@ class TobaccoParser @Autowired constructor(private var imageService: ImageServic
             } else {
                 makerDescription = attributeMakerDescription.text();
             }
-
+            //Получаем изображения производителя
             val attributeImageMaker = makerPage.selectFirst(makerImageElement);
             if (attributeImageMaker == null) {
                 throw MakerParsingException("Не определена ссылка на логотип у производителя $makerTitle из источника.", null);
@@ -182,7 +208,7 @@ class TobaccoParser @Autowired constructor(private var imageService: ImageServic
             makerImageUrl = attributeImageMaker.attr("style").substring(
                     attributeImageMaker.attr("style").indexOf('(') + 1,
                     attributeImageMaker.attr("style").indexOf(')'));
-
+            //Получаем дату основания производителя
             val attributeFoundingYear = makerPage.selectFirst(makerFoundingYearElement);
             if (attributeFoundingYear != null) {
                 makerFoundingYear = attributeFoundingYear.text()
@@ -208,7 +234,8 @@ class TobaccoParser @Autowired constructor(private var imageService: ImageServic
             newMaker.description = makerDescription;
             newMaker.foundingYear = makerFoundingYear;
             newMaker.image = makerImage;
-            newMaker.strength = makerStrengthOfTobacco;
+            newMaker.strength = makerStrength;
+            newMaker.rating = makerRating;
             savedMaker = makerService.add(newMaker);
             if (savedMaker == null) {
                 throw MakerParsingException("Ошибка сохранения производителя $makerTitle в БД.", null);
@@ -232,7 +259,7 @@ class TobaccoParser @Autowired constructor(private var imageService: ImageServic
                     tobaccoParserInfo.warningLog.add(
                             "Не определена ссылка на страницу табака ${element.text()} у производителя ${savedMaker.title} из источника.");
                 }
-                newTobacco = parseOneTobacco(tobaccoUrl, savedMaker, makerStrengthOfTobacco);
+                newTobacco = parseOneTobacco(tobaccoUrl, savedMaker, makerStrength);
                 if (newTobacco != null) {
                     tobaccoList.add(newTobacco);
                 }
@@ -249,6 +276,8 @@ class TobaccoParser @Autowired constructor(private var imageService: ImageServic
         val savedTobacco: Tobacco?;
         val tobaccoTitle: String;
         var tobaccoDescription: String = "";
+        var tobaccoRating: Double? = null;
+        var tobaccoRatingCount: Int = 0;
         var tobaccoImageUrl: String = "";
         val tobaccoTasteList: MutableList<Taste>;
 
@@ -286,6 +315,17 @@ class TobaccoParser @Autowired constructor(private var imageService: ImageServic
             } else {
                 tobaccoParserInfo.warningLog.add("Не получено изображение табака $tobaccoTitle из источника.");
             }
+            //Получаем рейтинг табака
+            val attributeRating = tobaccoPage.selectFirst(tobaccoRatingElement);
+            val attributeRatingCount = tobaccoPage.selectFirst(tobaccoRatingCountElement);
+            if (attributeRating != null && attributeRatingCount != null) {
+                tobaccoRatingCount = searchNumbersInString(attributeRatingCount.text())?.roundToInt()!!;
+                if (tobaccoRatingCount > 0) {
+                    tobaccoRating = attributeRating.text().toDouble();
+                }
+            } else {
+                tobaccoParserInfo.warningLog.add("Не получен рейтинг табака $tobaccoTitle из источника.");
+            }
             // Сохраняем изображение табака
             val tobaccoImageName = imageService.uploadImage(tobaccoImageUrl, maker.title + "_" + tobaccoTitle);
             if (tobaccoImageName.isNullOrBlank()) {
@@ -304,6 +344,7 @@ class TobaccoParser @Autowired constructor(private var imageService: ImageServic
             newTobacco.tasteList = tobaccoTasteList;
             newTobacco.mainTaste = tobaccoTasteList.firstOrNull();
             newTobacco.strength = strengthOfTobacco;
+            newTobacco.rating = tobaccoRating;
             newTobacco.image = tobaccoImage;
             newTobacco.maker = maker;
             newTobacco.sourceUrl = tobaccoUrl;
@@ -377,5 +418,17 @@ class TobaccoParser @Autowired constructor(private var imageService: ImageServic
             tobaccoTasteList.add(tobaccoTaste);
         }
         return tobaccoTasteList;
+    }
+
+    /** Поиск первого числа в заданной строке */
+    private fun searchNumbersInString(text: String): Double? {
+        //Настраиваем регулярку для получения чисел из строки
+        val pattern: Pattern = Pattern.compile("[-]?[0-9]+(.[0-9]+)?")
+        val matcher = pattern.matcher(text);
+        var value: Double? = null;
+        if (matcher.find()) {
+            value = matcher.group().toDouble();
+        }
+        return value;
     }
 }

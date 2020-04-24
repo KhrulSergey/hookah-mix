@@ -17,10 +17,6 @@ interface MakerRepository : JpaRepository<Maker, Long> {
 
     fun findAllByTitleContainingIgnoreCase(title:String): MutableList<Maker>;
 
-    @Query(nativeQuery = true,
-            value = "select * from makers m inner join tobaccos t on m.makers_id = t.maker_id " +
-                    "inner join my_tobaccos mt on t.tobaccos_id = mt.tobacco_id " +
-                    "inner join users u on mt.user_id = u.users_id " +
-                    "where u.users_id = :userId order by m.title")
-    fun findAllSortedByTitleAndUser(@Param("userId") userId: Long): MutableSet<Maker>;
+    /** Возвращает сохраненную запись или null в случае неудачи */
+    fun save (maker: Maker): Maker?;
 }
