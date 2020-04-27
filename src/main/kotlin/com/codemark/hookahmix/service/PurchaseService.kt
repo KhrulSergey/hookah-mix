@@ -21,6 +21,7 @@ class PurchaseService @Autowired constructor(
         return purchaseRepository.findById(id).orElse(null);
     }
 
+    /** Возвращает список всех купленных (заказанных) табаков Пользователем */
     fun getAllLatestPurchasedTobaccoForUser(user: User): MutableSet<Tobacco> {
         val latestDate = LocalDate.now().minusDays(latestPeriodValue);
         val purchaseList = purchaseRepository.findAllByUserAndCreatedDateAfter(user, latestDate);

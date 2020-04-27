@@ -16,7 +16,7 @@ class MixService @Autowired constructor(
         private val mixComponentRepository: MixComponentRepository,
         private val mixSearch: MixSearch) {
 
-
+    /** Параметр, ограничивающий список записей  более данного значения */
     @Value("\${mixRatingLimit}")
     var mixRatingLimitValue: Double = 0.0;
 

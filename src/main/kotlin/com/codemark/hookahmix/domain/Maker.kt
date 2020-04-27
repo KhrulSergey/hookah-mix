@@ -37,6 +37,7 @@ class Maker(title: String = "") {
     var image: Image? = null;
 
     /** Пользовательский рейтинг табака */
+    @Field
     @Column(name = "rating")
     var rating: Double? = 0.0;
 

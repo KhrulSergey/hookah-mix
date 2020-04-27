@@ -6,6 +6,7 @@ import com.codemark.hookahmix.repository.TobaccoRepository
 import com.codemark.hookahmix.repository.UserTobaccosRepository
 import com.codemark.hookahmix.service.searchBuilder.TobaccoSearch
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 
 /** Сервис для работы с каталогом Табаков и "Мои табаки" для пользователя */
@@ -18,6 +19,10 @@ class TobaccoService @Autowired constructor(
         private val makerService: MakerService,
         private val tasteService: TasteService,
         private val purchaseService: PurchaseService) {
+
+    /** Параметр, ограничивающий список записей  более данного значения */
+    @Value("\${tobaccoRatingLimit}")
+    var tobaccoRatingLimitValue: Double = 0.0;
 
 //<editor-fold desc="ПУБЛИЧНЫЕ МЕТОДЫ">
 
@@ -43,7 +48,7 @@ class TobaccoService @Autowired constructor(
     /** Поиск табака с частично совпадающим наименованием и заданным производителем */
     fun searchAllByTitle(title: String, maker: Maker): MutableList<Tobacco> {
         val tobaccoList: MutableList<Tobacco> = mutableListOf();
-        for (str in title.split(" ", "-", "_", ".", ",")){
+        for (str in title.split(" ", "-", "_", ".", ",")) {
             tobaccoList.addAll(tobaccoRepository.findAllByTitleContainingIgnoreCaseAndMaker(str, maker));
         }
         return tobaccoList;
@@ -62,30 +67,40 @@ class TobaccoService @Autowired constructor(
         val makerList = if (searchQuery.isNullOrBlank()) {
             makerService.getAllSortedByTitle();
         } else {
-            searchCatalogTobacco(searchQuery);
+            searchMakerCatalog(searchQuery);
         }
-        //Фича отключена т.к. в списках табаков статус TobaccoStatus.PURCHASED не нужен бизнесу
-        //val userPurchasedTobaccos = getAllUserLatestPurchasedTobacco(user);
-        //getFilledStatusTobaccoMakerList(makerList, userPurchasedTobaccos);
 
         //Переприсваиваем статусы табаков для списка "Мои табаки" (мой бар и корзина)
         val userTobaccos = getAllUserTobacco(user);
-        getFilledStatusTobaccoMakerList(makerList, userTobaccos);
+        getFilledStatusTobaccoMakerList(makerList.toMutableSet(), userTobaccos);
         return makerList;
     }
+
+    fun getMakersAndStatusTobaccosInCatalogWithLimitRatingForUser(user: User, searchQuery: String? = null): MutableSet<Maker> {
+        val tobaccoList = if (searchQuery.isNullOrBlank()) {
+            getAllByLimitRatingAndSortedByTitle(tobaccoRatingLimitValue);
+        } else {
+            searchTobaccoCatalogByTitleAndLimitRating(searchQuery, tobaccoRatingLimitValue);
+        }
+        //Переприсваиваем статусы табаков для списка "Мои табаки" (мой бар и корзина)
+        val userTobaccos = getAllUserTobacco(user);
+        getFilledStatusTobaccoList(tobaccoList, userTobaccos);
+        //Формируем "обертку" табаков в список производителей
+        return createListOfMakersForTobaccosList(tobaccoList);
+    }
+
 
     /** Возвращает список производителей с вложенным списком их табаков, из наличия в баре у пользователя.
      * В табаках проставлен статус для указанного пользователя
      * @param user - Пользователь, для которого формируем статусы табаков
      */
     fun getMakersAndStatusTobaccosInBarForUser(user: User, searchQuery: String? = null): MutableSet<Maker> {
-
         val userTobaccos = if (searchQuery.isNullOrBlank()) {
             getAllUserTobaccoInBar(user);
         } else {
             searchBarTobacco(searchQuery, user);
         }
-
+        //Формируем "обертку" табаков в список производителей
         return createListOfMakersForTobaccosList(userTobaccos);
     }
 
@@ -120,12 +135,6 @@ class TobaccoService @Autowired constructor(
         }
         return userTobaccoList
     }
-
-    /** Возвращает список всех купленных (заказанных) табаков Пользователем */
-    fun getAllFromLatestPurchases(user: User): MutableSet<Tobacco> {
-        val purchasedTobaccos = tobaccoRepository.findLatestPurchases(user.id);
-        return purchasedTobaccos.sortedBy { tobacco -> tobacco.title }.toMutableSet();
-    }
     //</editor-fold>
 
     //<editor-fold desc="Добавление записей">
@@ -136,7 +145,7 @@ class TobaccoService @Autowired constructor(
         tobacco.tasteList = mutableListOf();
         //TODO check Tobacco content or just save what come
         val newTobacco = tobaccoRepository.save(tobacco);
-        if (newTobacco != null ) {
+        if (newTobacco != null) {
             for (tobaccoTaste in tasteListForTobacco) {
                 if (!tasteService.saveTobaccoTaste(tobaccoTaste, newTobacco)) return null;
             }
@@ -199,6 +208,7 @@ class TobaccoService @Autowired constructor(
         }
         return false
     }
+
     //</editor-fold>
 
     //<editor-fold desc="Удаление записей">
@@ -229,8 +239,12 @@ class TobaccoService @Autowired constructor(
 
     //<editor-fold desc="Поиск по записям">
 
-    fun searchCatalogTobacco(text: String): MutableList<Maker> {
-        return tobaccoSearch.searchCatalogTobacco(text);
+    fun searchMakerCatalog(text: String): MutableList<Maker> {
+        return tobaccoSearch.searchMakerCatalog(text);
+    }
+
+    fun searchTobaccoCatalogByTitleAndLimitRating(text: String, ratingLimit: Double): MutableList<Tobacco> {
+        return tobaccoSearch.searchTobaccoCatalogByTitleAndLimitRating(text, ratingLimit);
     }
 
     fun searchBarTobacco(text: String, user: User): MutableList<Tobacco> {
@@ -245,6 +259,11 @@ class TobaccoService @Autowired constructor(
 //</editor-fold>
 
 //<editor-fold desc="ВНУТРЕННИЕ МЕТОДЫ">
+
+    private fun getAllByLimitRatingAndSortedByTitle(ratingLimit: Double = tobaccoRatingLimitValue): MutableList<Tobacco> {
+        return tobaccoRepository.findAllByRatingAfterOrderByMaker(ratingLimit);
+    }
+
     /** Вспомогательная функция-обертка для создания списка производителей
      * из переданного списка табаков tobaccoList
      */
@@ -268,9 +287,20 @@ class TobaccoService @Autowired constructor(
     }
 
     /** Вспомогательная функция для заполнения статусов табака
+     * из userTobaccoList извлекаем табаки и их статусы присваиваем соотв. табакам из tobaccoList
+     */
+    private fun getFilledStatusTobaccoList(tobaccoList: MutableList<Tobacco>, userTobaccoList: MutableList<Tobacco>) {
+        //Идем по списку переданных табаков
+        for (tobacco in userTobaccoList) {
+            tobaccoList.firstOrNull { value: Tobacco -> value.id == tobacco.id }
+                    ?.status = tobacco.status;
+        }
+    }
+
+    /** Вспомогательная функция для заполнения статусов табака
      * из tobaccoList извлекаем табаки и их статусы присваиваем соотв. табакам из makerList.tobaccos
      */
-    private fun getFilledStatusTobaccoMakerList(makerList: MutableList<Maker>, tobaccoList: MutableList<Tobacco>) {
+    private fun getFilledStatusTobaccoMakerList(makerList: MutableSet<Maker>, tobaccoList: MutableList<Tobacco>) {
         //Идем по списку переданных табаков
         for (tobacco in tobaccoList) {
             makerList.firstOrNull { maker: Maker -> maker.id == tobacco.maker?.id }?.tobaccos

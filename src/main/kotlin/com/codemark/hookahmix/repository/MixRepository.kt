@@ -9,25 +9,19 @@ import org.springframework.stereotype.Repository
 
 @Repository
 interface MixRepository : JpaRepository<Mix, Long> {
-
-    @Query(nativeQuery = true,
-            value = "select c.composition from components c " +
-                    "inner join mixes m on m.mixes_id = c.mix_id " +
-                    "where c.tobacco_id = :tobaccoId " +
-                    "and c.mix_id = :mixId")
-    fun getCompositionInMix(@Param("tobaccoId") tobaccoId: Long,
-                            @Param("mixId") mixId: Long): Int;
-
+    /** Возвращает запись совпадающую с указанным наименованием */
     fun findByTitle(title: String): Mix?;
 
+    /** Возвращает true, если запись с указанным источником найдена или false если не найдена */
     fun existsBySourceUrl(sourceUrl: String): Boolean;
 
+    /** Возвращает true, если запись с указанным наименованием найдена или false если не найдена */
     fun existsByTitle(title: String): Boolean;
 
     /** Возвращает список записей ограниченных снизу по рейтингу и отсортированные по рейтингу */
     fun findAllByRatingAfterOrderByRatingAsc(rating: Double): MutableList<Mix>;
 
     /** Возвращает сохраненную запись или null в случае неудачи */
-    fun save (mix:Mix): Mix?;
+    fun save(mix: Mix): Mix?;
 
 }

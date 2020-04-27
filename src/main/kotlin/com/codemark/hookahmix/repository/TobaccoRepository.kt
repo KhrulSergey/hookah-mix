@@ -14,17 +14,6 @@ import org.springframework.stereotype.Repository
 interface TobaccoRepository : JpaRepository<Tobacco, Long> {
 
     /**
-     * Возвращает список последних купленных табаков
-     */
-    @Query(nativeQuery = true,
-            value = "select * from tobaccos t " +
-                    "inner join latest_purchases lt on t.tobaccos_id = lt.tobacco_id " +
-                    "inner join users u on lt.user_id = u.users_id " +
-                    "where u.users_id = :userId " +
-                    "order by t.tobaccos_id")
-    fun findLatestPurchases(@Param("userId") userId: Long): MutableSet<Tobacco>;
-
-    /**
      * Ищет в БД точное совпадение наименования табака и производителя
      * Возвращает null или табак с заданным ID и производителем.
      */
@@ -47,8 +36,12 @@ interface TobaccoRepository : JpaRepository<Tobacco, Long> {
 
     /** Возращает список табаков соответствующих заданному вкусу и производителю */
     @Query(nativeQuery = true,
-            value = "select * from tobaccos t inner join tobacco_tastes ta on t.tobaccos_id = ta.tobaccos_id where t.maker_id = :maker_id and ta.tastes_id = :taste_id")
+            value = "select * from tobaccos t inner join tobacco_tastes ta on t.tobaccos_id = ta.tobaccos_id " +
+                    "where t.maker_id = :maker_id and ta.tastes_id = :taste_id")
     fun findAllByTasteAndMaker(taste_id: Long, maker_id: Long): MutableList<Tobacco>;
+
+    /** Возвращает список записей ограниченных снизу по рейтингу и отсортированные по названию */
+    fun findAllByRatingAfterOrderByMaker(rating: Double): MutableList<Tobacco>;
 
     /** Возвращает сохраненную запись или null в случае неудачи */
     fun save (tobacco: Tobacco): Tobacco?;

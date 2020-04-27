@@ -19,17 +19,19 @@ class TobaccoController @Autowired constructor(private val userService: UserServ
                                                private val tobaccoService: TobaccoService,
                                                var cookieAuthorizationUtil: CookieAuthorizationUtil) {
 
+    //TODO убрать параметр full после отладки получения списка табаков до 01.06.20
     /**
      * Метод получения  структурированого списка табаков для экрана Все табаки
      */
     @GetMapping("/catalog")
-    fun getMakerCatalog(@RequestParam(required = false) search: String?, request: HttpServletRequest,
-                        response: HttpServletResponse, session: HttpSession): List<Maker> {
+    fun getMakerCatalog(@RequestParam(required = false) search: String?, @RequestParam(required = false) full: Boolean?,
+                        request: HttpServletRequest, response: HttpServletResponse, session: HttpSession): MutableSet<Maker> {
 
         val user = userService.getOneByInstallationCookie(cookieAuthorizationUtil
                 .getInstallationCookie(request, session));
         println(user);
-        return tobaccoService.getMakersAndStatusTobaccosInCatalogForUser(user, search);
+        if (full != null && full) tobaccoService.getMakersAndStatusTobaccosInCatalogForUser(user, search);
+        return tobaccoService.getMakersAndStatusTobaccosInCatalogWithLimitRatingForUser(user, search);
     }
 
     /**
@@ -77,7 +79,7 @@ class TobaccoController @Autowired constructor(private val userService: UserServ
 
     @GetMapping("/searchCatalog")
     fun searchCatalog(text: String): MutableList<Maker> {
-        val catalogTobaccoList: MutableList<Maker> = tobaccoService.searchCatalogTobacco(text);
+        val catalogTobaccoList: MutableList<Maker> = tobaccoService.searchMakerCatalog(text);
         return catalogTobaccoList;
     }
 
