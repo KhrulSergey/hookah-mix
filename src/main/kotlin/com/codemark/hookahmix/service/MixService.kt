@@ -5,6 +5,7 @@ import com.codemark.hookahmix.repository.MixComponentRepository
 import com.codemark.hookahmix.repository.MixRepository
 import com.codemark.hookahmix.service.searchBuilder.MixSearch
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import kotlin.streams.toList
 
@@ -15,6 +16,10 @@ class MixService @Autowired constructor(
         private val mixComponentRepository: MixComponentRepository,
         private val mixSearch: MixSearch) {
 
+
+    @Value("\${mixRatingLimit}")
+    var mixRatingLimitValue: Double = 0.0;
+
     //TODO Удалить неиспользуемые методы
     // Отсортировать методы
 
@@ -22,13 +27,17 @@ class MixService @Autowired constructor(
         return mixRepository.findAll().toMutableList();
     }
 
+    fun getAllLimitByRating(ratingLimit: Double = mixRatingLimitValue): MutableList<Mix> {
+        return mixRepository.findAllByRatingAfterOrderByRatingAsc(ratingLimit).toMutableList();
+    }
+
     /** Возвращает список миксов и его компонентов, с проставленными статусами согласно наличия табаков у Пользователя
      *  Также осуществляется поиск по миксам при необходимости*/
     fun getAllForUserWithSearch(user: User, searchQuery: String? = null): MutableList<Mix> {
         val mixesList = if (searchQuery.isNullOrBlank()) {
-            getAll();
+            getAllLimitByRating(mixRatingLimitValue);
         } else {
-            search(searchQuery);
+            searchByTagsAndLimitRating(searchQuery, mixRatingLimitValue);
         }
 
         val userTobaccosList = tobaccoService.getAllUserTobacco(user);
@@ -79,11 +88,11 @@ class MixService @Autowired constructor(
                             MixStatus.PARTIAL_BAR;
             }
         }
-        return mixesList;
+        return mixesList.sortedBy { mix -> mix.rating }.toMutableList();
     }
 
-    fun search(text: String): MutableList<Mix> {
-        return mixSearch.searchMixes(text);
+    fun searchByTagsAndLimitRating(text: String, ratingLimit: Double = mixRatingLimitValue): MutableList<Mix> {
+        return mixSearch.searchTagsInMixes(text, ratingLimit);
     }
 
     fun generateMixCount(user: User, status: String?, strength: String?, taste: String?): Int {
@@ -107,9 +116,7 @@ class MixService @Autowired constructor(
                                         && i.tags.contains(taste)
                             }
                             .toList().toMutableList();
-
                 } else {
-
 
                     mixes = getAllForUserWithSearch(user)
                     result = mixes.stream()
@@ -118,7 +125,6 @@ class MixService @Autowired constructor(
                                         && i.strength == strength.toDouble()
                             }
                             .toList().toMutableList()
-
                 }
             } else {
 
@@ -130,10 +136,8 @@ class MixService @Autowired constructor(
 
             }
         }
-
         count = result.size;
         return count;
-
     }
 
     fun isExist(title: String): Boolean {

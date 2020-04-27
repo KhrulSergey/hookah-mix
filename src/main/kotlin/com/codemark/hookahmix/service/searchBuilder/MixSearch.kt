@@ -14,7 +14,8 @@ import javax.transaction.Transactional
 class MixSearch @Autowired constructor(
         @PersistenceContext val entityManager: EntityManager) {
 
-    fun searchMixes(text: String): MutableList<Mix> {
+    /** Поиск по тегам в миксе */
+    fun searchTagsInMixes(text: String, ratingLimit: Double): MutableList<Mix> {
         //извлекаем fullTextEntityManager, используя entityManager
         val fullTextEntityManager = org.hibernate.search.jpa.Search.getFullTextEntityManager(entityManager)
 
@@ -24,9 +25,19 @@ class MixSearch @Autowired constructor(
 
         //обозначаем поля, по которым необходимо произвести поиск
         val query = queryBuilder
-                .keyword()
-                .onFields("title", "tags", "tobaccoMixList.title")
-                .matching(text)
+                .bool()
+                .must(queryBuilder.range()
+                        .onField("rating").above(ratingLimit)
+                        .createQuery())
+                .must(queryBuilder
+                        .keyword()
+                        .wildcard()
+//                .fuzzy()
+//                .withEditDistanceUpTo(2)
+//                .withPrefixLength(0)
+                        .onFields("tags")
+                        .matching("*${text.toLowerCase()}*")
+                        .createQuery())
                 .createQuery()
 
         //оборачиваем Lucene Query в Hibernate Query object

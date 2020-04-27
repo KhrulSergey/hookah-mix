@@ -20,6 +20,7 @@ class Mix {
     @Column(name = "title")
     var title: String = "";
 
+    @Field
     @Column(name = "rating")
     var rating: Double? = null;
 

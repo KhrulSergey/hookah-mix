@@ -41,7 +41,7 @@ class MixController @Autowired constructor(
 
     @GetMapping("/search")
     fun search(text: String): MutableList<Mix> {
-        val mixesList: MutableList<Mix> = mixService.search(text);
+        val mixesList: MutableList<Mix> = mixService.searchByTagsAndLimitRating(text);
         return mixesList;
     }
 

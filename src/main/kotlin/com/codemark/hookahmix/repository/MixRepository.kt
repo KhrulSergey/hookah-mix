@@ -1,5 +1,6 @@
 package com.codemark.hookahmix.repository
 
+import com.codemark.hookahmix.domain.Maker
 import com.codemark.hookahmix.domain.Mix
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
@@ -22,6 +23,9 @@ interface MixRepository : JpaRepository<Mix, Long> {
     fun existsBySourceUrl(sourceUrl: String): Boolean;
 
     fun existsByTitle(title: String): Boolean;
+
+    /** Возвращает список записей ограниченных снизу по рейтингу и отсортированные по рейтингу */
+    fun findAllByRatingAfterOrderByRatingAsc(rating: Double): MutableList<Mix>;
 
     /** Возвращает сохраненную запись или null в случае неудачи */
     fun save (mix:Mix): Mix?;
