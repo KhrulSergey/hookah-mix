@@ -28,7 +28,7 @@ class MixService @Autowired constructor(
     }
 
     fun getAllLimitByRating(ratingLimit: Double = mixRatingLimitValue): MutableList<Mix> {
-        return mixRepository.findAllByRatingAfterOrderByRatingAsc(ratingLimit).toMutableList();
+        return mixRepository.findAllByRatingAfterOrderByRatingDesc(ratingLimit).toMutableList();
     }
 
     /** Возвращает список миксов и его компонентов, с проставленными статусами согласно наличия табаков у Пользователя
@@ -88,7 +88,7 @@ class MixService @Autowired constructor(
                             MixStatus.PARTIAL_BAR;
             }
         }
-        return mixesList.sortedBy { mix -> mix.rating }.toMutableList();
+        return mixesList;
     }
 
     fun searchByTagsAndLimitRating(text: String, ratingLimit: Double = mixRatingLimitValue): MutableList<Mix> {

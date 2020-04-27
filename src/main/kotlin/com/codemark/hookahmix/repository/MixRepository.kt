@@ -19,7 +19,7 @@ interface MixRepository : JpaRepository<Mix, Long> {
     fun existsByTitle(title: String): Boolean;
 
     /** Возвращает список записей ограниченных снизу по рейтингу и отсортированные по рейтингу */
-    fun findAllByRatingAfterOrderByRatingAsc(rating: Double): MutableList<Mix>;
+    fun findAllByRatingAfterOrderByRatingDesc(rating: Double): MutableList<Mix>;
 
     /** Возвращает сохраненную запись или null в случае неудачи */
     fun save(mix: Mix): Mix?;
